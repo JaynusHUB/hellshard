@@ -9,6 +9,26 @@ import { UIManager } from './ui/UIManager.js';
 import { mountFacingDebug } from './ui/FacingDebugPage.js';
 import { translate } from './ui/strings.js';
 
+function parseDevOptions() {
+  if (!import.meta.env.DEV) return {};
+  const params = new URLSearchParams(window.location.search);
+  const rawZone = params.get('zone');
+  const zone = ZONE_ORDER.includes(rawZone) ? rawZone : null;
+  const rawSeed = Number(params.get('seed'));
+  const seed = Number.isInteger(rawSeed) && rawSeed > 0 ? rawSeed : null;
+  const gallery = params.get('debug') === 'gallery';
+  const peacefulParam = params.get('peaceful') === '1';
+  const flyParam = params.get('fly') === '1';
+  return {
+    zone,
+    seed,
+    gallery,
+    peaceful: peacefulParam || gallery,
+    fly: flyParam || gallery,
+    autoStart: Boolean(zone || seed || peacefulParam || flyParam || gallery),
+  };
+}
+
 function setBoot(progress, text) {
   const bar = document.getElementById('boot-progress');
   const status = document.getElementById('boot-status');
@@ -40,12 +60,30 @@ async function boot() {
   await Promise.all(ZONE_ORDER.map((zoneId) => assets.loadZoneBackgrounds(zoneId)));
   setBoot(0.94, t('game.loading'));
   const canvas = document.getElementById('game');
-  const game = new Game({ canvas, save, audio, assets });
+  const devOptions = parseDevOptions();
+  const game = new Game({ canvas, save, audio, assets, devOptions });
   const ui = new UIManager({ game, assets, save, audio });
   game.attachUI(ui);
   game.initialize();
+  if (devOptions.autoStart) {
+    const seed = devOptions.seed ?? Number(save.settings.seed ?? GAME.seed.default);
+    game.startRun('kael', seed);
+    if (devOptions.zone && devOptions.zone !== 'cemetery') {
+      game.setZone(devOptions.zone, game.worlds[devOptions.zone].spawn);
+    }
+    if (game.devGallery) {
+      game.player.devFly = true;
+      game.player.immortal = true;
+      game.player.x = game.activeWorld.spawn.x;
+      game.player.y = game.activeWorld.surface + GAME.dev.galleryHeight;
+      game.player.prevX = game.player.x;
+      game.player.prevY = game.player.y;
+      game.snapCameraToPlayer();
+    }
+  } else {
+    ui.showMainMenu();
+  }
   setBoot(1, t('game.assets'));
-  ui.showMainMenu();
   game.start();
   ui.hideBoot();
   window.HELLSHARD = { game, ui, save, assets, audio };

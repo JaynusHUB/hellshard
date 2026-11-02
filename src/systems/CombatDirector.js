@@ -171,7 +171,7 @@ export class CombatDirector {
           game.respawnFromFall();
           break;
         case 'hazardHit':
-          game.player.takeDamage(14, { type: 'hazard' });
+          game.player.takeDamage(GAME.hazards.spikeDamage, { type: 'hazard' });
           game.audio.play('playerHurt');
           break;
         case 'playerHurt':

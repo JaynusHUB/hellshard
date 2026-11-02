@@ -44,6 +44,8 @@ export class RunController {
     };
     game.worlds = generateWorld(game.seed);
     game.player = new Player(characterId, game.assets, this.getMetaModifiers());
+    game.player.devFly = Boolean(game.devFly);
+    game.player.immortal = Boolean(game.devFly);
     game.progression = new Progression(game);
     game.progression.reset(game.seed, characterId);
     game.progression.recalculatePlayer();

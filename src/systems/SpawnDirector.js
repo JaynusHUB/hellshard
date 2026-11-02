@@ -37,6 +37,7 @@ export class SpawnDirector {
 
   update(dt) {
     const game = this.game;
+    if (game.peaceful) return;
     if (!game.player || !game.activeWorld) return;
     if (game.boss && !game.boss.dead) return;
     const arena = game.activeWorld.arena;
@@ -124,10 +125,28 @@ export class SpawnDirector {
     }
   }
 
+  countSameTypeOnScreen(enemyId) {
+    const game = this.game;
+    const player = game.player;
+    if (!player) return 0;
+    const halfScreen = GAME.internalWidth / 2;
+    let count = 0;
+    for (const enemy of game.enemies ?? []) {
+      if (enemy.dead || enemy.isBoss || enemy.id !== enemyId) continue;
+      if (Math.abs(enemy.x - player.x) <= halfScreen) count++;
+    }
+    return count;
+  }
+
+  isTypeAtCrowdLimit(enemyId) {
+    return this.countSameTypeOnScreen(enemyId) >= GAME.enemyAI.crowd.maxSameTypePerScreen;
+  }
+
   pickEnemy(phase) {
     const zone = this.game.activeZone;
     const available = zone.enemyPool.filter((id) => phase.pool.includes(id));
-    const pool = available.length ? available : zone.enemyPool;
+    const candidates = available.length ? available : zone.enemyPool;
+    const pool = candidates.filter((id) => !this.isTypeAtCrowdLimit(id));
     if (!pool.length) return null;
     const weighted = pool.map((id) => {
       const count = pool.filter((other) => other === id).length;
@@ -140,7 +159,8 @@ export class SpawnDirector {
     const zone = this.game.activeZone;
     const elites = zone.elitePool.filter((id) => phase.pool.includes(id));
     const fallback = zone.elitePool;
-    const pool = elites.length ? elites : fallback;
+    const candidates = elites.length ? elites : fallback;
+    const pool = candidates.filter((id) => !this.isTypeAtCrowdLimit(id));
     return pool.length ? this.rng.pick(pool) : null;
   }
 
@@ -154,6 +174,7 @@ export class SpawnDirector {
     const world = game.activeWorld;
     const def = game.getEnemyDef(enemyId);
     if (!def) return null;
+    if (this.isTypeAtCrowdLimit(enemyId)) return null;
     const side = this.rng.chance(0.5) ? -1 : 1;
     const baseDistance = GAME.internalWidth / 2 + 40 + this.rng.float(0, 170);
     const choices = [side, -side];
@@ -161,6 +182,10 @@ export class SpawnDirector {
       for (let attempt = 0; attempt < 5; attempt++) {
         const x = player.x + direction * (baseDistance + attempt * 40);
         if (x < 32 || x > world.width * GAME.tile - 32) continue;
+        const nearChest = world.interactions.some((interaction) => (
+          interaction.type === 'chest' && Math.abs(interaction.x - x) < 4 * GAME.tile
+        ));
+        if (nearChest) continue;
         const groundY = this.findGround(world, x, player.y);
         if (groundY === null) continue;
         const tileX = Math.floor(x / GAME.tile);

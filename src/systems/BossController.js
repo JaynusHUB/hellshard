@@ -9,6 +9,7 @@ export class BossController {
 
   checkTrigger() {
     const game = this.game;
+    if (game.peaceful) return;
     const arena = game.activeWorld?.arena;
     const state = game.zoneStates[game.activeZoneId];
     if (!arena || !state || state.bossStarted || state.bossDefeated) return;

@@ -840,34 +840,54 @@
       "atlas": "gothic",
       "frames": {
         "tree1": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-1.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-1.png",
+          "w": 166,
+          "h": 117
         },
         "tree2": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-2.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-2.png",
+          "w": 166,
+          "h": 117
         },
         "tree3": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-3.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/tree-3.png",
+          "w": 176,
+          "h": 171
         },
         "statue": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/statue.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/statue.png",
+          "w": 63,
+          "h": 75
         },
         "stone1": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-1.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-1.png",
+          "w": 27,
+          "h": 39
         },
         "stone2": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-2.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-2.png",
+          "w": 27,
+          "h": 40
         },
         "stone3": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-3.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-3.png",
+          "w": 27,
+          "h": 33
         },
         "stone4": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-4.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/stone-4.png",
+          "w": 19,
+          "h": 38
         },
         "bushLarge": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/bush-large.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/bush-large.png",
+          "w": 76,
+          "h": 65
         },
         "bushSmall": {
-          "image": "assets/cemetery/PNG/Environment/sliced-objects/bush-small.png"
+          "image": "assets/cemetery/PNG/Environment/sliced-objects/bush-small.png",
+          "w": 34,
+          "h": 29
         }
       }
     },
@@ -875,7 +895,9 @@
       "atlas": "gothic",
       "frames": {
         "column": {
-          "image": "assets/church/ENVIRONMENT/column.png"
+          "image": "assets/church/ENVIRONMENT/column.png",
+          "w": 114,
+          "h": 190
         }
       }
     },
@@ -883,7 +905,9 @@
       "atlas": "gothic",
       "frames": {
         "trees": {
-          "image": "assets/swamp/Evironment/trees.png"
+          "image": "assets/swamp/Evironment/trees.png",
+          "w": 288,
+          "h": 208
         },
         "grass": {
           "image": "assets/swamp/Evironment/props.png",
@@ -892,7 +916,9 @@
             5,
             38,
             34
-          ]
+          ],
+          "w": 38,
+          "h": 34
         },
         "root": {
           "image": "assets/swamp/Evironment/props.png",
@@ -901,7 +927,9 @@
             20,
             55,
             21
-          ]
+          ],
+          "w": 55,
+          "h": 21
         },
         "fern": {
           "image": "assets/swamp/Evironment/props.png",
@@ -910,7 +938,9 @@
             10,
             45,
             32
-          ]
+          ],
+          "w": 45,
+          "h": 32
         }
       }
     },
@@ -924,7 +954,9 @@
             7,
             34,
             58
-          ]
+          ],
+          "w": 34,
+          "h": 58
         },
         "torch1": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -933,7 +965,9 @@
             7,
             34,
             58
-          ]
+          ],
+          "w": 34,
+          "h": 58
         },
         "torch2": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -942,7 +976,9 @@
             7,
             34,
             58
-          ]
+          ],
+          "w": 34,
+          "h": 58
         },
         "torch3": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -951,7 +987,9 @@
             5,
             34,
             60
-          ]
+          ],
+          "w": 34,
+          "h": 60
         },
         "knight": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -960,7 +998,9 @@
             69,
             42,
             96
-          ]
+          ],
+          "w": 42,
+          "h": 96
         },
         "robed": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -969,7 +1009,9 @@
             69,
             44,
             96
-          ]
+          ],
+          "w": 44,
+          "h": 96
         },
         "wallLarge": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -978,7 +1020,9 @@
             128,
             128,
             48
-          ]
+          ],
+          "w": 128,
+          "h": 48
         },
         "spikes": {
           "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
@@ -987,7 +1031,9 @@
             184,
             32,
             18
-          ]
+          ],
+          "w": 32,
+          "h": 18
         }
       }
     },
@@ -1001,7 +1047,9 @@
             64,
             48,
             80
-          ]
+          ],
+          "w": 48,
+          "h": 80
         },
         "treeBig2": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1010,7 +1058,9 @@
             114,
             76,
             78
-          ]
+          ],
+          "w": 76,
+          "h": 78
         },
         "treeBig3": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1019,7 +1069,9 @@
             119,
             51,
             73
-          ]
+          ],
+          "w": 51,
+          "h": 73
         },
         "bush1": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1028,7 +1080,9 @@
             60,
             31,
             20
-          ]
+          ],
+          "w": 31,
+          "h": 20
         },
         "bush2": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1037,7 +1091,9 @@
             60,
             31,
             20
-          ]
+          ],
+          "w": 31,
+          "h": 20
         },
         "bush3": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1046,7 +1102,9 @@
             88,
             63,
             24
-          ]
+          ],
+          "w": 63,
+          "h": 24
         },
         "rock": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1055,7 +1113,9 @@
             54,
             28,
             26
-          ]
+          ],
+          "w": 28,
+          "h": 26
         },
         "log": {
           "image": "assets/fantasy forest map/Decore/Fantasy Decore.png",
@@ -1064,7 +1124,9 @@
             26,
             77,
             22
-          ]
+          ],
+          "w": 77,
+          "h": 22
         }
       }
     }

@@ -120,9 +120,14 @@ for (const zoneId of Object.keys(world)) {
       failures.push(`${zoneId}: top tile ${i} surface row ${measuredRows[i]} != manifest surfaceOffset ${offset}`);
     }
   }
+  const footSink = Number(GAME.footSink[zoneId] ?? 0);
   const paintedSurface = (zone.floorRow + 1) * TILE_SIZE - offset;
-  if (Math.abs(zone.surface - paintedSurface) > TOLERANCE) {
-    failures.push(`${zoneId}: physics surface ${zone.surface} != painted surface ${paintedSurface}`);
+  const expectedSurface = paintedSurface - footSink;
+  if (Number(zone.footSink ?? 0) !== footSink) {
+    failures.push(`${zoneId}: runtime footSink ${zone.footSink} != config ${footSink}`);
+  }
+  if (Math.abs(zone.surface - expectedSurface) > TOLERANCE) {
+    failures.push(`${zoneId}: physics surface ${zone.surface} != painted ${paintedSurface} - footSink ${footSink}`);
   }
   if (Math.abs(zone.map.surfaceY - zone.surface) > TOLERANCE) {
     failures.push(`${zoneId}: tilemap surface ${zone.map.surfaceY} != physics surface ${zone.surface}`);
@@ -184,7 +189,8 @@ for (const zoneId of Object.keys(world)) {
   const rowsText = measuredRows.join('/');
   console.log(
     `${zoneId.padEnd(9)} route=${route.indexOf(zoneId)} surface=${zone.surface} ` +
-    `manifestOffset=${offset} measuredRows=${rowsText} props=${zoneProps}`,
+    `painted=${paintedSurface} footSink=${footSink} manifestOffset=${offset} ` +
+    `measuredRows=${rowsText} props=${zoneProps}`,
   );
 }
 
@@ -194,5 +200,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`\n✓ Alignment validation passed: 5 zones, ${placedProps} props, ${checkedObjects} placed objects, ±${TOLERANCE}px tolerance.`);
+console.log(`\n✓ Alignment validation passed: 5 zones, ${placedProps} props, ${checkedObjects} placed objects, footSink applied, ±${TOLERANCE}px tolerance.`);
 console.log(`  ground props checked: ${groundProps}; one-way ledges are at least 3 tiles wide.`);

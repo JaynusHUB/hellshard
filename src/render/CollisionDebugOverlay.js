@@ -141,6 +141,7 @@ export class CollisionDebugOverlay {
       hit: collisionY,
       tile: tileY,
       sprite: spriteY,
+      footSink: world.footSink ?? 0,
     });
     ctx.restore();
   }
@@ -188,7 +189,7 @@ export class CollisionDebugOverlay {
     const x = 8;
     const y = 58;
     const width = 150;
-    const height = 27;
+    const height = 34;
     ctx.fillStyle = COLORS.panel;
     ctx.fillRect(x, y, width, height);
     ctx.strokeStyle = 'rgba(160, 200, 180, 0.28)';
@@ -200,6 +201,7 @@ export class CollisionDebugOverlay {
       [COLORS.physics, `${t('debug.hitbox')} ${values.hit.toFixed(0)}`],
       [COLORS.painted, `${t('debug.tileFloor')} ${values.tile === null ? t('debug.noFloor') : values.tile.toFixed(0)}`],
       [COLORS.sprite, `${t('debug.spriteAnchor')} ${values.sprite.toFixed(0)}`],
+      [COLORS.text, `${t('debug.footSink')} ${values.footSink}px`],
     ];
     rows.forEach(([color, text], index) => {
       ctx.fillStyle = color;

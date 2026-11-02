@@ -20,7 +20,7 @@ index.html
    ├─ render/Renderer.js        WebGLRenderer, integer stage scaling, camera
    ├─ render/AssetLibrary.js    manifest loading, runtime canvas atlases
    ├─ render/SpriteBatch.js     one InstancedMesh per atlas + tint/flash shader
-   ├─ render/TileChunks.js      merged static tile geometry per chunk
+   ├─ render/TileChunks.js      merged static tile geometry + front grass fringe
    ├─ render/WorldRenderer.js   terrain, decor, interactions, water, backgrounds
    ├─ render/BackgroundLayers.js parallax background quads
    ├─ render/EntityRenderer.js  player/enemy/boss/pickup/projectile sprite batching
@@ -31,6 +31,7 @@ index.html
    ├─ render/CameraRig.js       bounded follow camera, snap and shake
    ├─ world/WorldGen.js         seeded rooms, route, secrets, validation metadata
    ├─ world/Tilemap.js          collision queries, one-way platforms, breakables
+   ├─ world/LayoutGrid.js       per-zone occupancy for props/platforms/chests/gates
    ├─ world/SpatialHash.js      active-enemy spatial queries
    ├─ world/ZoneSceneManager.js zone scene build/teardown and transitions
    ├─ entities/Player.js        movement, damage, dash, interaction state
@@ -87,6 +88,9 @@ index.html
 - Ground AI probes pits with `Enemy.probeGap`; jump-capable types use the configured jump envelope,
   others retreat and eventually despawn. Despawns refund the spawn budget. Spike damage uses
   `GAME.hazards` multipliers and is applied by `CombatDirector.applySpikeDamage`.
+- Enemy instances randomize animation phase, ±8% movement speed and tint within
+  `GAME.enemyAI.crowd`. `SpawnDirector` keeps each species at or below the configured
+  same-type-per-screen cap before picking or placing a spawn.
 - Collision is AABB vs. tilemap. One-way platforms collide only when falling. A spatial hash answers
   melee/projectile queries against active enemies.
 - World layout is deterministic from `seed + zone + room`. Gameplay RNG is a separate stream, so
@@ -94,9 +98,14 @@ index.html
 - Movement envelope constants live in `src/config/game.js`. Generation and `scripts/validate-world.js`
   import the same constants, so reachability validation cannot drift from the real jump physics.
 - `ASSET_MANIFEST.json` stores a per-zone `surfaceOffset`: the first top-tile alpha row with at least
-  60% horizontal fill. `WorldGen` and `Tilemap` use `tileTop - surfaceOffset` as the physical floor;
-  props, chests, gates and spawns are placed against that same line. `scripts/validate-alignment.js`
-  verifies the painted rows and prop support.
+  60% horizontal fill. `GAME.footSink` lowers that surface by a further 0-3 pixels. `WorldGen` and
+  `Tilemap` use `tileTop - surfaceOffset - footSink` as the physical floor; props, chests, gates and
+  spawns are placed against that same line. `scripts/validate-alignment.js` verifies the painted rows,
+  footSink and prop support.
+- `LayoutGrid` records every prop/platform/chest/gate footprint. Decorations and chests are shifted or
+  omitted on collision; `scripts/validate-layout.js` checks 100 seeds × 5 zones.
+- Dev-only queries (`import.meta.env.DEV`) set zone/seed/peaceful/fly/gallery inspection modes; the
+  gallery auto-scrolls a zone and `N`/`P` switch zones.
 
 ## Data / config boundary
 

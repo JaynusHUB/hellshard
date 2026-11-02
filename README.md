@@ -19,14 +19,25 @@ npm test                 # Vitest logic tests
 npm run validate:world   # validate seeded worlds 1..100
 npm run validate:world -- 1 300
 npm run validate:alignment # alpha-painted surface + prop/support alignment
+npm run validate:layout    # 100 seeds × 5 zones prop/platform/chest occupancy
 ```
+
+Dev-only inspection URLs (`npm run dev`):
+
+```text
+http://127.0.0.1:5173/?zone=cemetery&seed=20261102&peaceful=1
+http://127.0.0.1:5173/?zone=dungeon&fly=1&peaceful=1
+http://127.0.0.1:5173/?debug=gallery&zone=church
+http://127.0.0.1:5173/?debug=facing
+```
+
+Gallery mode: `N` / `P` switch zones. Fly mode: `WASD`/arrows, `Space` up, `S`/Down down.
 
 Facing audit page (dev or preview):
 
 ```text
 http://127.0.0.1:5173/?debug=facing
 http://127.0.0.1:4173/?debug=facing
-```
 ```
 
 All runtime assets are local under `public/assets`; there are no CDN requests.
@@ -69,8 +80,12 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
 - **Presentation:** 640×360 internal resolution, integer letterbox scaling, nearest filtering,
   one texture atlas per art family, instanced sprite batches and merged tile chunks. F3 shows a
   collision overlay with the green physics floor, magenta alpha-painted surface and yellow
-  sprite-anchor marker. Physics and props use per-zone `surfaceOffset` values measured from tile
-  alpha, and `npm run validate:alignment` checks them across all five zones.
+  sprite-anchor marker. Physics and props use per-zone `surfaceOffset` and `footSink` values measured
+  from tile alpha; a foreground 4-px grass strip is drawn in front of cemetery/swamp/forest actors.
+- **Layout / inspection:** occupancy-grid placement prevents props, platforms, chests and gates from
+  overlapping. `npm run validate:layout` checks 100 seeds × 5 zones for overlaps, floating chests and
+  unsupported single tiles. Dev-only `?zone`, `?seed`, `?peaceful`, `?fly` and `?debug=gallery`
+  parameters support world inspection.
 - **UI:** main menu, character select, HUD, pause, settings, achievements, level-up cards,
   seed entry, credits, boss bar and result screen. English and Turkish localization.
 - **Determinism / QA:** fixed 60 Hz simulation with interpolation, seeded generation and a

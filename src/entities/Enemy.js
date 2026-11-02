@@ -39,11 +39,17 @@ export class Enemy {
     this.healthScale = modifiers.health ?? 1;
     this.damageScale = modifiers.damage ?? 1;
     this.speedScale = modifiers.speed ?? 1;
+    const crowd = GAME.enemyAI.crowd;
+    this.speedJitter = 1 + (Math.random() * 2 - 1) * crowd.speedVariance;
+    this.animationPhase = Math.random();
+    this.tintJitter = [0, 1, 2].map(
+      () => 1 + (Math.random() * 2 - 1) * crowd.tintVariance,
+    );
     this.maxHealth = Math.round(def.health * this.healthScale);
     this.health = this.maxHealth;
     this.damage = def.damage * this.damageScale;
     this.projectileDamage = (def.projectileDamage ?? def.damage) * this.damageScale;
-    this.speed = def.speed * this.speedScale;
+    this.speed = def.speed * this.speedScale * this.speedJitter;
     this.state = 'spawn';
     this.stateTimer = 0.45;
     this.cooldown = 0.5 + Math.random() * 0.9;
@@ -65,7 +71,9 @@ export class Enemy {
     this.pendingAttack = false;
     this.lastHitAt = -1;
     this.spatialIndex = -1;
-    this.tintBase = def.tint ?? [1, 1, 1];
+    this.tintBase = (def.tint ?? [1, 1, 1]).map(
+      (channel, index) => channel * this.tintJitter[index],
+    );
     this.zoneTint = modifiers.zoneTint ?? [1, 1, 1];
     this.spawnGrace = 0.15;
     this.slowTimer = 0;
@@ -633,6 +641,7 @@ export class Enemy {
       restart,
       fps: timing.fps,
       loop: timing.loop,
+      phase: timing.loop ? this.animationPhase : 0,
     });
   }
 

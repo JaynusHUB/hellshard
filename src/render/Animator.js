@@ -10,7 +10,7 @@ export class Animator {
     this.speed = 1;
   }
 
-  play(name, { restart = false, speed = 1, fps = null, loop = null } = {}) {
+  play(name, { restart = false, speed = 1, fps = null, loop = null, phase = 0 } = {}) {
     const next = this.assets.getAnimation(this.spriteId, name);
     if (!next) return false;
     if (this.animationName === name && !restart) {
@@ -27,6 +27,11 @@ export class Animator {
     this.speed = speed;
     this.fps = fps ?? next.fps ?? 8;
     this.loop = loop ?? next.loop ?? true;
+    const frameDuration = this.fps > 0 ? 1 / this.fps : 0;
+    if (this.loop && phase > 0 && frameDuration > 0 && this.animation.frames.length > 0) {
+      this.time = (phase % 1) * this.animation.frames.length * frameDuration;
+      this.frameIndex = Math.floor(this.time / frameDuration) % this.animation.frames.length;
+    }
     return true;
   }
 

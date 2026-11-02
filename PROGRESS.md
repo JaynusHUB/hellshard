@@ -7,14 +7,18 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` — passes after the facing/pit-AI pass (62 modules, no errors; atlases are generated
-  at runtime, JS ~828 kB / 219 kB gzip).
-- `npm test` — **29/29 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
-  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund).
+- `npm run build` - passes after the crowd-variation pass (63 modules, no errors; atlases are
+  generated at runtime, JS 838.31 kB / 222.52 kB gzip).
+- Layout note: hidden breakable/fake-wall chests are registered in the layout grid after the room
+  structures are indexed.
+- `npm test` — **32/32 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
+  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
-- `npm run validate:alignment` — **passed**: 5 zones, 41 ground props, 120 placed objects,
-  ±1px tolerance; one-way ledges are at least 3 tiles wide.
+- `npm run validate:alignment` — **passed**: 5 zones, 41 ground props, 115 placed objects,
+  footSink applied, ±1px tolerance.
+- `npm run validate:layout` — **passed**: 100 seeds × 5 zones; zero overlaps, floating chests,
+  clearance violations or unsupported single-tile structures.
 - Production preview smoke test (`npm run preview`) — menu → achievements → character select →
   gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →
   result. **No console errors, no failed requests, no external requests.**
@@ -125,24 +129,24 @@ frames exist in any supplied pack, so death cannot be a sprite clip without inve
 
 Measured alignment:
 
-| Zone | Top fill rows | `surfaceOffset` | Physics surface |
-|---|---|---:|---:|
-| Cemetery | 11 / 11 / 9 / 11 | 10 | 134 |
-| Church | 0 | 0 | 144 |
-| Swamp | 7 / 6 / 7 / 6 / 7 | 7 | 137 |
-| Dungeon | 0 / 0 / 0 / 0 | 0 | 144 |
-| Forest | 0 | 0 | 144 |
+| Zone | Top fill rows | `surfaceOffset` | `footSink` | Physics surface |
+|---|---|---:|---:|---:|
+| Cemetery | 11 / 11 / 9 / 11 | 10 | 3 | 131 |
+| Church | 0 | 0 | 0 | 144 |
+| Swamp | 7 / 6 / 7 / 6 / 7 | 7 | 3 | 134 |
+| Dungeon | 0 / 0 / 0 / 0 | 0 | 1 | 143 |
+| Forest | 0 | 0 | 3 | 141 |
 
 `npm run validate:alignment` result:
 
 ```text
-cemetery  route=0 surface=134 manifestOffset=10 measuredRows=11/11/9/11 props=8
-church    route=1 surface=144 manifestOffset=0 measuredRows=0 props=8
-swamp     route=2 surface=137 manifestOffset=7 measuredRows=7/6/7/6/7 props=10
-dungeon   route=-1 surface=144 manifestOffset=0 measuredRows=0/0/0/0 props=7
-forest    route=3 surface=144 manifestOffset=0 measuredRows=0 props=8
+cemetery  route=0 surface=131 painted=134 footSink=3 manifestOffset=10 measuredRows=11/11/9/11 props=11
+church    route=1 surface=144 painted=144 footSink=0 manifestOffset=0 measuredRows=0 props=5
+swamp     route=2 surface=134 painted=137 footSink=3 manifestOffset=7 measuredRows=7/6/7/6/7 props=11
+dungeon   route=-1 surface=143 painted=144 footSink=1 manifestOffset=0 measuredRows=0/0/0/0 props=1
+forest    route=3 surface=141 painted=144 footSink=3 manifestOffset=0 measuredRows=0 props=13
 
-✓ Alignment validation passed: 5 zones, 41 props, 120 placed objects, ±1px tolerance.
+✓ Alignment validation passed: 5 zones, 41 props, 115 placed objects, footSink applied, ±1px tolerance.
   ground props checked: 41; one-way ledges are at least 3 tiles wide.
 ```
 
@@ -167,6 +171,49 @@ forest    route=3 surface=144 manifestOffset=0 measuredRows=0 props=8
   the push cannot shove an enemy over a gap.
 - [x] **Deterministic 1D pit simulation:** `tests/pit-ai.test.js` verifies a jump-capable enemy
   crosses a two-tile pit and a non-jumping enemy either crosses or safely despawns inside 10 seconds.
+
+## Known issues — world seating, occupancy and dev inspection (2026-11-02)
+
+- [x] **Dev-only URL parameters:** `?zone=...`, `?seed=N`, `?peaceful=1`, `?fly=1` and
+  `?debug=gallery` auto-start the selected zone. `peaceful` blocks spawns/bosses; `fly` gives
+  immortal free flight; gallery auto-scrolls the zone and `N` / `P` switch zones. Parsing is gated by
+  `import.meta.env.DEV`; production builds ignore these gameplay parameters.
+- [x] **Foot sink:** per-zone `GAME.footSink` values (cemetery 3, church 0, swamp 3, dungeon 1,
+  forest 3) are added to the alpha `surfaceOffset`. Physics, spawn, player/enemy feet, props, chests,
+  gates and collision all use the effective surface. F3 prints `FOOT SINK`.
+- [x] **Foreground grass fringe:** `TileChunks` builds a separate top 4-px strip from the existing top
+  tile regions, using the same tile material, rendered at order 2.6 in front of actors. Cemetery,
+  swamp and forest use it; church/dungeon use zero fringe.
+- [x] **Occupancy layout:** `LayoutGrid` stores prop/platform/structure/chest/gate footprints per
+  zone. Props shift/omit on collision; large props (>56px) avoid platforms/structures; chests require
+  solid/one-way support, two clear tiles above and no gate/chest/structure overlap; enemy spawn
+  candidates stay 4 tiles away from chests.
+- [x] **Layout validation:** `npm run validate:layout` checks 100 seeds × 5 zones for prop/platform/
+  chest/gate overlaps, floating or clearance-bad chests, and unsupported single-tile structures.
+- [x] **Facing page controls:** every sprite card has a `TERS` button; it flips only the page-local
+  facing, redraws both game-path states, and updates the copyable JSON at the bottom. Manifest values
+  are not changed until the user returns the JSON.
+- [x] **Pit/trap hardening:** ground enemies probe gaps and jump within the physics envelope or
+  retreat/despawn; spikes damage both player and enemies; despawns refund spawn budget; separation
+  requires same-level support. `tests/pit-ai.test.js` covers the 10-second outcome.
+- [x] **Crowd variation:** every enemy instance gets a random animation phase, a speed multiplier
+  inside ±8% and a ±5% per-channel tint jitter (`GAME.enemyAI.crowd`). The spawn director keeps at
+  most 3 same-type enemies within one 640px screen of the player, filtering both normal and elite
+  picks and re-checking before placement.
+
+Layout validation result (100 seeds × 5 zones):
+
+```text
+zone      props  chests gates  platforms overlaps floatingChests clearanceBad tinyStructures
+cemetery  969    671    300    4694      0        0              0            0
+church    375    675    200    4692      0        0              0            0
+swamp     1069   675    200    4686      0        0              0            0
+dungeon   1138   773    100    4937      0        0              0            0
+forest    1240   781    100    4933      0        0              0            0
+
+✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests,
+  clearance violations or unsupported single-tile structures.
+```
 
 ## Completed phases
 

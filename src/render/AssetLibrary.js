@@ -394,8 +394,10 @@ export class AssetLibrary {
     return this.manifest.sprites[spriteId]?.facing === 'left' ? 'left' : 'right';
   }
 
-  shouldFlipSprite(spriteId, direction) {
-    const base = this.getSpriteFacing(spriteId);
+  shouldFlipSprite(spriteId, direction, facingOverride = null) {
+    const base = facingOverride === 'left' || facingOverride === 'right'
+      ? facingOverride
+      : this.getSpriteFacing(spriteId);
     return (direction < 0) !== (base === 'left');
   }
 

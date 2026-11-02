@@ -1,6 +1,6 @@
 import { GAME } from '../config/game.js';
 import { getDifficultyPhase } from '../config/difficulty.js';
-import { ZONES } from '../data/zones.js';
+import { ZONES, ZONE_ORDER } from '../data/zones.js';
 import { ENEMY_BY_ID } from '../data/enemies.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Renderer } from '../render/Renderer.js';
@@ -26,11 +26,15 @@ import { ZoneSceneManager } from '../world/ZoneSceneManager.js';
 import { CollisionDebugOverlay } from '../render/CollisionDebugOverlay.js';
 
 export class Game {
-  constructor({ canvas, save, audio, assets }) {
+  constructor({ canvas, save, audio, assets, devOptions = {} }) {
     this.canvas = canvas;
     this.save = save;
     this.audio = audio;
     this.assets = assets;
+    this.devOptions = devOptions;
+    this.devFly = Boolean(devOptions.fly || devOptions.gallery);
+    this.devGallery = Boolean(devOptions.gallery);
+    this.peaceful = Boolean(devOptions.peaceful || devOptions.gallery);
     this.renderer = new Renderer(canvas);
     this.camera = new CameraRig();
     this.camera.setShakeSetting(save.settings.shake ?? 0.7);
@@ -219,6 +223,10 @@ export class Game {
   update(dt) {
     this.time += dt;
     if (this.input.wasPressed('debug')) this.debugVisible = !this.debugVisible;
+    if (this.devGallery && this.state === 'playing') {
+      if (this.input.wasPressed('nextZone')) this.changeDevZone(1);
+      if (this.input.wasPressed('prevZone')) this.changeDevZone(-1);
+    }
     if (this.state === 'playing') {
       if (this.input.wasPressed('pause')) {
         this.state = 'paused';
@@ -234,6 +242,38 @@ export class Game {
       this.interactions.updateTransition(dt);
     }
     this.input.clearPressed();
+  }
+
+  updateGallery(dt) {
+    const player = this.player;
+    const world = this.activeWorld;
+    if (!player || !world) return;
+    player.x += GAME.dev.gallerySpeed * dt;
+    player.y = world.surface + GAME.dev.galleryHeight;
+    player.prevX = player.x;
+    player.prevY = player.y;
+    player.vx = 0;
+    player.vy = 0;
+    player.onGround = false;
+    if (player.x > world.width * GAME.tile - 48) {
+      player.x = 48;
+      player.prevX = 48;
+    }
+  }
+
+  changeDevZone(step) {
+    if (!this.devGallery) return;
+    const index = ZONE_ORDER.indexOf(this.activeZoneId);
+    const next = ZONE_ORDER[(index + step + ZONE_ORDER.length) % ZONE_ORDER.length];
+    this.setZone(next, this.worlds[next].spawn);
+    this.player.devFly = true;
+    this.player.immortal = true;
+    this.player.x = this.activeWorld.spawn.x;
+    this.player.y = this.activeWorld.surface + GAME.dev.galleryHeight;
+    this.player.prevX = this.player.x;
+    this.player.prevY = this.player.y;
+    this.snapCameraToPlayer();
+    this.ui?.toast('zone.entered', { zone: this.ui.t(this.activeZone.nameKey) }, { duration: 1200 });
   }
 
   updateMenuAmbience(dt) {
@@ -270,6 +310,7 @@ export class Game {
     this.run.elapsed += dt;
     this.worldLife.updateMovingPlatforms();
     player.update(dt, this.activeWorld, this.input);
+    if (this.devGallery) this.updateGallery(dt);
     this.bossController.checkTrigger();
     const playerEvents = player.consumeEvents();
     for (const enemy of this.enemies) {

@@ -136,11 +136,35 @@ export const GAME = {
     pitStuckSeconds: 5,
     pitFallDepth: 8,
     despawnY: -40,
+    crowd: {
+      maxSameTypePerScreen: 3,
+      speedVariance: 0.08,
+      tintVariance: 0.05,
+    },
   },
   hazards: {
     spikeDamage: 12,
     enemyDamageMultiplier: 1.25,
     enemyHitInterval: 0.65,
+  },
+  dev: {
+    flySpeed: 260,
+    gallerySpeed: 110,
+    galleryHeight: 32,
+  },
+  footSink: {
+    cemetery: 3,
+    church: 0,
+    swamp: 3,
+    dungeon: 1,
+    forest: 3,
+  },
+  foregroundFringe: {
+    cemetery: 4,
+    church: 0,
+    swamp: 4,
+    dungeon: 0,
+    forest: 4,
   },
 };
 

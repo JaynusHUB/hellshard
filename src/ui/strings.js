@@ -419,6 +419,7 @@ export const EN = {
   'debug.collisionFloor': 'AABB FEET',
   'debug.tileFloor': 'TILE FLOOR',
   'debug.spriteAnchor': 'SPRITE',
+  'debug.footSink': 'FOOT SINK',
   'debug.noFloor': '—',
 
   'credits.title': 'Credits',
@@ -901,6 +902,7 @@ export const TR = {
   'debug.collisionFloor': 'AABB AYAK',
   'debug.tileFloor': 'TILE ZEMİN',
   'debug.spriteAnchor': 'SPRITE',
+  'debug.footSink': 'AYAK GÖMÜLMESİ',
   'debug.noFloor': '—',
 
   'credits.title': 'Katkılar',

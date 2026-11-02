@@ -30,6 +30,8 @@ export class Player {
     this.iframes = 0;
     this.hurtTimer = 0;
     this.dead = false;
+    this.devFly = false;
+    this.immortal = false;
     this.spawnGrace = 1;
     this.specialCooldown = 0;
     this.specialActiveTimer = 0;
@@ -152,6 +154,10 @@ export class Player {
     this.map = world.map;
     this.prevX = this.x;
     this.prevY = this.y;
+    if (this.devFly) {
+      this.updateDevFlight(dt, world, input);
+      return;
+    }
     this._wasRiding = this.ridingPlatform;
     if (this.ridingPlatform) {
       this.x += this.ridingPlatform.dx ?? 0;
@@ -170,6 +176,22 @@ export class Player {
     this.chooseAnimation();
     this.animator.update(dt);
     this.updateAfterimages(dt);
+  }
+
+  updateDevFlight(dt, world, input) {
+    const axis = input.getAxis();
+    const vertical = (input.isDown('jump') ? 1 : 0) - (input.isDown('down') ? 1 : 0);
+    const speed = GAME.dev.flySpeed;
+    this.vx = axis * speed;
+    this.vy = vertical * speed;
+    if (axis !== 0) this.facing = axis;
+    this.x = clamp(this.x + this.vx * dt, 8, world.width * GAME.tile - 8);
+    this.y = clamp(this.y + this.vy * dt, 8, world.height * GAME.tile - 8);
+    this.onGround = false;
+    this.animTime += dt;
+    this.iframes = Math.max(this.iframes, 0.2);
+    this.animator.play(axis !== 0 ? 'run' : 'idle');
+    this.animator.update(dt);
   }
 
   tickTimers(dt) {
@@ -347,7 +369,7 @@ export class Player {
   }
 
   takeDamage(amount, source = null) {
-    if (this.dead || this.iframes > 0 || this.spawnGrace > 0) return 0;
+    if (this.immortal || this.dead || this.iframes > 0 || this.spawnGrace > 0) return 0;
     const reduced = amount * (1 - this.stats.armor);
     this.health = Math.max(0, this.health - reduced);
     this.iframes = GAME.player.hurtIFrames;
