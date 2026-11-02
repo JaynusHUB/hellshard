@@ -157,7 +157,7 @@ export const ZONES = {
       { id: 'return', target: 'swamp', room: 0, offset: 0.14, labelKey: 'zone.swamp.name', style: 'portal' },
     ],
     hasFinalGate: false,
-    hazards: 'water',
+    hazards: 'spikes',
     music: 'forest',
     weather: 'fireflies',
     challengeRoom: 3,

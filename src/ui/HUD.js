@@ -93,9 +93,7 @@ export class HUD {
     this.refs.killsLabel.textContent = t('hud.kills').replace('{count}', '').trim();
     this.refs.dashLabel.textContent = t('hud.dash');
     this.refs.specialName.textContent = t('hud.special');
-    this.refs.controlHint.textContent = this.ui.settings.language === 'tr'
-      ? 'J saldırı · K ağır · L yetenek'
-      : 'J attack · K heavy · L ability';
+    this.refs.controlHint.textContent = t('hud.controls');
     this.refs.seed.textContent = t('hud.seed', { seed: this.ui.game?.run?.seed ?? GAME.seed.default });
   }
 

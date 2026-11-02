@@ -30,6 +30,8 @@ export const BOSSES = {
     visualOffsetY: 8,
     shard: 'cemetery',
     arenaWidth: 30,
+    deathEffect: 'ember',
+    xp: 140,
   },
   church: {
     id: 'seraph_ash',
@@ -64,6 +66,8 @@ export const BOSSES = {
     flying: true,
     shard: 'church',
     arenaWidth: 32,
+    deathEffect: 'soul',
+    xp: 190,
   },
   swamp: {
     id: 'drowned_choir',
@@ -97,6 +101,8 @@ export const BOSSES = {
     flying: true,
     shard: 'swamp',
     arenaWidth: 30,
+    deathEffect: 'soul',
+    xp: 170,
   },
 };
 

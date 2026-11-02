@@ -2,6 +2,7 @@ import { GAME } from '../config/game.js';
 import { CHARACTER_BY_ID } from '../data/characters.js';
 import { clamp } from '../core/RNG.js';
 import { Animator } from '../render/Animator.js';
+import { handleActions, pickAnim, emitBasicStrike, emitProjectiles, emitHeavyStrike, useSpecial } from './PlayerCombat.js';
 
 export class Player {
   constructor(characterId, assets, modifiers = {}) {
@@ -151,14 +152,20 @@ export class Player {
     this.map = world.map;
     this.prevX = this.x;
     this.prevY = this.y;
+    this._wasRiding = this.ridingPlatform;
+    if (this.ridingPlatform) {
+      this.x += this.ridingPlatform.dx ?? 0;
+      this.y += this.ridingPlatform.dy ?? 0;
+    }
     this.timeAlive += dt;
     this.animTime += dt;
     this.tickTimers(dt);
     this.handleDash(input, world);
-    this.handleActions(input, world);
+    handleActions(this, input, world);
     this.handleHorizontal(dt, input);
     this.applyGravity(dt);
     this.integrate(dt, world);
+    this.checkMovingPlatforms(world);
     this.handleHazards(dt, world);
     this.chooseAnimation();
     this.animator.update(dt);
@@ -189,7 +196,7 @@ export class Player {
       this.heavyTimer = 0.08;
       if (!this.heavyStrikeFired) {
         this.heavyStrikeFired = true;
-        this.emitHeavyStrike();
+        emitHeavyStrike(this);
       }
     } else if (this.heavyPhase === 'strike' && this.heavyTimer <= 0) {
       this.heavyPhase = 'recover';
@@ -208,6 +215,8 @@ export class Player {
       this.dashTimer = GAME.player.dashDuration;
       this.dashCooldown = this.stats.dashCooldown;
       this.iframes = Math.max(this.iframes, GAME.player.dashIFrames);
+      this.ridingPlatform = null;
+      this._wasRiding = null;
       this.vy = 0;
       this.emit({ type: 'dash', x: this.x, y: this.y, direction: this.dashDirection });
       this.afterimageTimer = 0;
@@ -231,235 +240,6 @@ export class Player {
       }
       this.emit({ type: 'dashTrail', x: this.x, y: this.y, facing: this.facing });
     }
-  }
-
-  handleActions(input, world) {
-    if (this.heavyPhase !== 'none' || this.dashTimer > 0) return;
-    const pressedHeavy = input.wasPressed('heavy');
-    const pressedSpecial = input.wasPressed('special');
-    const pressedBasic = input.wasPressed('attack') || (input.isDown('attack') && this.basicCooldown <= 0);
-    if (pressedSpecial && this.specialCooldown <= 0) {
-      this.useSpecial(world);
-      return;
-    }
-    if (pressedHeavy && this.heavyCooldown <= 0) {
-      this.heavyPhase = 'windup';
-      this.heavyTimer = this.character.weapon.heavy.windup ?? 0.3;
-      this.heavyStrikeFired = false;
-      this.attackAnim = this.heavyTimer + (this.character.weapon.heavy.recover ?? 0.3) + 0.1;
-      this.animator.play(this.character.weapon.style === 'melee' ? this.pickAnim('heavy', 'attack') : this.pickAnim('attack', 'cast'), { restart: true });
-      this.emit({ type: 'heavyWindup', characterId: this.characterId });
-      return;
-    }
-    if (pressedBasic && this.basicCooldown <= 0) {
-      this.basicCooldown = this.stats.attackCooldown;
-      this.basicAnimTimer = Math.min(0.3, this.stats.attackCooldown * 0.8);
-      this.attackAnim = this.basicAnimTimer;
-      this.animator.play(this.pickAnim('attack', 'cast'), { restart: true });
-      this.emitBasicStrike();
-    }
-  }
-
-  pickAnim(...names) {
-    for (const name of names) {
-      if (this.assets.getAnimation(this.character.sprite, name)) return name;
-    }
-    return 'idle';
-  }
-
-  emitBasicStrike() {
-    const weapon = this.character.weapon;
-    if (weapon.style === 'melee') {
-      this.emit({
-        type: 'meleeStrike',
-        x: this.x,
-        y: this.y,
-        facing: this.facing,
-        range: weapon.range * this.stats.area,
-        arcHeight: weapon.arcHeight,
-        damage: weapon.damage * this.stats.damageMultiplier * (this.rageTimer > 0 ? 1.5 : 1),
-        knockback: weapon.knockback,
-        color: this.character.accent,
-        heavy: false,
-      });
-    } else {
-      this.emitProjectiles(false);
-    }
-  }
-
-  emitProjectiles(heavy) {
-    const weapon = this.character.weapon;
-    const heavyDef = weapon.heavy;
-    const count = heavy ? 1 : this.stats.projectileCount;
-    const projectileDamageBase = heavy ? heavyDef.damage : weapon.damage;
-    const damage = projectileDamageBase * this.stats.damageMultiplier * (this.rageTimer > 0 ? 1.5 : 1);
-    const speed = heavy ? heavyDef.speed : weapon.projectileSpeed;
-    const pierce = heavy ? heavyDef.pierce : weapon.pierce + (this.evolved ? 3 : 0);
-    const spread = count > 1 ? weapon.spread : 0;
-    const aoe = heavy ? (weapon.style === 'projectile' ? weapon.aoe : 0) : weapon.aoe * this.stats.area;
-    for (let i = 0; i < count; i++) {
-      const offset = count === 1 ? 0 : (i - (count - 1) / 2) * spread;
-      const vx = this.facing * speed;
-      const vy = offset * 60;
-      this.emit({
-        type: 'spawnProjectile',
-        owner: 'player',
-        x: this.x + this.facing * 15,
-        y: this.y + 16 + offset * 4,
-        vx,
-        vy,
-        damage,
-        pierce,
-        aoe,
-        element: weapon.element,
-        color: this.character.accent,
-        trailColor: weapon.trailColor,
-        life: heavy ? weapon.projectileLife * 1.2 : weapon.projectileLife,
-        heavy,
-        evolved: this.evolved,
-        characterId: this.characterId,
-        knockback: weapon.knockback,
-        weaponId: weapon.id,
-        ricochet: this.evolved && this.characterId === 'nyx' ? 2 : 0,
-      });
-    }
-    const projEvent = {
-      type: 'muzzle',
-      x: this.x + this.facing * 16,
-      y: this.y + 16,
-      facing: this.facing,
-      color: weapon.accent ?? this.character.accent,
-      heavy,
-    };
-    this.emit(projEvent);
-  }
-
-  emitHeavyStrike() {
-    const weapon = this.character.weapon;
-    if (this.characterId === 'kael') {
-      this.emitProjectiles(true);
-      this.emit({ type: 'heavyTrail', x: this.x, y: this.y, facing: this.facing, color: '#bfefff' });
-    } else if (this.characterId === 'brakk') {
-      const range = weapon.heavy.radius * this.stats.area;
-      this.emit({
-        type: 'meleeStrike',
-        x: this.x,
-        y: this.y,
-        facing: this.facing,
-        range,
-        arcHeight: 60,
-        damage: weapon.heavy.damage * this.stats.damageMultiplier * (this.rageTimer > 0 ? 1.5 : 1),
-        knockback: weapon.heavy.knockback,
-        color: '#ff7a66',
-        heavy: true,
-      });
-      this.emit({ type: 'shock', x: this.x, y: this.y, facing: this.facing, color: '#d05155', heavy: true });
-    } else if (this.characterId === 'seraphine') {
-      this.emit({
-        type: 'burst',
-        x: this.x,
-        y: this.y + 16,
-        radius: weapon.heavy.radius * this.stats.area,
-        damage: weapon.heavy.damage * this.stats.frostPower * this.stats.damageMultiplier,
-        color: '#cfadff',
-        element: 'frost',
-        heavy: true,
-      });
-      this.emit({ type: 'shock', x: this.x, y: this.y, facing: this.facing, color: '#cdb0ff', heavy: true });
-    } else {
-      this.emit({
-        type: 'meleeStrike',
-        x: this.x,
-        y: this.y,
-        facing: this.facing,
-        range: weapon.heavy.range,
-        arcHeight: weapon.heavy.arcHeight,
-        damage: weapon.heavy.damage * this.stats.damageMultiplier,
-        knockback: weapon.heavy.knockback,
-        color: '#a48bff',
-        heavy: true,
-      });
-    }
-  }
-
-  useSpecial(world) {
-    const special = this.character.special;
-    this.specialCooldown = special.cooldown;
-    this.attackAnim = 0.3;
-    this.animator.play(this.pickAnim('cast', 'attack'), { restart: true });
-    if (special.type === 'trap') {
-      const tx = this.x + this.facing * 38;
-      this.emit({
-        type: 'specialTrap',
-        x: tx,
-        y: this.y,
-        duration: special.duration,
-        damage: special.damage * this.stats.frostPower * this.stats.damageMultiplier,
-        radius: special.radius,
-      });
-      this.emit({ type: 'castBurst', x: this.x, y: this.y + 16, color: '#9fe4ff' });
-    } else if (special.type === 'rage') {
-      this.rageTimer = special.duration;
-      this.emit({ type: 'rage', x: this.x, y: this.y, duration: special.duration });
-    } else if (special.type === 'blinkBurst' || special.type === 'shadowStep') {
-      const fromX = this.x;
-      const distance = special.distance;
-      let nextX = this.x;
-      for (let step = 6; step <= distance; step += 6) {
-        const candidate = this.x + this.facing * step;
-        const testX = Math.floor((candidate + (this.facing > 0 ? 6 : -6)) / GAME.tile);
-        const y0 = Math.floor((this.y + 2) / GAME.tile);
-        const y1 = Math.floor((this.y + this.height - 2) / GAME.tile);
-        let blocked = false;
-        for (let ty = y0; ty <= y1; ty++) {
-          if (world.map.isSolidAt(testX, ty)) {
-            blocked = true;
-            break;
-          }
-        }
-        if (blocked) break;
-        nextX = candidate;
-      }
-      this.x = nextX;
-      this.iframes = Math.max(this.iframes, special.iframes ?? 0.35);
-      this.emit({ type: 'blink', fromX, toX: nextX, y: this.y + 16, facing: this.facing });
-      if (special.type === 'blinkBurst') {
-        this.emit({
-          type: 'burst',
-          x: this.x,
-          y: this.y + 16,
-          radius: special.radius * this.stats.area,
-          damage: special.damage * this.stats.frostPower * this.stats.damageMultiplier,
-          color: '#d5bcff',
-          element: 'frost',
-          heavy: true,
-        });
-        this.emit({
-          type: 'burst',
-          x: fromX,
-          y: this.y + 16,
-          radius: special.radius * 0.6 * this.stats.area,
-          damage: special.damage * 0.5 * this.stats.damageMultiplier,
-          color: '#a9e8ff',
-          element: 'frost',
-          heavy: false,
-        });
-      } else {
-        this.emit({
-          type: 'meleeStrike',
-          x: fromX,
-          y: this.y,
-          facing: this.facing,
-          range: 46,
-          arcHeight: 40,
-          damage: special.damage * this.stats.damageMultiplier,
-          knockback: 120,
-          color: '#9c86ff',
-          heavy: false,
-        });
-      }
-    }
-    this.emit({ type: 'specialUsed', characterId: this.characterId });
   }
 
   handleHorizontal(dt, input) {
@@ -497,6 +277,8 @@ export class Player {
       this.jumpBuffer = 0;
       this.coyote = 0;
       this.onGround = false;
+      this.ridingPlatform = null;
+      this._wasRiding = null;
       this.emit({ type: 'jump', x: this.x, y: this.y });
     }
     if (!input.isDown('jump') && this.vy > 0) this.vy *= GAME.player.jumpCut;
@@ -524,6 +306,30 @@ export class Player {
     }
     if (!previousOnGround && this.onGround) {
       this.emit({ type: 'land', x: this.x, y: this.y, velocity: Math.abs(this.vy) });
+    }
+  }
+
+  checkMovingPlatforms(world) {
+    const platforms = world.movingPlatforms;
+    const previous = this._wasRiding;
+    this.ridingPlatform = null;
+    if (!platforms?.length) return;
+    const halfW = this.width / 2;
+    for (const platform of platforms) {
+      const top = platform.y;
+      const overlapX = this.x + halfW > platform.x - platform.w / 2 + 2 &&
+        this.x - halfW < platform.x + platform.w / 2 - 2;
+      if (!overlapX) continue;
+      const wasOnThis = previous === platform;
+      if (!wasOnThis && this.vy > 0) continue;
+      if (!wasOnThis && this.prevY < top - 1) continue;
+      if (wasOnThis || (this.y <= top + 2 && this.y >= top - 12)) {
+        this.y = top;
+        this.vy = 0;
+        this.onGround = true;
+        this.ridingPlatform = platform;
+        break;
+      }
     }
   }
 
@@ -583,12 +389,12 @@ export class Player {
     if (!this.onGround) {
       if (this.characterId === 'seraphine') {
         this.animator.play('idle');
-      } else if (this.vy > 0) this.animator.play(this.pickAnim('jump', 'run'));
-      else this.animator.play(this.pickAnim('fall', 'jump', 'run'));
+      } else if (this.vy > 0) this.animator.play(pickAnim(this, 'jump', 'run'));
+      else this.animator.play(pickAnim(this, 'fall', 'jump', 'run'));
       return;
     }
     if (Math.abs(this.vx) > 10) {
-      this.animator.play(this.pickAnim('run', 'idle'));
+      this.animator.play(pickAnim(this, 'run', 'idle'));
     } else {
       this.animator.play('idle');
     }

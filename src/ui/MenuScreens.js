@@ -1,5 +1,6 @@
 import { CHARACTERS } from '../data/characters.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from '../data/achievements.js';
+import { GAME } from '../config/game.js';
 import { formatTime } from './strings.js';
 
 export function mainMenuHtml({ t, seed, shards, version, bestTime }) {
@@ -56,7 +57,7 @@ export function characterSelectHtml({ t, selectedId, meta, seed }) {
   const cards = CHARACTERS.map((character) => {
     const unlocked = meta.unlockedCharacters.includes(character.id);
     const selected = character.id === selectedId;
-    const cost = character.unlock === 'shards' ? (character.id === 'seraphine' ? 1 : 2) : 0;
+    const cost = character.unlock === 'shards' ? (GAME.meta.unlockCosts[character.id] ?? 1) : 0;
     const power = character.weapon.style === 'melee'
       ? character.weapon.damage * (1 / character.weapon.cooldown) * 0.14
       : character.weapon.damage * (1 / character.weapon.cooldown) * 0.1;
@@ -142,7 +143,7 @@ export function settingsHtml({ t, settings, meta, inRun, seed }) {
           ${rangeRow(t('settings.master'), 'master', settings.master, 'settings.master')}
           ${rangeRow(t('settings.sfx'), 'sfx', settings.sfx, 'settings.sfx')}
           ${rangeRow(t('settings.music'), 'music', settings.music, 'settings.music')}
-          <div class="setting-row"><label>${t('settings.music')}</label>${toggleHtml('musicEnabled', settings.musicEnabled)}</div>
+          <div class="setting-row"><label>${t('settings.musicEnabled')}</label>${toggleHtml('musicEnabled', settings.musicEnabled)}</div>
           <div class="setting-section">${t('settings.video')}</div>
           ${rangeRow(t('settings.shake'), 'shake', settings.shake, 'settings.shake')}
           ${rangeRow(t('settings.flash'), 'flash', settings.flash, 'settings.flash')}
@@ -200,7 +201,7 @@ export function achievementsHtml({ t, meta, inRun }) {
           <div class="achievement-name">${t(achievement.nameKey)}</div>
           <div class="achievement-desc">${t(achievement.descKey)}</div>
           <div class="achievement-progress ${unlocked ? 'unlocked' : ''}">
-            ${unlocked ? t('settings.bonus.maxed') : showProgress ? t('achievements.progress', { current: Math.min(progress, target), target }) : t('achievements.locked')}
+            ${unlocked ? t('achievements.unlockedShort') : showProgress ? t('achievements.progress', { current: Math.min(progress, target), target }) : t('achievements.locked')}
           </div>
         </div>
       </div>
@@ -236,8 +237,8 @@ export function levelUpHtml({ t, offers, level, playerUpgrades }) {
         <h2 class="card-title">${t(card.nameKey)}</h2>
         <p class="card-desc">${t(card.descKey)}</p>
         <div class="card-footer">
-          <span>${isEvolution ? t('evolution.available') : t('common.level', { level: currentLevel + 1 })}</span>
-          <span class="card-levels">${isEvolution ? t('evolution.already') : `${currentLevel}/${max}`}</span>
+          <span>${isEvolution ? t('levelup.weaponLevel', { level: 5 }) : t('common.level', { level: currentLevel + 1 })}</span>
+          <span class="card-levels">${isEvolution ? t('evolution.available') : `${currentLevel}/${max}`}</span>
         </div>
       </button>
     `;
@@ -294,7 +295,7 @@ export function resultHtml({ t, summary, victory, newBestTime }) {
           <h3 style="margin-top:10px;">${t('result.achievements')}</h3>
           <div class="result-achievements">${ach}</div>
           <h3 style="margin-top:10px;">${t('result.weapon')}</h3>
-          <div class="result-list-item"><span>${summary.weaponName}</span><b>${summary.evolved ? t('evolution.already') : t('common.level', { level: summary.weaponLevel })}</b></div>
+          <div class="result-list-item"><span>${t(summary.weaponNameKey ?? 'hud.weapon')}</span><b>${summary.evolved ? t('evolution.already') : t('common.level', { level: summary.weaponLevel })}</b></div>
         </div>
       </div>
       <div class="result-footer">

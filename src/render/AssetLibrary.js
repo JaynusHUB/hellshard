@@ -399,12 +399,53 @@ export class AssetLibrary {
     return this.tileGroupWidths[zoneId] ?? 4;
   }
 
+  getPalette(family, frame, maxColors = 10) {
+    if (!frame) return [[220, 210, 190]];
+    this.paletteCache ??= new Map();
+    const key = `${family}:${frame.id}`;
+    if (this.paletteCache.has(key)) return this.paletteCache.get(key);
+    const atlas = this.atlases[family];
+    if (!atlas) return [[220, 210, 190]];
+    const ctx = atlas.ctx;
+    atlas.pixelData ??= ctx.getImageData(0, 0, atlas.canvas.width, atlas.canvas.height).data;
+    const image = atlas.pixelData;
+    const counts = new Map();
+    const stride = atlas.canvas.width;
+    const step = 2;
+    for (let y = 0; y < frame.h; y += step) {
+      for (let x = 0; x < frame.w; x += step) {
+        const i = ((frame.sy + y) * stride + frame.sx + x) * 4;
+        const alpha = image[i + 3];
+        if (alpha < 40) continue;
+        const r = image[i] & 0xf8;
+        const g = image[i + 1] & 0xf8;
+        const b = image[i + 2] & 0xf8;
+        if (r + g + b < 30) continue;
+        const colorKey = (r << 16) | (g << 8) | b;
+        counts.set(colorKey, (counts.get(colorKey) ?? 0) + 1);
+      }
+    }
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, maxColors);
+    const palette = sorted.map(([value]) => [
+      (value >> 16) & 0xff,
+      (value >> 8) & 0xff,
+      value & 0xff,
+    ]);
+    if (!palette.length) palette.push([210, 196, 170]);
+    this.paletteCache.set(key, palette);
+    return palette;
+  }
+
   get backgroundManifest() {
     return this.manifest.backgrounds;
   }
 
   getSpriteManifest(spriteId) {
     return this.manifest.sprites[spriteId];
+  }
+
+  getSpriteAtlas(spriteId) {
+    return this.manifest.sprites[spriteId]?.atlas ?? 'gothic';
   }
 
   getPresentation() {

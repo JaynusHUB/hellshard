@@ -197,7 +197,7 @@ button {
 }
 
 #toast-layer {
-  z-index: 30;
+  z-index: 12;
   pointer-events: none;
   overflow: hidden;
 }
@@ -211,6 +211,15 @@ button {
   position: absolute;
   inset: 0;
   pointer-events: auto;
+}
+
+.hit-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.13s ease-out;
+  mix-blend-mode: screen;
 }
 
 #fade-layer {
@@ -1036,9 +1045,9 @@ button {
 
 .boss-hud {
   position: absolute;
-  left: 112px;
-  right: 112px;
-  top: 36px;
+  left: 178px;
+  right: 156px;
+  top: 70px;
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1281,7 +1290,9 @@ button {
 /* ---------- level up ---------- */
 
 .levelup-screen {
-  background: rgba(4, 3, 7, 0.82);
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(74, 49, 54, 0.2), transparent 54%),
+    rgba(4, 3, 7, 0.955);
   backdrop-filter: blur(1px);
   display: flex;
   flex-direction: column;
@@ -1496,10 +1507,23 @@ button {
   font-size: 8px;
 }
 
-.settings-grid {
+.settings-modal {
+  height: 344px;
+  max-height: 344px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 25px 10px;
+  overflow: hidden;
+}
+
+.settings-modal .settings-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 7px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 7px;
+  gap: 6px;
 }
 
 .setting-section {
@@ -1615,13 +1639,33 @@ button {
 
 .achievement-list {
   width: 486px;
-  max-height: 300px;
+  height: 344px;
+  max-height: 344px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 10px;
+  overflow: hidden;
 }
 
-.achievement-grid {
+.achievement-list .achievement-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5px;
+  align-content: start;
+}
+
+.settings-modal .levelup-footer,
+.achievement-list .levelup-footer {
+  flex-shrink: 0;
+}
+
+.settings-modal .modal-title,
+.achievement-list .modal-title {
+  margin-top: 0;
 }
 
 .achievement-item {
@@ -1695,18 +1739,20 @@ button {
 }
 
 .result-header {
-  padding: 27px 30px 10px;
+  padding: 14px 30px 8px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  gap: 18px;
   border-bottom: 1px solid rgba(212, 174, 104, 0.16);
 }
 
 .result-header h1 {
   margin: 0;
   color: var(--bone);
-  font-size: 30px;
-  letter-spacing: 3px;
+  font-size: 24px;
+  line-height: 1.04;
+  letter-spacing: 2px;
   text-transform: uppercase;
 }
 
@@ -1731,20 +1777,20 @@ button {
 .result-body {
   display: grid;
   grid-template-columns: 1.04fr 0.96fr;
-  gap: 18px;
-  padding: 14px 30px;
-  height: 223px;
+  gap: 14px;
+  padding: 10px 30px;
+  height: 192px;
 }
 
 .result-stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px;
+  gap: 5px;
 }
 
 .result-stat {
   border: 1px solid rgba(212, 174, 104, 0.14);
-  padding: 7px 9px;
+  padding: 5px 8px;
   background: rgba(9, 7, 12, 0.54);
 }
 
@@ -1760,7 +1806,7 @@ button {
   display: block;
   margin-top: 2px;
   color: var(--bone);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 400;
 }
 
@@ -1809,7 +1855,9 @@ button {
 .result-achievements {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 3px;
+  max-height: 61px;
+  overflow: hidden;
 }
 
 .result-achievement {
@@ -1823,7 +1871,7 @@ button {
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 9px 30px 18px;
+  padding: 5px 30px 8px;
 }
 
 /* ---------- credits / controls / toasts / debug ---------- */
@@ -1869,7 +1917,7 @@ button {
 
 .game-toast {
   position: absolute;
-  top: 50px;
+  top: 94px;
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
   display: flex;

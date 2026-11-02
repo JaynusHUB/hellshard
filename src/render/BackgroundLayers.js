@@ -45,6 +45,7 @@ export class BackgroundLayers {
       const material = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
+        opacity: def.opacity ?? 1,
         depthTest: false,
         depthWrite: false,
         color: new THREE.Color(def.tint?.[0] ?? 1, def.tint?.[1] ?? 1, def.tint?.[2] ?? 1),

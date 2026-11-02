@@ -11,8 +11,11 @@ const ROWS = GAME.world.rows;
 const FLOOR_ROW = 8;
 const SURFACE = (FLOOR_ROW + 1) * T;
 const BOSS_ROOM = 3;
-const PREV_ZONE = { church: 'cemetery', swamp: 'church', forest: 'swamp' };
-const EXIT_REQUIRES_BOSS = new Set(['cemetery', 'church', 'swamp']);
+
+export function buildZoneRoute(seed) {
+  const rng = new RNG(combineSeed(seed, 'zone-route'));
+  return ['cemetery', ...rng.shuffle(['church', 'swamp']), 'forest'];
+}
 
 function idx(x, y) {
   return y * WIDTH + x;
@@ -58,8 +61,10 @@ function addBreakableSecret(data, roomStart, rng, interactions, secrets) {
   const height = 3;
   // Exterior mass with a 2-tile-high chamber hollowed into it.
   setSolidRect(data, baseX, FLOOR_ROW + 1, 6, height, TILE.SOLID);
-  for (let x = baseX + 1; x < baseX + 5; x++) {
-    data[idx(x, FLOOR_ROW + 1)] = TILE.EMPTY;
+  for (let y = FLOOR_ROW + 1; y < FLOOR_ROW + height; y++) {
+    for (let x = baseX + 1; x < baseX + 5; x++) {
+      data[idx(x, y)] = TILE.EMPTY;
+    }
   }
   for (let x = baseX; x < baseX + 6; x++) {
     data[idx(x, FLOOR_ROW + height)] = TILE.SOLID;
@@ -156,6 +161,25 @@ function buildRoom(zone, roomIndex, data, rng, world) {
   if (roomIndex === 1) {
     addFakeWallSecret(data, start, rng, world.interactions, world.secrets);
     addChest(world.interactions, `chest-${zone.id}-1b`, start + ROOM_W - 8, FLOOR_ROW + 1);
+    const mx = (start + 16) * T;
+    const my = SURFACE + 56;
+    if (!isBossRoom) {
+      world.movingPlatforms.push({
+        id: `${zone.id}-lifter-1`,
+        baseX: mx,
+        baseY: my,
+        x: mx,
+        y: my,
+        w: 48,
+        h: 10,
+        axis: rng.chance(0.5) ? 'x' : 'y',
+        range: rng.int(22, 38),
+        speed: 0.55,
+        phase: rng.float(0, Math.PI * 2),
+        dx: 0,
+        dy: 0,
+      });
+    }
   }
   if (roomIndex === 2) {
     addBreakableSecret(data, start, rng, world.interactions, world.secrets);
@@ -215,13 +239,16 @@ function addTransition(world, zone, id, type, x, y, target, labelKey, extra = {}
 }
 
 function addDecor(world, zone, rng, start, surface) {
-  const count = zone.id === 'swamp' || zone.id === 'forest' ? rng.int(1, 3) : rng.int(2, 4);
+  const count = zone.id === 'swamp' || zone.id === 'forest' ? rng.int(2, 4) : rng.int(2, 4);
   for (let i = 0; i < count; i++) {
     const prop = rng.pick(zone.decor);
     if (!prop) continue;
     const x = (start + rng.int(3, ROOM_W - 4)) * T;
     const nearTransition = world.transitions.some((tr) => Math.abs(tr.x - x) < 64);
     if (nearTransition) continue;
+    const nearOther = world.decorations.some((decor) => Math.abs(decor.x - x) < 90 && Math.abs(decor.y - surface) < 16);
+    if (nearOther) continue;
+    const yOffset = prop.startsWith('torch') ? 38 : 0;
     world.decorations.push({
       prop,
       x,
@@ -230,19 +257,20 @@ function addDecor(world, zone, rng, start, surface) {
       layer: 'back',
       scale: 1,
       alpha: 0.72 + rng.float(0, 0.28),
-      yOffset: prop === 'column' || prop === 'trees' || prop.startsWith('tree') ? 0 : 0,
+      yOffset,
     });
   }
 }
 
-function addInteractions(zone, world) {
-  const previous = PREV_ZONE[zone.id];
-  if (previous) {
+function addInteractions(zone, world, route) {
+  const routeIndex = route.indexOf(zone.id);
+  if (routeIndex > 0) {
+    const previous = route[routeIndex - 1];
     addTransition(
       world,
       zone,
       `left-${zone.id}`,
-      'gate',
+      zone.id === 'forest' || previous === 'forest' ? 'portal' : 'gate',
       2.5 * T,
       SURFACE,
       previous,
@@ -250,24 +278,26 @@ function addInteractions(zone, world) {
       { labelZone: previous, entrySide: 'right' },
     );
   }
-  if (zone.exit) {
+  if (routeIndex >= 0 && routeIndex < route.length - 1) {
+    const next = route[routeIndex + 1];
     addTransition(
       world,
       zone,
       `right-${zone.id}`,
-      zone.exit.target === 'forest' ? 'portal' : 'gate',
+      next === 'forest' || zone.id === 'forest' ? 'portal' : 'gate',
       (WIDTH - 3) * T,
       SURFACE,
-      zone.exit.target,
+      next,
       'action.usePortal',
       {
-        labelZone: zone.exit.target,
+        labelZone: next,
         entrySide: 'left',
-        requiresBoss: EXIT_REQUIRES_BOSS.has(zone.id),
+        requiresBoss: Boolean(zone.boss),
       },
     );
   }
   for (const door of zone.doors) {
+    if (zone.id === 'forest') continue;
     const x = (door.room * ROOM_W + Math.floor(ROOM_W * door.offset)) * T;
     addTransition(
       world,
@@ -292,9 +322,10 @@ function addInteractions(zone, world) {
   }
 }
 
-export function generateZone(seed, zoneId) {
+export function generateZone(seed, zoneId, options = {}) {
   const zone = ZONES[zoneId];
   if (!zone) throw new Error(`Unknown zone: ${zoneId}`);
+  const route = options.route ?? buildZoneRoute(seed);
   const data = new Uint8Array(WIDTH * ROWS);
   fillGround(data);
   const worldRng = new RNG(combineSeed(seed, 'zone', zoneId));
@@ -336,8 +367,9 @@ export function generateZone(seed, zoneId) {
     buildRoom(zone, room, data, roomRng, world);
   }
 
-  addInteractions(zone, world);
-  // Dungeon/forest are reached by door/portal at the start; keep entry safe and centered.
+  addInteractions(zone, world, route);
+  world.route = route;
+  // Dungeon is reached by a crypt door at the start; keep entry safe and centered.
   world.spawn = zone.id === 'dungeon' || zone.id === 'forest'
     ? { x: 10 * T, y: SURFACE }
     : { x: 6 * T, y: SURFACE };
@@ -400,8 +432,9 @@ export function analyzeReachability(world) {
 
 export function generateWorld(seed) {
   const zones = {};
+  const route = buildZoneRoute(seed);
   for (const zoneId of ZONE_ORDER) {
-    zones[zoneId] = generateZone(seed, zoneId);
+    zones[zoneId] = generateZone(seed, zoneId, { route });
   }
   return zones;
 }

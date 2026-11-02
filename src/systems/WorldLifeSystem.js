@@ -1,0 +1,67 @@
+import { GAME } from '../config/game.js';
+import { COLORS } from '../render/ParticleSystem.js';
+
+export class WorldLifeSystem {
+  constructor(game) {
+    this.game = game;
+    this.ambientTimer = 0;
+  }
+
+  updateMovingPlatforms() {
+    const game = this.game;
+    const platforms = game.activeWorld?.movingPlatforms;
+    if (!platforms?.length) return;
+    const t = game.run.elapsed;
+    for (const platform of platforms) {
+      const offset = Math.sin(t * platform.speed + platform.phase) * platform.range;
+      const nextX = platform.axis === 'x' ? platform.baseX + offset : platform.baseX;
+      const nextY = platform.axis === 'y' ? platform.baseY + offset : platform.baseY;
+      platform.dx = nextX - platform.x;
+      platform.dy = nextY - platform.y;
+      platform.x = nextX;
+      platform.y = nextY;
+    }
+  }
+
+  emitAmbient(dt) {
+    const game = this.game;
+    this.ambientTimer -= dt;
+    if (this.ambientTimer > 0) return;
+    this.ambientTimer = 0.18 + Math.random() * 0.18;
+    const x = game.camera.x + (Math.random() - 0.5) * GAME.internalWidth;
+    const y = game.camera.y + (Math.random() - 0.5) * GAME.internalHeight;
+    let color = COLORS.ember;
+    let vy = 8;
+    let life = 2.6;
+    if (game.activeZoneId === 'swamp') {
+      color = Math.random() < 0.5 ? COLORS.venom : COLORS.gold;
+      vy = Math.random() < 0.5 ? -6 : 7;
+      life = 3.5;
+    } else if (game.activeZoneId === 'forest') {
+      color = COLORS.venom;
+      vy = 5 + Math.random() * 9;
+      life = 3.8;
+    } else if (game.activeZoneId === 'church') {
+      color = COLORS.bone;
+      vy = 5;
+      life = 3.4;
+    } else if (game.activeZoneId === 'dungeon') {
+      color = COLORS.stone;
+      vy = -22;
+      life = 1.4;
+    }
+    game.glowParticles.emit({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 9,
+      vy,
+      gravity: -1.5,
+      drag: 0.08,
+      life,
+      sizeX: Math.random() < 0.12 ? 2 : 1,
+      sizeY: Math.random() < 0.12 ? 2 : 1,
+      color,
+      alpha: 0.34,
+    });
+  }
+}

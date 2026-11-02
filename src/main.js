@@ -42,16 +42,24 @@ async function boot() {
 
 boot().catch((error) => {
   console.error(error);
-  setBoot(1, 'The abyss resisted. / Uçurum direndi.');
+  const language = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('hellshard.settings.v1'))?.language ?? 'en';
+    } catch {
+      return 'en';
+    }
+  })();
+  const t = (key) => translate(language, key);
+  setBoot(1, t('error.loadTitle'));
   const status = document.getElementById('boot-status');
   if (status) {
     status.style.color = '#d05155';
-    status.textContent = 'The abyss resisted. Check the console and refresh.';
+    status.textContent = `${t('error.loadTitle')} ${t('error.loadBody')}`;
   }
   const overlay = document.getElementById('boot-overlay');
   if (overlay) {
     const retry = document.createElement('button');
-    retry.textContent = 'Reload';
+    retry.textContent = t('error.retry');
     retry.style.cssText = 'margin-top:14px;padding:6px 14px;background:#160b0d;border:1px solid #87343a;color:#e9ddc7;font-family:inherit;cursor:pointer;';
     retry.addEventListener('click', () => window.location.reload());
     overlay.appendChild(retry);

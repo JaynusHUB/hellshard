@@ -1,27 +1,23 @@
 import { GAME } from '../config/game.js';
-import { CHARACTERS, CHARACTER_BY_ID } from '../data/characters.js';
-import { UPGRADE_BY_ID } from '../config/upgrades.js';
-import { ACHIEVEMENT_BY_ID } from '../data/achievements.js';
+import { CHARACTER_BY_ID } from '../data/characters.js';
+
 import { formatTime, translate } from './strings.js';
 import { HUD } from './HUD.js';
+import { FeedbackLayer } from './FeedbackLayer.js';
+import { SettingsViews } from './SettingsViews.js';
 import {
   mainMenuHtml,
   characterSelectHtml,
-  settingsHtml,
-  achievementsHtml,
   levelUpHtml,
   resultHtml,
   creditsHtml,
 } from './MenuScreens.js';
-
-const DAMAGE_POOL_SIZE = 36;
 
 export class UIManager {
   constructor({ game, assets, save, audio }) {
     this.game = game;
     this.assets = assets;
     this.save = save;
-    this.settings = save.settings;
     this.audio = audio;
     this.root = document.getElementById('ui-root');
     this.toastLayer = document.getElementById('toast-layer');
@@ -29,7 +25,7 @@ export class UIManager {
     this.fadeLayer = document.getElementById('fade-layer');
     this.stage = document.getElementById('stage');
     this.screenRoot = document.createElement('div');
-    this.screenRoot.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+    this.screenRoot.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:15;';
     this.root.appendChild(this.screenRoot);
     this.currentScreen = null;
     this.currentScreenName = null;
@@ -40,26 +36,23 @@ export class UIManager {
     this.selectedCharacterId = CHARACTER_BY_ID[save.meta.selectedCharacter]
       ? save.meta.selectedCharacter
       : 'kael';
-    this.achievementsReturn = 'menu';
-    this.settingsReturn = 'menu';
-    this.toastQueue = [];
-    this.activeToast = null;
-    this.toastTimer = 0;
-    this.damageNumbers = [];
-    this.damagePool = [];
-    this.lastScreenPause = false;
+    this.screenContext.inRun = false;
     this.hud = new HUD(this.root, this);
-    this.debugOverlay = document.createElement('div');
-    this.debugOverlay.className = 'debug-overlay hidden';
-    this.root.appendChild(this.debugOverlay);
+    this.settingsViews = new SettingsViews(this);
+    this.feedback = new FeedbackLayer({
+      root: this.root,
+      stage: this.stage,
+      save: this.save,
+      audio: this.audio,
+      language: save.settings.language,
+      t: (key, vars) => this.t(key, vars),
+      damageLayer: this.damageLayer,
+      toastLayer: this.toastLayer,
+      fadeLayer: this.fadeLayer,
+    });
+
     this.boundKeydown = (event) => this.handleKeyDown(event);
     window.addEventListener('keydown', this.boundKeydown);
-    for (let i = 0; i < DAMAGE_POOL_SIZE; i++) {
-      const el = document.createElement('div');
-      el.className = 'damage-number hidden';
-      this.damageLayer.appendChild(el);
-      this.damagePool.push(el);
-    }
     this.setLanguage(save.settings.language);
   }
 
@@ -134,10 +127,10 @@ export class UIManager {
         this.showCharacterSelect();
         break;
       case 'settings':
-        this.showSettings({ inRun: this.screenContext.inRun, from: this.settingsReturn });
+        this.showSettings({ inRun: this.settingsViews.currentInRun, from: this.settingsViews.settingsReturn });
         break;
       case 'achievements':
-        this.showAchievements({ from: this.achievementsReturn });
+        this.showAchievements({ from: this.settingsViews.achievementsReturn });
         break;
       case 'pause':
         this.showPause();
@@ -179,14 +172,8 @@ export class UIManager {
         this.game.updateSettings?.({ seed }, false);
         this.showCharacterSelect();
       },
-      achievements: () => {
-        this.achievementsReturn = 'menu';
-        this.showAchievements();
-      },
-      settings: () => {
-        this.settingsReturn = 'menu';
-        this.showSettings({ inRun: false, from: 'menu' });
-      },
+      achievements: () => this.showAchievements({ from: 'menu' }),
+      settings: () => this.showSettings({ inRun: false, from: 'menu' }),
       credits: () => this.showCredits(),
       'random-seed': () => {
         const input = this.screenRoot.querySelector('[data-seed-input]');
@@ -368,14 +355,8 @@ export class UIManager {
         this.clearScreen();
         this.game.setPaused?.(false);
       },
-      settings: () => {
-        this.settingsReturn = 'pause';
-        this.showSettings({ inRun: true, from: 'pause' });
-      },
-      achievements: () => {
-        this.achievementsReturn = 'pause';
-        this.showAchievements({ from: 'pause' });
-      },
+      settings: () => this.showSettings({ inRun: true, from: 'pause' }),
+      achievements: () => this.showAchievements({ from: 'pause' }),
       abandon: () => {
         const node = this.screenRoot.querySelector('[data-abandon-confirm]');
         node?.classList.toggle('hidden');
@@ -393,107 +374,12 @@ export class UIManager {
     if (this.currentScreenName === 'pause') this.clearScreen();
   }
 
-  showSettings({ inRun = false, from = 'menu' } = {}) {
-    this.settingsReturn = from;
-    const settings = this.save.settings;
-    const seed = this.game.seed ?? settings.seed ?? GAME.seed.default;
-    const html = settingsHtml({
-      t: this.t,
-      settings,
-      meta: this.save.meta,
-      inRun,
-      seed,
-    });
-    this.mountScreen('settings', html, {
-      back: () => this.settingsBack(from),
-      'apply-settings': () => {
-        const input = this.screenRoot.querySelector('[data-setting="seed"]');
-        if (input && !inRun) {
-          const seedValue = this.parseSeed(input.value);
-          if (seedValue === null) {
-            this.toast('settings.seedInvalid', {}, { error: true });
-            return;
-          }
-          this.save.updateSettings({ seed: seedValue });
-          this.game.updateSettings?.({ seed: seedValue }, false);
-        }
-        this.toast('settings.saved');
-        this.settingsBack(from);
-      },
-      'reset-settings': () => {
-        this.save.resetSettings();
-        this.game.updateSettings?.(this.save.settings, true);
-        this.setLanguage(this.save.settings.language);
-        this.showSettings({ inRun, from });
-      },
-    });
-    this.bindSettingsControls(inRun);
+  showSettings(options) {
+    this.settingsViews.showSettings(options);
   }
 
-  settingsBack(from) {
-    if (from === 'pause') this.showPause();
-    else this.showMainMenu();
-  }
-
-  bindSettingsControls(inRun) {
-    for (const input of this.screenRoot.querySelectorAll('[data-setting]')) {
-      const key = input.dataset.setting;
-      if (key === 'seed') {
-        input.addEventListener('input', () => {
-          input.value = input.value.replace(/[^0-9]/g, '').slice(0, GAME.seed.maxLength);
-        });
-        continue;
-      }
-      input.addEventListener('input', () => {
-        if (input.type === 'range') {
-          const value = Number(input.value) / 100;
-          const output = this.screenRoot.querySelector(`[data-output="${key}"]`);
-          if (output) output.textContent = `${Math.round(value * 100)}%`;
-          this.updateSettingLive(key, value);
-        } else if (key === 'language') {
-          this.updateSettingLive(key, input.value);
-          this.setLanguage(input.value);
-          this.showSettings({ inRun, from: this.settingsReturn });
-        }
-      });
-    }
-    for (const toggle of this.screenRoot.querySelectorAll('[data-toggle]')) {
-      toggle.addEventListener('click', () => {
-        const key = toggle.dataset.toggle;
-        const value = !toggle.classList.contains('on');
-        toggle.classList.toggle('on', value);
-        toggle.setAttribute('aria-pressed', String(value));
-        this.updateSettingLive(key, value);
-      });
-    }
-    for (const buy of this.screenRoot.querySelectorAll('[data-buy-bonus]')) {
-      buy.addEventListener('click', () => {
-        const id = buy.dataset.buyBonus;
-        const cost = Number(buy.dataset.cost);
-        if (this.game.buyPermanentBonus(id, cost)) {
-          this.audio?.play('shard');
-          this.showSettings({ inRun, from: this.settingsReturn });
-        } else {
-          this.toast('char.select.notEnough', {}, { error: true });
-        }
-      });
-    }
-  }
-
-  updateSettingLive(key, value) {
-    this.save.updateSettings({ [key]: value });
-    if (key === 'seed') this.game.updateSettings?.({ seed: Number(value) }, false);
-    else this.game.updateSettings?.(this.save.settings, true);
-    this.audio?.applyVolumes();
-  }
-
-  showAchievements({ from = 'menu' } = {}) {
-    this.achievementsReturn = from;
-    const inRun = from === 'pause';
-    const html = achievementsHtml({ t: this.t, meta: this.save.meta, inRun });
-    this.mountScreen('achievements', html, {
-      back: () => (from === 'pause' ? this.showPause() : this.showMainMenu()),
-    });
+  showAchievements(options) {
+    this.settingsViews.showAchievements(options);
   }
 
   showCredits() {
@@ -545,9 +431,9 @@ export class UIManager {
         return;
       }
       if (['settings', 'achievements', 'credits'].includes(this.currentScreenName)) {
-        if (this.currentScreenName === 'settings') this.settingsBack(this.settingsReturn);
+        if (this.currentScreenName === 'settings') this.settingsViews.backFromSettings();
         else if (this.currentScreenName === 'achievements') {
-          this.achievementsReturn === 'pause' ? this.showPause() : this.showMainMenu();
+          this.settingsViews.backFromAchievements();
         } else this.showMainMenu();
         event.preventDefault();
       }
@@ -568,160 +454,36 @@ export class UIManager {
     this.hud.update(info);
   }
 
-  setZoneTheme(zone) {
-    if (!zone?.palette) return;
-    const p = zone.palette;
-    this.stage.dataset.zone = zone.id;
-    this.stage.style.background = `
-      radial-gradient(ellipse at 50% 86%, ${hexToRgba(p.accent, 0.075)}, transparent 48%),
-      linear-gradient(180deg, ${p.sky} 0%, #08070c 52%, #0c0909 100%)
-    `;
-    const wash = document.getElementById('zone-wash');
-    if (wash) wash.style.background = p.fog;
-    this.stage.classList.toggle('is-critical', false);
-  }
+  setZoneTheme(zone) { this.feedback.setZoneTheme(zone); }
 
-  setFade(active) {
-    this.fadeLayer?.classList.toggle('active', Boolean(active));
-  }
+  setFade(active) { this.feedback.setFade(active); }
 
-  setVignetteOpacity(value) {
-    const vignette = document.getElementById('vignette');
-    if (vignette) vignette.style.opacity = String(value);
-  }
+  setVignetteOpacity(value) { this.feedback.setVignetteOpacity(value); }
 
-  flashHurt(critical = false) {
-    this.stage.classList.remove('is-hurt');
-    void this.stage.offsetWidth;
-    this.stage.classList.add('is-hurt');
-    this.stage.classList.toggle('is-critical', critical);
-    setTimeout(() => this.stage.classList.remove('is-hurt'), 260);
-  }
+  flashHurt(critical = false) { this.feedback.flashHurt(critical); }
 
-  toast(key, vars = {}, options = {}) {
-    const text = key.includes('.') ? this.t(key, vars) : key;
-    this.toastQueue.push({
-      text,
-      icon: options.icon ?? '◆',
-      kind: options.achievement ? 'achievement' : 'normal',
-      fadeAfter: options.duration ?? 1900,
-    });
-    if (!this.activeToast) this.showNextToast();
-  }
+  clearToasts() { this.feedback.clearToasts(); }
 
-  showNextToast() {
-    if (this.activeToast) return;
-    const entry = this.toastQueue.shift();
-    if (!entry) return;
-    const node = document.createElement('div');
-    node.className = `game-toast ${entry.kind === 'achievement' ? 'achievement' : ''}`;
-    node.innerHTML = `<span class="toast-icon">${entry.icon}</span><span>${entry.text}</span>`;
-    this.toastLayer.appendChild(node);
-    requestAnimationFrame(() => node.classList.add('show'));
-    this.activeToast = { node, entry };
-    this.toastTimer = window.setTimeout(() => {
-      node.classList.remove('show');
-      window.setTimeout(() => {
-        node.remove();
-        this.activeToast = null;
-        this.showNextToast();
-      }, 260);
-    }, entry.fadeAfter);
-  }
+  toast(key, vars = {}, options = {}) { this.feedback.toast(key, vars, options); }
 
   spawnDamageNumber(worldX, worldY, text, kind = 'normal') {
-    if (!this.save.settings.damageNumbers) return;
-    const el = this.damagePool.find((node) => node.classList.contains('hidden'));
-    if (!el) return;
-    el.classList.remove('hidden', 'crit', 'player', 'heal');
-    if (kind === 'crit') el.classList.add('crit');
-    else if (kind === 'player') el.classList.add('player');
-    else if (kind === 'heal') el.classList.add('heal');
-    el.textContent = String(text);
-    el.style.opacity = '1';
-    el.style.transform = 'translate(-1000px,-1000px)';
-    el.dataset.age = '0';
-    el.dataset.life = String(GAME.combat.damageNumberLife);
-    el.dataset.x = String(worldX);
-    el.dataset.y = String(worldY);
-    el.dataset.wobble = String((Math.random() - 0.5) * 7);
-    el.dataset.kind = kind;
-    el.style.display = 'block';
-    el.classList.remove('hidden');
-    el.classList.add('active');
-    el.dataset.used = '1';
+    this.feedback.spawnDamageNumber(worldX, worldY, text, kind);
   }
 
-  updateDamageNumbers(dt, camera) {
-    if (!this.save.settings.damageNumbers) return;
-    const cam = camera.getRenderPosition(0);
-    for (const el of this.damagePool) {
-      if (!el.dataset.used) continue;
-      const life = Number(el.dataset.life);
-      let age = Number(el.dataset.age) + dt;
-      el.dataset.age = String(age);
-      if (age >= life) {
-        el.dataset.used = '';
-        el.classList.add('hidden');
-        el.style.display = 'none';
-        continue;
-      }
-      const t = age / life;
-      const x = Number(el.dataset.x) - cam.x + GAME.internalWidth / 2 + Number(el.dataset.wobble) * t;
-      const y = cam.y - Number(el.dataset.y) + GAME.internalHeight / 2 - 8 - t * 18;
-      el.style.opacity = String(t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35);
-      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`;
-    }
-  }
+  updateDamageNumbers(dt, camera) { this.feedback.updateDamageNumbers(dt, camera); }
 
-  clearDamageNumbers() {
-    for (const el of this.damagePool) {
-      el.dataset.used = '';
-      el.classList.add('hidden');
-      el.style.display = 'none';
-    }
-  }
+  clearDamageNumbers() { this.feedback.clearDamageNumbers(); }
 
-  updateDebug(info) {
-    if (!info) {
-      this.debugOverlay.classList.add('hidden');
-      return;
-    }
-    this.debugOverlay.classList.remove('hidden');
-    const lines = [
-      `<div class="debug-title">${this.t('debug.title')} <span style="float:right;color:#6d806e">${this.t('debug.hint')}</span></div>`,
-      `FPS <b>${info.fps.toFixed(0)}</b>  ${this.t('debug.frame')} <b>${info.frameMs.toFixed(1)}ms</b>`,
-      `Draw <b>${info.drawCalls}</b>  ${this.t('debug.entities')} <b>${info.entities}</b>`,
-      `Particles <b>${info.particles}</b>  Budget <b>${info.spawnBudget.toFixed(1)}</b>`,
-      `${this.t('debug.zone')} <b>${info.zone}</b>  Seed <b>${info.seed}</b>`,
-      `${this.t('debug.pos')} <b>${info.x.toFixed(0)}, ${info.y.toFixed(0)}</b>  ${this.t('debug.state')} <b>${info.state}</b>`,
-      `Enemies <b>${info.activeEnemies}</b>  Boss <b>${info.boss ?? '—'}</b>`,
-    ];
-    this.debugOverlay.innerHTML = lines.join('\n');
-  }
+  updateDebug(info) { this.feedback.updateDebug(info); }
 
-  hideDebug() {
-    this.debugOverlay.classList.add('hidden');
-  }
+  hideDebug() { this.feedback.hideDebug(); }
 
   destroy() {
     window.removeEventListener('keydown', this.boundKeydown);
     this.stopPreviewAnimation();
-    window.clearTimeout(this.toastTimer);
-    this.toastLayer.innerHTML = '';
+    this.feedback.dispose();
     this.screenRoot.innerHTML = '';
     this.hud.root.remove();
-    this.debugOverlay.remove();
   }
 }
 
-function hexToRgba(hex, alpha) {
-  const h = hex.replace('#', '');
-  const value = h.length === 3
-    ? h.split('').map((c) => c + c).join('')
-    : h;
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}

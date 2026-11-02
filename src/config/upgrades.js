@@ -44,6 +44,7 @@ export const UPGRADES = [
     perLevel: 0.2,
     format: 'percent',
     color: '#9fdcff',
+    validFor: ['kael', 'seraphine'],
   },
   {
     id: 'projectileCount',
@@ -55,6 +56,7 @@ export const UPGRADES = [
     perLevel: 1,
     format: 'flat',
     color: '#b9e4ff',
+    validFor: ['kael', 'seraphine', 'nyx'],
   },
   {
     id: 'areaDamage',

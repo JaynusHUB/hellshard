@@ -158,8 +158,12 @@ export class TileChunkManager {
       old.geometry.dispose();
     }
     const mesh = this.buildChunk(cx, cy);
-    if (mesh) this.chunks.set(key, mesh);
-    this.group.add(mesh);
+    if (mesh) {
+      this.chunks.set(key, mesh);
+      this.group.add(mesh);
+    } else {
+      this.chunks.delete(key);
+    }
   }
 
   cull(cameraLeft, cameraRight, cameraBottom, cameraTop) {
