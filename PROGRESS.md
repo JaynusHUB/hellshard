@@ -7,12 +7,12 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` — passes after the post-playtest fixes (60 modules, no errors).
-- `npm test` — **20/20 tests passing** in 4 suites (RNG, upgrades/evolutions, world generation,
-  achievements).
+- `npm run build` — passes after the round 2 playtest fixes (61 modules, no errors; atlases are
+  generated at runtime, JS ~816 kB / 215 kB gzip).
+- `npm test` — **25/25 tests passing** in 6 suites (RNG, upgrades/evolutions, world generation,
+  achievements, sprite manifest facing/coverage, localization).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
-- `npm run build` — production build succeeds (atlases are generated at runtime; JS ~800 kB / 211 kB gzip).
 - Production preview smoke test (`npm run preview`) — menu → achievements → character select →
   gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →
   result. **No console errors, no failed requests, no external requests.**
@@ -46,6 +46,59 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 - [x] **Church background had hard black gaps and a translucent rectangle.** Root cause: the 624×192
   five-panel sheet was repeated whole, including its 16px transparent separators, and overlaid twice.
   Replaced with a single cropped 160×192 window-panel layer aligned to the world ground.
+
+## Known issues — round 2 playtest fixes (2026-11-02)
+
+- [x] **Enemies walked backwards / sprites faced the wrong way.** `ASSET_MANIFEST.json` now declares
+  `"facing": "left" | "right"` for every player, enemy and boss sprite, verified against the source
+  PNG poses. `AssetLibrary.shouldFlipSprite()` combines that source facing with the actor's movement
+  facing (velocity when moving, logical facing during windup/strike).
+- [x] **Enemy idle/walk/attack/hurt states were mostly unbound.** Every normal enemy now resolves
+  idle/walk/attack/hurt through explicit clips or documented fallbacks. Attacks have a windup pose and
+  a strike pose; hurt poses squash; death is a squash-and-fade using the existing death palette/particles.
+  Frame timings live in `src/config/animations.js`.
+- [x] **Some enemy feet sat at different heights.** Sprite foot anchors are now stable per sprite:
+  the lowest opaque row across all clips is used as a single foot anchor, so animation frames cannot
+  move the visible feet away from the collision-box bottom. The F3 overlay still displays the anchor.
+- [x] **Dungeon looked like a flat gray gradient.** The room now uses the supplied floor strip for
+  top/body/deep floor tiles, the two opaque wall-panel crops as stacked background layers, animated
+  torch frames, and deterministic knight/robed statues. There is no dedicated column sprite in the
+  ThePixelist sheet; this is reported in `ASSET_REPORT.md` and statues/wall pilasters are used instead.
+- [x] **Enemies stacked on one another.** Added a simple horizontal separation pass for non-boss
+  enemies with geometry checks; flying enemies also receive a small vertical separation.
+- [x] **Turkish Nyx labels.** Audited all EN/TR keys and added `tests/strings.test.js`; Shadow Blades
+  is `Gölge Bıçakları`, Shadow Step is `Gölge Adımı`. All TR keys are present and no weapon/ability
+  value contains a zone placeholder.
+
+## Enemy animation map
+
+Frame timing config: `src/config/animations.js` — idle `0 fps` (hold first frame), walk `10 fps`,
+attack `14 fps`, hurt `10 fps` for `0.2s`, death squash/fade `0.45s`.
+
+| Enemy | Idle | Walk | Attack / windup | Hurt | Death |
+|---|---|---|---|---|---|
+| Bone Thrall | `walk` frame 0 held | `walk` | `attack` 2f | `hurt` 1f + squash | squash/fade + bone burst |
+| Grave Wight | `walk` frame 0 held | `walk` | `attack` 2f | `hurt` 1f + squash | squash/fade + bone burst |
+| Cinder Hound | `run` frame 0 held | `run` | `attack` 2f | `hurt` 1f + squash | squash/fade + ember burst |
+| Mourning Wisp | `float` frame 0 held | `float` | `attack` 2f | `hurt` 1f + squash | squash/fade + soul burst |
+| Burning Ghoul | `walk` frame 0 held | `walk` | `attack` 2f | `hurt` 1f + squash | squash/fade + fire burst |
+| Blight Cultist | `idle` frame 0 held | `walk` | `cast` 10f | `hurt` 1f + squash | squash/fade + soul burst |
+| Venom Spider | `walk` frame 0 held | `walk` | `attack` 2f | `hurt` 1f + squash | squash/fade + venom burst |
+| Bog Brute | `walk` frame 0 held | `walk` | `attack` 2f | `hurt` 1f + squash | squash/fade + mud burst |
+| Mire Wraith | `float` frame 0 held | `float` | `attack` 2f | `hurt` 1f + squash | squash/fade + soul burst |
+| Moss Slime | `bounce` frame 0 held | `bounce` | `attack` 2f | `hurt` 1f + squash | squash/fade + venom burst |
+| Pale Revenant | `wight` clips | `wight` | `wight attack` 2f | `wight hurt` | squash/fade |
+| Alpha Hound | `hellgato` clips | `hellgato` | `hellgato attack` 2f | `hellgato hurt` | squash/fade |
+
+Bosses: Mourning Maw uses `run` for idle and attack (no separate attack clip in the pack); Seraph of
+Ash uses `idle`/`attack`; Drowned Choir uses `float` for idle and attack. All three use flash for hurt
+and shard/death bursts rather than a death sprite. No enemy pack contains death frames; death is
+therefore consistently procedural, and this is the documented fallback.
+
+Missing before this fix: wight had only `walk`; wisp only `float`; hell-gato only `run`; burning ghoul,
+spider and bog brute only `walk`; mire wraith only `float`; moss slime only `bounce`. Dedicated attack
+and hurt clips were assembled from their native frames; idle holds the first native frame. No death
+frames exist in any supplied pack, so death cannot be a sprite clip without inventing art.
 
 ## Completed phases
 

@@ -1,4 +1,5 @@
 import { GAME } from '../config/game.js';
+import { ANIMATION } from '../config/animations.js';
 import { ENEMY_BY_ID } from '../data/enemies.js';
 import { Animator } from '../render/Animator.js';
 import { clamp } from '../core/RNG.js';
@@ -69,8 +70,10 @@ export class Enemy {
     this.spawnGrace = 0.15;
     this.slowTimer = 0;
     this.slowFactor = 1;
+    this.hurtTimer = 0;
+    this.deathTimer = 0;
     this.paletteFrame = null;
-    this.animator.play(def.flying ? 'float' : 'walk');
+    this.playAnimation('idle', { restart: true });
   }
 
   get isDamageable() {
@@ -82,9 +85,13 @@ export class Enemy {
   }
 
   update(dt, world, player, game) {
-    if (this.dead) return;
+    if (this.dead) {
+      this.deathTimer = Math.max(0, this.deathTimer - dt);
+      return;
+    }
     this.prevX = this.x;
     this.prevY = this.y;
+    this.hurtTimer = Math.max(0, this.hurtTimer - dt);
     this.flashTimer = Math.max(0, this.flashTimer - dt);
     this.iframes = Math.max(0, this.iframes - dt);
     this.spawnGrace = Math.max(0, this.spawnGrace - dt);
@@ -144,10 +151,7 @@ export class Enemy {
       case 'windup':
         this.stateTimer = this.def.windup;
         this.attackFired = false;
-        this.animator.play(
-          this.behavior === 'ranged' && this.assets.getAnimation(this.sprite, 'cast') ? 'cast' : this.getAnimationName(),
-          { restart: true },
-        );
+        this.playAnimation('attack', { restart: true });
         this.events.push({ type: 'windup', enemy: this });
         break;
       case 'strike':
@@ -441,6 +445,8 @@ export class Enemy {
     this.vx = direction * knock;
     if (!this.flying) this.vy = Math.max(this.vy, 40);
     this.hitstun = Math.max(this.hitstun, options.hitstun ?? 0.06);
+    this.hurtTimer = Math.max(this.hurtTimer, ANIMATION.enemy.hurt.duration);
+    this.playAnimation('hurt', { restart: true });
     this.events.push({ type: 'hit', enemy: this, amount, crit: options.crit });
     if (this.health <= 0) {
       this.die(options.game);
@@ -454,6 +460,9 @@ export class Enemy {
     if (this.dead) return;
     this.dead = true;
     this.state = 'dead';
+    this.deathTimer = ANIMATION.enemy.death.duration;
+    this.vx = 0;
+    this.vy = 0;
     this.events.push({ type: 'death', enemy: this, selfDestruct: Boolean(options.selfDestruct) });
     if (game) game.onEnemyDefeated?.(this, options);
   }
@@ -469,19 +478,47 @@ export class Enemy {
     return { x: this.x - this.width / 2, y: this.y, w: this.width, h: this.height };
   }
 
-  getAnimationName() {
-    if (this.def.flying) return 'float';
-    if (this.state === 'windup' || this.state === 'strike') {
-      if (this.def.id === 'blight_cultist') return 'cast';
-      if (this.assets.getAnimation(this.sprite, 'attack')) return 'attack';
+  resolveAnimation(state) {
+    const chains = {
+      idle: this.flying
+        ? ['idle', 'float', 'walk', 'run', 'bounce']
+        : ['idle', 'walk', 'run', 'bounce', 'float'],
+      walk: this.flying
+        ? ['float', 'idle', 'walk', 'run', 'bounce']
+        : ['walk', 'run', 'bounce', 'idle', 'float'],
+      attack: this.flying
+        ? ['attack', 'cast', 'float', 'idle', 'walk', 'run', 'bounce']
+        : ['attack', 'cast', 'walk', 'run', 'bounce', 'idle', 'float'],
+      hurt: ['hurt', 'idle', 'walk', 'float', 'bounce', 'cast'],
+    };
+    for (const clip of chains[state] ?? []) {
+      if (this.assets.getAnimation(this.sprite, clip)) return clip;
     }
-    return this.assets.getAnimation(this.sprite, 'walk') ? 'walk' : 'float';
+    return null;
+  }
+
+  playAnimation(state, { restart = false } = {}) {
+    const clip = this.resolveAnimation(state);
+    if (!clip) return false;
+    const timing = ANIMATION.enemy[state] ?? ANIMATION.enemy.walk;
+    return this.animator.play(clip, {
+      restart,
+      fps: timing.fps,
+      loop: timing.loop,
+    });
   }
 
   chooseAnimation() {
-    if (this.hitstun > 0) return;
-    if (this.state === 'windup' || this.state === 'strike') return;
-    this.animator.play(this.getAnimationName());
+    if (this.hurtTimer > 0) {
+      this.playAnimation('hurt');
+      return;
+    }
+    if (this.state === 'windup' || this.state === 'strike') {
+      this.playAnimation('attack');
+      return;
+    }
+    const moving = Math.abs(this.vx) > 6;
+    this.playAnimation(moving ? 'walk' : 'idle');
   }
 
   consumeEvents() {

@@ -40,6 +40,7 @@
   "sprites": {
     "kael": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "idle": {
           "images": [
@@ -126,6 +127,7 @@
     },
     "brakk": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "idle": {
           "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
@@ -225,6 +227,7 @@
     },
     "seraphine": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "idle": {
           "sheet": "assets/church/SPRITES/wizard/spritesheet/wizard.png",
@@ -277,6 +280,7 @@
     },
     "nyx": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "idle": {
           "images": [
@@ -346,6 +350,7 @@
     },
     "bone_thrall": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "walk": {
           "images": [
@@ -372,11 +377,21 @@
           "h": 52,
           "fps": 12,
           "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/skeleton/skeleton-2.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "wight": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "walk": {
           "images": [
@@ -393,11 +408,31 @@
           "h": 52,
           "fps": 9,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/skeleton-clothed/skeleton-clothed-5.png",
+            "assets/cemetery/PNG/Sprites/skeleton-clothed/skeleton-clothed-6.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/skeleton-clothed/skeleton-clothed-2.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "wisp": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "float": {
           "images": [
@@ -410,11 +445,31 @@
           "h": 65,
           "fps": 8,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/ghost/ghost-2.png",
+            "assets/cemetery/PNG/Sprites/ghost/ghost-3.png"
+          ],
+          "w": 37,
+          "h": 65,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/ghost/ghost-2.png"
+          ],
+          "w": 37,
+          "h": 65,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "hellgato": {
       "atlas": "gothic",
+      "facing": "left",
       "animations": {
         "run": {
           "images": [
@@ -427,11 +482,31 @@
           "h": 53,
           "fps": 12,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/hell-gato/hell-gato-3.png",
+            "assets/cemetery/PNG/Sprites/hell-gato/hell-gato-4.png"
+          ],
+          "w": 96,
+          "h": 53,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/hell-gato/hell-gato-2.png"
+          ],
+          "w": 96,
+          "h": 53,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "burning_ghoul": {
       "atlas": "gothic",
+      "facing": "left",
       "animations": {
         "walk": {
           "images": [
@@ -448,11 +523,31 @@
           "h": 60,
           "fps": 11,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-4.png",
+            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-5.png"
+          ],
+          "w": 57,
+          "h": 60,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-3.png"
+          ],
+          "w": 57,
+          "h": 60,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "blight_cultist": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "idle": {
           "sheet": "assets/church/SPRITES/wizard/spritesheet/wizard.png",
@@ -466,6 +561,20 @@
             4
           ],
           "fps": 7,
+          "loop": true
+        },
+        "walk": {
+          "sheet": "assets/church/SPRITES/wizard/spritesheet/wizard.png",
+          "fw": 81,
+          "fh": 66,
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "fps": 6,
           "loop": true
         },
         "cast": {
@@ -486,11 +595,22 @@
           ],
           "fps": 14,
           "loop": false
+        },
+        "hurt": {
+          "sheet": "assets/church/SPRITES/wizard/spritesheet/wizard.png",
+          "fw": 81,
+          "fh": 66,
+          "frames": [
+            0
+          ],
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "venom_spider": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "walk": {
           "images": [
@@ -503,11 +623,31 @@
           "h": 21,
           "fps": 12,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/swamp/Sprites/Spider/walk/spider3.png",
+            "assets/swamp/Sprites/Spider/walk/spider4.png"
+          ],
+          "w": 32,
+          "h": 21,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/swamp/Sprites/Spider/walk/spider2.png"
+          ],
+          "w": 32,
+          "h": 21,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "bog_brute": {
       "atlas": "gothic",
+      "facing": "left",
       "animations": {
         "walk": {
           "images": [
@@ -520,11 +660,31 @@
           "h": 45,
           "fps": 8,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/swamp/Sprites/Thing/walk thing/thing3.png",
+            "assets/swamp/Sprites/Thing/walk thing/thing4.png"
+          ],
+          "w": 33,
+          "h": 45,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/swamp/Sprites/Thing/walk thing/thing2.png"
+          ],
+          "w": 33,
+          "h": 45,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "mire_wraith": {
       "atlas": "gothic",
+      "facing": "left",
       "animations": {
         "float": {
           "images": [
@@ -537,11 +697,31 @@
           "h": 44,
           "fps": 8,
           "loop": true
+        },
+        "attack": {
+          "images": [
+            "assets/swamp/Sprites/Ghost/Flying/Ghost3.png",
+            "assets/swamp/Sprites/Ghost/Flying/Ghost4.png"
+          ],
+          "w": 31,
+          "h": 44,
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "images": [
+            "assets/swamp/Sprites/Ghost/Flying/Ghost2.png"
+          ],
+          "w": 31,
+          "h": 44,
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "moss_slime": {
       "atlas": "forest",
+      "facing": "right",
       "animations": {
         "bounce": {
           "sheet": "assets/fantasy forest map/Enemies/Slime-jumping-Sheet.png",
@@ -555,11 +735,33 @@
           ],
           "fps": 10,
           "loop": true
+        },
+        "attack": {
+          "sheet": "assets/fantasy forest map/Enemies/Slime-jumping-Sheet.png",
+          "fw": 16,
+          "fh": 16,
+          "frames": [
+            2,
+            3
+          ],
+          "fps": 14,
+          "loop": false
+        },
+        "hurt": {
+          "sheet": "assets/fantasy forest map/Enemies/Slime-jumping-Sheet.png",
+          "fw": 16,
+          "fh": 16,
+          "frames": [
+            1
+          ],
+          "fps": 8,
+          "loop": false
         }
       }
     },
     "angel": {
       "atlas": "gothic",
+      "facing": "right",
       "animations": {
         "attack": {
           "sheet": "assets/church/SPRITES/angel/spritesheet/angel.png",
@@ -1560,87 +1762,53 @@
     "dungeon": [
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.18,
-        "y": 35,
+        "parallax": 0.015,
+        "worldY": 261,
         "mode": "repeat",
         "tint": [
-          0.34,
-          0.34,
-          0.4
-        ],
-        "crop": [
-          162,
-          57,
-          128,
-          65
-        ]
-      },
-      {
-        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.14,
-        "y": 100,
-        "mode": "repeat",
-        "tint": [
-          0.28,
-          0.28,
+          0.26,
+          0.26,
           0.34
         ],
         "crop": [
           162,
-          57,
+          5,
           128,
-          65
+          117
         ]
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.1,
-        "y": 165,
+        "parallax": 0.015,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.22,
-          0.22,
-          0.28
+          0.34,
+          0.34,
+          0.43
         ],
         "crop": [
           162,
-          57,
+          5,
           128,
-          65
+          117
         ]
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.06,
-        "y": 230,
+        "parallax": 0.055,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.16,
-          0.16,
-          0.22
+          0.62,
+          0.6,
+          0.7
         ],
         "crop": [
           162,
-          57,
           128,
-          65
-        ]
-      },
-      {
-        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.035,
-        "y": 295,
-        "mode": "repeat",
-        "tint": [
-          0.12,
-          0.12,
-          0.17
-        ],
-        "crop": [
-          162,
-          57,
           128,
-          65
+          48
         ]
       }
     ],

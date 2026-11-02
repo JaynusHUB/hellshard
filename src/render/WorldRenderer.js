@@ -50,6 +50,7 @@ export class WorldRenderer {
     if (propBatch) {
       propBatch.begin();
       this.drawDecorations(propBatch);
+      if (game.activeZoneId === 'dungeon') this.drawDungeonPlatforms(propBatch);
       propBatch.end();
     }
     if (includePlayer && game.player) {
@@ -69,9 +70,9 @@ export class WorldRenderer {
     const tint = isDungeon ? [1.36, 1.38, 1.52] : zoneTint.map((v) => v * 0.84);
     for (const decoration of game.activeWorld.decorations) {
       let frame = this.assets.getPropFrame(game.activeZoneId, decoration.prop);
-      if (!frame && decoration.prop.startsWith('torch')) {
-        const torchIndex = Math.floor(game.time * 6) % 4;
-        frame = this.assets.getFrame('dungeon', `prop:dungeon:torch${torchIndex}`);
+      if (decoration.prop.startsWith('torch')) {
+        const torchIndex = Math.floor(game.time * 6 + decoration.x * 0.01) % 4;
+        frame = this.assets.getFrame('dungeon', `prop:dungeon:torch${torchIndex}`) ?? frame;
       }
       if (!frame) continue;
       batch.draw(frame, Math.round(decoration.x), Math.round(decoration.y + (decoration.yOffset ?? 0)), {
@@ -160,10 +161,31 @@ export class WorldRenderer {
     }
   }
 
+  drawDungeonPlatforms(batch) {
+    const game = this.game;
+    const platforms = game.activeWorld?.movingPlatforms;
+    if (!platforms?.length) return;
+    const frames = [
+      this.assets.getTileFrame('dungeon', 'top', 0),
+      this.assets.getTileFrame('dungeon', 'top', 1),
+      this.assets.getTileFrame('dungeon', 'top', 2),
+    ].filter(Boolean);
+    if (frames.length < 3) return;
+    for (const platform of platforms) {
+      for (let i = 0; i < 3; i++) {
+        batch.draw(frames[i], Math.round(platform.x - 16 + i * 16), Math.round(platform.y), {
+          anchorY: 0,
+          alpha: 1,
+        });
+      }
+    }
+  }
+
   drawMovingPlatforms(batch) {
     const game = this.game;
     const platforms = game.activeWorld?.movingPlatforms;
     if (!platforms?.length) return;
+    if (game.activeZoneId === 'dungeon') return;
     const frame = this.generated.frames.plank;
     if (!frame) return;
     const tint = game.activeZoneId === 'forest'

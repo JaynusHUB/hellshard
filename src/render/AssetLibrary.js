@@ -342,6 +342,22 @@ export class AssetLibrary {
         if (!built) continue;
         built.frames = built.frames.map((frame) => frames.get(frame.id) ?? null);
       }
+      // Use one foot anchor for the whole sprite. Per-frame opaque bottoms can
+      // differ when a cloak, weapon or trailing limb dips below the feet; sharing
+      // the lowest opaque row keeps every animation planted on the same ground line.
+      let footAnchor = 0;
+      for (const animation of Object.values(this.animations[spriteId] ?? {})) {
+        for (const frame of animation.frames) {
+          if (frame) footAnchor = Math.max(footAnchor, frame.anchorY ?? 1);
+        }
+      }
+      if (footAnchor > 0) {
+        for (const animation of Object.values(this.animations[spriteId] ?? {})) {
+          animation.frames = animation.frames.map((frame) => (
+            frame ? { ...frame, anchorY: footAnchor } : frame
+          ));
+        }
+      }
     }
     const texture = new THREE.CanvasTexture(canvas);
     texture.magFilter = THREE.NearestFilter;
@@ -372,6 +388,15 @@ export class AssetLibrary {
 
   getAnimation(spriteId, animName) {
     return this.animations[spriteId]?.[animName] ?? null;
+  }
+
+  getSpriteFacing(spriteId) {
+    return this.manifest.sprites[spriteId]?.facing === 'left' ? 'left' : 'right';
+  }
+
+  shouldFlipSprite(spriteId, direction) {
+    const base = this.getSpriteFacing(spriteId);
+    return (direction < 0) !== (base === 'left');
   }
 
   getTileFrame(zoneId, kind, index = 0) {

@@ -28,8 +28,8 @@ const VERTEX = /* glsl */ `
 export function computeSpriteRect(frame, x, y, options = {}) {
   if (!frame) return null;
   const scale = options.scale ?? 1;
-  const width = frame.w * scale;
-  const height = frame.h * scale;
+  const width = frame.w * (options.scaleX ?? scale);
+  const height = frame.h * (options.scaleY ?? scale);
   const anchorX = options.anchorX ?? 0.5;
   const anchorY = options.anchorY ?? 1;
   const offsetX = options.offsetX ?? 0;

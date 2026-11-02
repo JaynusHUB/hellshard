@@ -55,7 +55,8 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
 - **Meta progression:** persistent Hellshards, character unlocks, three permanent boon tracks,
   run history and 12 achievements. Saved in `localStorage`.
 - **Presentation:** 640×360 internal resolution, integer letterbox scaling, nearest filtering,
-  one texture atlas per art family, instanced sprite batches and merged tile chunks.
+  one texture atlas per art family, instanced sprite batches and merged tile chunks. F3 shows a
+  collision overlay with AABB feet, tile-render floor and sprite-anchor markers.
 - **UI:** main menu, character select, HUD, pause, settings, achievements, level-up cards,
   seed entry, credits, boss bar and result screen. English and Turkish localization.
 - **Determinism / QA:** fixed 60 Hz simulation with interpolation, seeded generation and a

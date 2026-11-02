@@ -144,7 +144,7 @@ export const ZONES = {
     },
     enemyPool: ['bone_thrall', 'wight', 'burning_ghoul', 'blight_cultist', 'wisp', 'pale_revenant'],
     elitePool: ['pale_revenant'],
-    decor: ['torch0', 'knight', 'robed'],
+    decor: [],
     traps: ['spikes'],
     exit: null,
     doors: [

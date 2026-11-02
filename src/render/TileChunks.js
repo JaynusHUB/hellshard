@@ -86,8 +86,8 @@ export class TileChunkManager {
     const frame = this.assets.getTileFrame(this.zoneId, kind, index);
     let color = [1, 1, 1, 1];
     if (this.zoneId === 'dungeon') {
-      if (kind === 'body') color = [0.74, 0.73, 0.78, 1];
-      else if (kind === 'deep') color = [0.5, 0.49, 0.56, 1];
+      if (kind === 'body') color = [0.92, 0.9, 0.9, 1];
+      else if (kind === 'deep') color = [0.68, 0.66, 0.7, 1];
     }
     return { frame, color };
   }

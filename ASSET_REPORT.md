@@ -182,4 +182,24 @@ reskins.
   dark, semi-transparent dungeon tint. The corrected anchor and a full-alpha, brighter dungeon prop
   grade restore their silhouettes.
 - **Sprite anchors:** all sprite frames are now bottom-anchored by the measured opaque foot instead of
-  being placed with the frame top at the world foot point.
+  being placed with the frame top at the world foot point. A stable per-sprite foot row is derived from
+  the lowest opaque row across all clips, so animation frames share one ground line.
+
+## 10. Round 2 playtest corrections (2026-11-02)
+
+- **Source facing:** added `facing` metadata to every player/enemy/boss sprite in `ASSET_MANIFEST.json`.
+  Verified against the PNGs: players, skeletons, wisp and the wizard face right; hell-gato, burning
+  ghoul, bog brute and mire wraith use the left-facing source pose; angel/slime/spider are
+  front-facing and default to right. Flipping is applied only when the movement/logical direction
+  disagrees with the source facing.
+- **Dungeon environment:** the room uses the native 128×16 brick floor strip for top/body/deep tiles.
+  The wall is built from the two opaque wall panels at `[162,5,128,117]` and `[162,128,128,48]`,
+  stacked from the world ground line with a darker far grade and a lighter base grade. Fixed torches
+  use all four supplied torch frames; knight/robed statues provide vertical accents.
+- **No dungeon column asset:** the supplied ThePixelist sheet contains torches, knight/robed statues,
+  wall panels, a brick floor strip and spikes, but no standalone column. No column was invented; the
+  wall panels and statues are the only vertical architecture used.
+- **Enemy animation coverage:** dedicated attack frames were added for wight, wisp, hell-gato, burning
+  ghoul, spider, bog brute, mire wraith and moss slime by reusing appropriate native frames. Hurt
+  one-frame clips were added for every normal enemy. Death frames do not exist in the packs, so death
+  uses squash/fade plus the existing palette/particle burst.

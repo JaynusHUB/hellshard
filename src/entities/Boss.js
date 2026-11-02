@@ -1,4 +1,5 @@
 import { GAME } from '../config/game.js';
+import { ANIMATION } from '../config/animations.js';
 import { Animator } from '../render/Animator.js';
 import { RNG, combineSeed, clamp } from '../core/RNG.js';
 
@@ -43,7 +44,7 @@ export class Boss {
     this.invuln = 0;
     this.dead = false;
     this.events = [];
-    this.animator.play(data.animation ?? 'idle');
+    this.playAnimation(data.animation ?? 'idle');
     this.rng = new RNG(combineSeed(game.seed ?? 1, data.id));
     this.hoverPhase = Math.random() * Math.PI * 2;
     this.attackCount = 0;
@@ -115,7 +116,7 @@ export class Boss {
       this.drift(dt, world, player);
       if (this.stateTimer <= 0) {
         this.state = 'fight';
-        this.animator.play(this.data.animation ?? 'idle');
+        this.playAnimation(this.data.animation ?? 'idle');
       }
       return;
     }
@@ -141,7 +142,7 @@ export class Boss {
       this.cooldowns = {};
       for (const pattern of next.patterns) this.cooldowns[pattern] = 1;
       this.events.push({ type: 'phase', boss: this, phase: this.phaseIndex + 1 });
-      this.animator.play(this.data.attackAnimation ?? this.data.animation, { restart: true });
+      this.playAnimation(this.data.attackAnimation ?? this.data.animation, { restart: true });
     }
   }
 
@@ -172,7 +173,7 @@ export class Boss {
       blink: 0.5,
     }[pattern] ?? 0.7;
     this.stateTimer = telegraphTime;
-    this.animator.play(this.data.attackAnimation ?? this.data.animation, { restart: true });
+    this.playAnimation(this.data.attackAnimation ?? this.data.animation, { restart: true });
     this.events.push({
       type: 'telegraph',
       boss: this,
@@ -235,7 +236,15 @@ export class Boss {
       this.stateTimer = 0.3;
     }
     this.cooldowns[pattern] = (phase.cooldowns[pattern] ?? 4) * (0.85 + Math.random() * 0.3);
-    this.animator.play(this.data.attackAnimation ?? this.data.animation, { restart: true });
+    this.playAnimation(this.data.attackAnimation ?? this.data.animation, { restart: true });
+  }
+
+  playAnimation(name, { restart = false } = {}) {
+    const isAttack = name === this.data.attackAnimation || name === 'attack';
+    return this.animator.play(name, {
+      restart,
+      fps: isAttack ? ANIMATION.boss.attackFps : ANIMATION.boss.idleFps,
+    });
   }
 
   updateActive(dt, world, player, game) {
@@ -273,12 +282,13 @@ export class Boss {
     this.pattern = null;
     this.patternCooldown = 1.1;
     this.strikeHit = false;
-    this.animator.play(this.data.animation ?? 'idle');
+    this.playAnimation(this.data.animation ?? 'idle');
   }
 
   drift(dt, world, player) {
     const arena = world.arena;
     if (!arena) return;
+    if (player) this.facing = player.x < this.x ? -1 : 1;
     const center = (arena.left + arena.right) / 2;
     if (this.flying) {
       this.hoverPhase += dt;

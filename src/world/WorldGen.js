@@ -262,6 +262,48 @@ function addDecor(world, zone, rng, start, surface) {
   }
 }
 
+function addDungeonProps(world) {
+  for (let room = 0; room < ROOMS; room++) {
+    const start = room * ROOM_W;
+    const torchXs = [start + 5, start + 29];
+    for (const tileX of torchXs) {
+      world.decorations.push({
+        prop: 'torch0',
+        x: tileX * T + T / 2,
+        y: SURFACE,
+        yOffset: 72,
+        flip: tileX >= start + 17,
+        layer: 'back',
+        scale: 1,
+        alpha: 1,
+      });
+    }
+    const statueProp = room % 2 === 0 ? 'knight' : 'robed';
+    world.decorations.push({
+      prop: statueProp,
+      x: (start + 12) * T + T / 2,
+      y: SURFACE,
+      yOffset: 0,
+      flip: room % 3 === 0,
+      layer: 'back',
+      scale: 1,
+      alpha: 1,
+    });
+    if (room === 0 || room === 4) {
+      world.decorations.push({
+        prop: room === 0 ? 'robed' : 'knight',
+        x: (start + 23) * T + T / 2,
+        y: SURFACE,
+        yOffset: 0,
+        flip: room !== 0,
+        layer: 'back',
+        scale: 1,
+        alpha: 1,
+      });
+    }
+  }
+}
+
 function addInteractions(zone, world, route) {
   const routeIndex = route.indexOf(zone.id);
   if (routeIndex > 0) {
@@ -376,6 +418,7 @@ export function generateZone(seed, zoneId, options = {}) {
   for (let room = 0; room < ROOMS; room++) {
     addDecor(world, zone, new RNG(combineSeed(seed, 'decor', zoneId, room)), room * ROOM_W, SURFACE);
   }
+  if (zone.id === 'dungeon') addDungeonProps(world);
   for (const transition of world.transitions) {
     if (Math.abs(transition.x - world.spawn.x) < 52) {
       transition.x += 64;

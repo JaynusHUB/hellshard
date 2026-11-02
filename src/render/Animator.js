@@ -10,11 +10,13 @@ export class Animator {
     this.speed = 1;
   }
 
-  play(name, { restart = false, speed = 1 } = {}) {
+  play(name, { restart = false, speed = 1, fps = null, loop = null } = {}) {
     const next = this.assets.getAnimation(this.spriteId, name);
     if (!next) return false;
     if (this.animationName === name && !restart) {
       this.speed = speed;
+      if (fps !== null) this.fps = fps;
+      if (loop !== null) this.loop = loop;
       return false;
     }
     this.animation = next;
@@ -23,15 +25,22 @@ export class Animator {
     this.frameIndex = 0;
     this.finished = false;
     this.speed = speed;
+    this.fps = fps ?? next.fps ?? 8;
+    this.loop = loop ?? next.loop ?? true;
     return true;
   }
 
   update(dt) {
     if (!this.animation) return;
+    if ((this.fps ?? this.animation.fps ?? 8) <= 0) {
+      this.frameIndex = 0;
+      this.finished = false;
+      return;
+    }
     this.time += dt * this.speed;
-    const frameDuration = 1 / (this.animation.fps || 8);
+    const frameDuration = 1 / (this.fps ?? this.animation.fps ?? 8);
     const rawIndex = Math.floor(this.time / frameDuration);
-    if (this.animation.loop) {
+    if (this.loop ?? this.animation.loop) {
       this.frameIndex = rawIndex % this.animation.frames.length;
       this.finished = false;
     } else if (rawIndex >= this.animation.frames.length) {
@@ -49,7 +58,9 @@ export class Animator {
 
   get progress() {
     if (!this.animation) return 0;
-    const total = this.animation.frames.length / (this.animation.fps || 8);
+    const fps = this.fps || this.animation.fps || 8;
+    if (fps <= 0) return 0;
+    const total = this.animation.frames.length / fps;
     return Math.min(1, this.time / total);
   }
 }

@@ -272,8 +272,9 @@ export class Game {
     this.bossController.checkTrigger();
     const playerEvents = player.consumeEvents();
     for (const enemy of this.enemies) {
-      if (!enemy.dead) enemy.update(dt, this.activeWorld, player, this);
+      enemy.update(dt, this.activeWorld, player, this);
     }
+    this.separateEnemies();
     this.combatDirector.handlePlayerEvents(player.consumeEvents());
     this.buildSpatialHash();
     this.combatDirector.handlePlayerEvents(playerEvents);
@@ -364,8 +365,57 @@ export class Game {
 
   cleanupEnemies() {
     if (!this.enemies.some((enemy) => enemy.dead)) return;
-    this.enemies = this.enemies.filter((enemy) => !enemy.dead);
+    this.enemies = this.enemies.filter((enemy) => !enemy.dead || enemy.deathTimer > 0);
     this.buildSpatialHash();
+  }
+
+  separateEnemies() {
+    const world = this.activeWorld;
+    if (!world || this.enemies.length < 2) return;
+    const minX = 12;
+    const maxX = world.width * GAME.tile - 12;
+    for (let i = 0; i < this.enemies.length; i++) {
+      const a = this.enemies[i];
+      if (a.dead || a.isBoss) continue;
+      for (let j = i + 1; j < this.enemies.length; j++) {
+        const b = this.enemies[j];
+        if (b.dead || b.isBoss) continue;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const rangeX = (a.width + b.width) * 0.5 + 2;
+        const rangeY = Math.min(a.height, b.height) * 0.58;
+        if (Math.abs(dx) >= rangeX || Math.abs(dy) >= rangeY) continue;
+        const overlap = rangeX - Math.abs(dx);
+        const direction = Math.sign(dx) || (i % 2 === 0 ? 1 : -1);
+        const shift = Math.min(overlap * 0.5, 3);
+        const oldAX = a.x;
+        const oldBX = b.x;
+        const nextAX = clamp(a.x - direction * shift, minX, maxX);
+        const nextBX = clamp(b.x + direction * shift, minX, maxX);
+        if (this.canSeparateTo(a, nextAX)) a.x = nextAX;
+        if (this.canSeparateTo(b, nextBX)) b.x = nextBX;
+        if (a.x === oldAX && b.x === oldBX) {
+          // Both blocked by geometry: let the faster actor yield if the tile permits.
+          const faster = Math.abs(a.vx) > Math.abs(b.vx) ? a : b;
+          const base = faster === a ? oldAX : oldBX;
+          const candidate = clamp(base + (faster === a ? direction : -direction), minX, maxX);
+          if (this.canSeparateTo(faster, candidate)) faster.x = candidate;
+        }
+        if (a.flying && b.flying && Math.abs(dy) < rangeY * 0.5) {
+          const pushY = Math.sign(dy) || 1;
+          a.y -= pushY * Math.min(0.5, overlap * 0.1);
+          b.y += pushY * Math.min(0.5, overlap * 0.1);
+        }
+      }
+    }
+  }
+
+  canSeparateTo(enemy, x) {
+    if (enemy.flying) return true;
+    const half = enemy.width / 2;
+    const map = this.activeWorld?.map;
+    if (!map) return false;
+    return !map.rectHitsSolid(x - half + 1, enemy.y + 2, enemy.width - 2, Math.max(1, enemy.height - 4));
   }
 
   onEnemyDefeated(enemy) {

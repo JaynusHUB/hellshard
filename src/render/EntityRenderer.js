@@ -1,4 +1,5 @@
 import { GAME } from '../config/game.js';
+import { ANIMATION } from '../config/animations.js';
 import { clamp } from '../core/RNG.js';
 
 export class EntityRenderer {
@@ -10,7 +11,7 @@ export class EntityRenderer {
     const game = this.game;
     const families = new Map();
     for (const enemy of game.enemies) {
-      if (enemy.dead) continue;
+      if (enemy.dead && enemy.deathTimer <= 0) continue;
       if (Math.abs(enemy.x - game.camera.x) > GAME.internalWidth * 0.75) continue;
       const family = game.assets.getSpriteAtlas(enemy.sprite);
       if (!families.has(family)) families.set(family, []);
@@ -41,6 +42,8 @@ export class EntityRenderer {
     const frame = enemy.animator.frame;
     if (!frame) return;
     const pos = enemy.getRenderPosition(alpha);
+    const flip = game.assets.shouldFlipSprite(enemy.sprite, this.resolveFacing(enemy));
+    const pose = this.getEnemyPose(enemy);
     const zoneTint = game.assets.getPresentation().zoneTints[game.activeZoneId] ?? [1, 1, 1];
     let tint = [0, 1, 2].map((i) => (enemy.tintBase[i] ?? 1) * zoneTint[i]);
     let alphaValue = enemy.state === 'spawn' ? clamp(1 - enemy.stateTimer / 0.45, 0.15, 1) : 1;
@@ -57,19 +60,54 @@ export class EntityRenderer {
     if (enemy.elite) {
       batch.draw(frame, pos.x, pos.y, {
         anchorY: frame.anchorY ?? 1,
-        flip: enemy.facing < 0,
+        flip,
         tint: [1.35, 1.1, 0.55],
-        alpha: 0.14,
+        alpha: 0.14 * pose.alpha,
         offsetY: -2,
+        scaleX: pose.scaleX,
+        scaleY: pose.scaleY,
       });
     }
     batch.draw(frame, pos.x, pos.y, {
       anchorY: frame.anchorY ?? 1,
-      flip: enemy.facing < 0,
+      flip,
       tint,
       flash,
-      alpha: alphaValue,
+      alpha: alphaValue * pose.alpha,
+      scaleX: pose.scaleX,
+      scaleY: pose.scaleY,
     });
+  }
+
+  resolveFacing(actor) {
+    const vx = Number(actor.vx) || 0;
+    if (Math.abs(vx) > 4 && actor.state !== 'windup' && actor.state !== 'strike') {
+      return Math.sign(vx);
+    }
+    return Math.sign(actor.facing || vx || 1);
+  }
+
+  getEnemyPose(enemy) {
+    let scaleX = 1;
+    let scaleY = 1;
+    let alpha = 1;
+    if (enemy.dead) {
+      const progress = 1 - enemy.deathTimer / ANIMATION.enemy.death.duration;
+      const clamped = clamp(progress, 0, 1);
+      scaleX = 1 + clamped * 0.7;
+      scaleY = Math.max(0.05, 1 - clamped * 0.95);
+      alpha = 1 - clamped;
+    } else if (enemy.hurtTimer > 0) {
+      scaleX = ANIMATION.enemy.hurtPose.scaleX;
+      scaleY = ANIMATION.enemy.hurtPose.scaleY;
+    } else if (enemy.state === 'windup') {
+      scaleX = ANIMATION.enemy.windup.scaleX;
+      scaleY = ANIMATION.enemy.windup.scaleY;
+    } else if (enemy.state === 'strike') {
+      scaleX = ANIMATION.enemy.strike.scaleX;
+      scaleY = ANIMATION.enemy.strike.scaleY;
+    }
+    return { scaleX, scaleY, alpha };
   }
 
   drawBoss(batch, boss, alpha) {
@@ -77,6 +115,9 @@ export class EntityRenderer {
     const frame = boss.animator.frame;
     if (!frame) return;
     const pos = boss.getRenderPosition(alpha);
+    const spriteId = boss.data?.sprite ?? 'angel';
+    const bossFacing = this.resolveFacing(boss);
+    const bossFlip = game.assets.shouldFlipSprite(spriteId, bossFacing);
     const zoneTint = game.assets.getPresentation().zoneTints[game.activeZoneId] ?? [1, 1, 1];
     const flash = boss.flashTimer > 0
       ? 0.9 * (boss.flashTimer / GAME.combat.hitFlashDuration) * (game.save.settings.flash ?? 0.75)
@@ -93,9 +134,10 @@ export class EntityRenderer {
       offsets.forEach((offset, i) => {
         const frameIndex = (baseIndex + i * 2) % anim.frames.length;
         const ghost = anim.frames[frameIndex];
+        const ghostFacing = i === 2 ? -bossFacing : bossFacing;
         batch.draw(ghost, pos.x + offset, pos.y + (i === 1 ? 0 : 10), {
           anchorY: ghost.anchorY ?? 1,
-          flip: i === 2,
+          flip: game.assets.shouldFlipSprite('mire_wraith', ghostFacing),
           tint: [tint[0] * (i === 1 ? 1 : 0.65), tint[1] * (i === 1 ? 1 : 0.8), tint[2]],
           flash,
           alpha: i === 1 ? 0.95 : 0.45,
@@ -104,7 +146,7 @@ export class EntityRenderer {
     } else {
       batch.draw(frame, pos.x, pos.y, {
         anchorY: frame.anchorY ?? 1,
-        flip: boss.facing < 0,
+        flip: bossFlip,
         tint,
         flash,
         alpha: boss.state === 'intro' ? 0.7 : 1,
@@ -113,7 +155,7 @@ export class EntityRenderer {
     const aura = 0.12 + (boss.phaseIndex > 0 ? 0.08 : 0) + Math.sin(game.time * 4) * 0.03;
     batch.draw(frame, pos.x, pos.y, {
       anchorY: frame.anchorY ?? 1,
-      flip: boss.facing < 0,
+      flip: bossFlip,
       tint: [tint[0] * 1.8, tint[1] * 1.5, tint[2] * 0.8],
       alpha: aura,
       offsetY: -2,
@@ -129,11 +171,12 @@ export class EntityRenderer {
     const zoneTint = game.assets.getPresentation().zoneTints[game.activeZoneId] ?? [1, 1, 1];
     const baseTint = player.character.tint;
     const tint = [0, 1, 2].map((i) => baseTint[i] * zoneTint[i]);
+    const flip = game.assets.shouldFlipSprite(player.character.sprite, this.resolveFacing(player));
     for (const image of player.afterimages) {
       const t = image.life / image.maxLife;
       batch.draw(image.frame, Math.round(image.x), Math.round(image.y), {
         anchorY: image.frame.anchorY ?? 1,
-        flip: image.facing < 0,
+        flip: game.assets.shouldFlipSprite(player.character.sprite, image.facing || 1),
         tint: [0.55 * t + tint[0] * 0.2, 0.65 * t + tint[1] * 0.2, 1 * t],
         alpha: t * 0.3,
       });
@@ -146,7 +189,7 @@ export class EntityRenderer {
     const dashLean = player.dashTimer > 0 ? 1 : 0;
     batch.draw(frame, pos.x + dashLean * player.facing, pos.y + hover, {
       anchorY: frame.anchorY ?? 1,
-      flip: player.facing < 0,
+      flip,
       tint,
       flash: player.flashTimer > 0
         ? 0.8 * (player.flashTimer / 0.12) * (game.save.settings.flash ?? 0.75)
@@ -156,7 +199,7 @@ export class EntityRenderer {
       const aura = 0.5 + Math.sin(game.time * 10) * 0.2;
       batch.draw(frame, pos.x, pos.y + hover, {
         anchorY: frame.anchorY ?? 1,
-        flip: player.facing < 0,
+        flip,
         tint: [1.6, 0.3, 0.2],
         alpha: aura * 0.18,
       });
