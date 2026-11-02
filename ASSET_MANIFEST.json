@@ -217,6 +217,7 @@
   },
   "tiles": {
     "cemetery": {
+      "atlas": "gothic",
       "groupWidth": 4,
       "frames": {
         "top": [
@@ -347,7 +348,7 @@
   },
   "backgrounds": {
     "cemetery": [
-      { "image": "assets/cemetery/demo/assets/environment/bg-moon.png", "parallax": 0.03, "y": 40, "mode": "repeat", "tint": [0.56, 0.61, 0.78] },
+      { "image": "assets/cemetery/demo/assets/environment/bg-moon.png", "parallax": 0.015, "y": 136, "mode": "repeat", "tint": [0.68, 0.52, 0.75] },
       { "image": "assets/cemetery/PNG/Environment/mountains.png", "parallax": 0.12, "y": 28, "mode": "repeat", "tint": [0.23, 0.21, 0.36] },
       { "image": "assets/cemetery/PNG/Environment/graveyard.png", "parallax": 0.3, "y": 8, "mode": "repeat", "tint": [0.24, 0.17, 0.23] }
     ],

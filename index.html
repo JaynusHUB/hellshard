@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#06050a" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238d2d35' d='M8 0l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3C/svg%3E" />
+    <title>HELLSHARD</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage" role="application" aria-label="HELLSHARD game">
+        <canvas id="game" width="640" height="360" aria-label="Game canvas"></canvas>
+        <div id="zone-wash" aria-hidden="true"></div>
+        <div id="vignette" aria-hidden="true"></div>
+        <div id="damage-layer" aria-hidden="true"></div>
+        <div id="ui-root"></div>
+        <div id="toast-layer" aria-live="polite"></div>
+        <div id="fade-layer" aria-hidden="true"></div>
+      </div>
+      <div id="boot-overlay">
+        <div class="boot-mark">◆</div>
+        <div class="boot-title">HELLSHARD</div>
+        <div class="boot-status" id="boot-status">Forging the abyss…</div>
+        <div class="boot-bar"><div id="boot-progress"></div></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
