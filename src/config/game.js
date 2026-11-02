@@ -74,6 +74,16 @@ export const GAME = {
     maxParticles: 720,
     atlasMaxWidth: 2048,
     atlasPadding: 2,
+    layers: {
+      background: -100,
+      tiles: 0,
+      props: 1,
+      generated: 1.5,
+      actors: 2,
+      fringe: 2.6,
+      orbs: 3,
+      particles: 4,
+    },
   },
   progression: {
     weaponLevelsAt: [2, 4, 6, 8],

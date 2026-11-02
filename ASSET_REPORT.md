@@ -188,7 +188,7 @@ reskins.
 ## 10. Round 2 playtest corrections (2026-11-02)
 
 - **Source facing:** added `facing` metadata to every player/enemy/boss sprite in `ASSET_MANIFEST.json`.
-  Verified against the PNGs: players, skeletons, wisp and the wizard face right; hell-gato, burning
+  Verified against the PNGs: players, wisp and the wizard face right; skeletons, hell-gato, burning
   ghoul, bog brute and mire wraith use the left-facing source pose; angel/slime/spider are
   front-facing and default to right. Flipping is applied only when the movement/logical direction
   disagrees with the source facing.
@@ -235,9 +235,11 @@ reskins.
 - **Surface decals:** moss, puddle, crack, rubble and broken-brick marks are seeded along the top
   floor row. They are composed from slices of the supplied dungeon floor/wall crops, not separate
   painted assets, and do not affect collision.
-- **Depth layers:** the dungeon background now uses six manifest layers: far wall, upper stone
-  frieze, mid wall, base panel, and two screen-edge foreground pillar silhouettes. Parallax and tint
-  separate the depths; the edge pillars stay outside the player's normal path.
+- **Depth layers:** the dungeon background now uses seven manifest layers. The supplied 128x117 wall
+  crop contains a four-pixel transparent separator, so it is split into a 64px lower block and a 47px
+  upper block; those are stacked on the same 64/47px cadence with identical parallax to make a
+  continuous wall without the horizontal black band. A far copy, plus two screen-edge foreground
+  pillar silhouettes, add depth. The pillar positions stay outside the player's normal path.
 - **Set pieces:** cellblock, throne/altar, chain-pit, torch corridor and treasury arrangements are
   used across the five rooms. Statues are checked against platform/chest/gate occupancy and are only
   placed in open wall space. Torches emit the existing additive ember particles with a slow flicker;
@@ -254,3 +256,31 @@ reskins.
   the available wall panels/statues/torches and generated door/chest/altar icons. No new raster
   asset was added to `public/assets`; the missing pieces are recorded here instead of being painted
   into the packs.
+
+## 13. Tilemap audit and edge-aware catalog (2026-11-02)
+
+- **Authoritative grid:** every terrain sheet is on a 16x16 grid. `npm run validate:tiles` checks the
+  five manifests and reports `16x16 margin=0 spacing=0` for cemetery, church, swamp, dungeon and
+  forest. The cemetery demo's Tiled `map.json` independently confirms `tilewidth: 16`,
+  `tileheight: 16`, `margin: 0`, `spacing: 0`, with the layer order `Collisions Layer`, `Back Layer`,
+  `Main Layer`.
+- **Frame cropping:** all tile frames are explicit source rectangles; no guessed grid slicing is
+  performed for the non-uniform dungeon sheet. The runtime atlas still uses 2px transparent gutters
+  for WebGL bleeding protection, but those gutters are outside each frame UV and are not part of the
+  source tile crop.
+- **Edge-aware catalog:** each zone now declares `top`, `body`, `deep`, plus `topLeft`, `topRight`,
+  `bodyLeft`, `bodyRight`, `deepLeft` and `deepRight` frames. The renderer chooses the edge piece from
+  the tile's horizontal neighbours, so a pit/ledge gets a closed side instead of a cut-off repeating
+  middle tile. One-way platforms use the same left/middle/right rule.
+- **Ground sources:** cemetery uses the central 4-tile grass/dirt/deep strip from the demo tileset;
+  church uses the supplied 2x3 purple slab block; swamp uses the central columns of the large skull
+  terrain chunk; forest uses the central columns of its 4x3 moss/soil block; dungeon uses the native
+  128x16 brick floor strip with a depth tint.
+- **Layer order:** background(-100), tiles(0), props(1), generated interactables(1.5), actors(2),
+  foreground grass(2.6), XP orbs(3), particles(4) now live in `GAME.rendering.layers`.
+- **Pixel rendering:** the WebGL renderer already uses `antialias: false`, `image-rendering:
+  pixelated`, nearest filtering and integer-scaled 640x360 output. This audit did not add smoothing
+  or fractional sprite scales.
+- **Reference use:** the cemetery `demo/assets/maps/map.json` is treated as a calibration reference
+  for tile size, layer order and ground composition. The runtime game remains seeded/procedural, so
+  it does not load the 4800px demo map wholesale.

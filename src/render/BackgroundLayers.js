@@ -8,7 +8,7 @@ export class BackgroundLayers {
     this.zoneId = zoneId;
     this.layers = [];
     this.group = new THREE.Group();
-    this.group.renderOrder = -100;
+    this.group.renderOrder = GAME.rendering.layers.background;
     scene.add(this.group);
     this.initLayers();
   }
@@ -53,7 +53,7 @@ export class BackgroundLayers {
       const geometry = new THREE.PlaneGeometry(1, 1);
       const mesh = new THREE.InstancedMesh(geometry, material, count);
       mesh.frustumCulled = false;
-      mesh.renderOrder = -100 + order;
+      mesh.renderOrder = GAME.rendering.layers.background + order;
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       const matrix = new THREE.Matrix4();
       const dummy = { x: 0, y: 0, sx: tileWidth, sy: height };

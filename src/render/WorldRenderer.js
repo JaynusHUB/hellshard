@@ -29,17 +29,17 @@ export class WorldRenderer {
     this.createBatches();
     this.generated = createGeneratedSprites();
     this.generatedBatch = createGeneratedBatch(this.generated.texture);
-    this.generatedBatch.mesh.renderOrder = 1.5;
+    this.generatedBatch.mesh.renderOrder = GAME.rendering.layers.generated;
     this.scene.add(this.generatedBatch.mesh);
   }
 
   createBatches() {
     for (const [family, atlas] of Object.entries(this.assets.atlases)) {
       const propBatch = new SpriteBatch(atlas.texture, GAME.rendering.maxSpriteInstances);
-      propBatch.mesh.renderOrder = 1;
+      propBatch.mesh.renderOrder = GAME.rendering.layers.props;
       this.scene.add(propBatch.mesh);
       const actorBatch = new SpriteBatch(atlas.texture, GAME.rendering.maxSpriteInstances);
-      actorBatch.mesh.renderOrder = family === 'gothic' ? 2.1 : 2;
+      actorBatch.mesh.renderOrder = GAME.rendering.layers.actors + (family === 'gothic' ? 0.1 : 0);
       this.scene.add(actorBatch.mesh);
       this.batchEntries[family] = { prop: propBatch, actor: actorBatch };
     }
@@ -119,9 +119,9 @@ export class WorldRenderer {
 
   drawBackdrops(batch) {
     const game = this.game;
-    if (game.activeZoneId !== 'dungeon' || !game.activeWorld.backdrops?.length) return;
+    if (!game.activeWorld.backdrops?.length) return;
     for (const backdrop of game.activeWorld.backdrops) {
-      const frame = this.assets.getPropFrame('dungeon', backdrop.prop);
+      const frame = this.assets.getPropFrame(game.activeZoneId, backdrop.prop);
       if (!frame) continue;
       batch.draw(frame, Math.round(backdrop.x), Math.round(backdrop.y), {
         anchorY: frame.anchorY ?? 1,
@@ -200,6 +200,8 @@ export class WorldRenderer {
     const bodyFrames = Array.from({ length: width }, (_, index) => (
       this.assets.getTileFrame(zoneId, 'body', index)
     )).filter(Boolean);
+    const bodyLeft = this.assets.getTileFrame(zoneId, 'bodyLeft') ?? bodyFrames[0];
+    const bodyRight = this.assets.getTileFrame(zoneId, 'bodyRight') ?? bodyFrames.at(-1);
     if (!bodyFrames.length) return;
     const tints = {
       cemetery: [0.62, 0.58, 0.46],
@@ -216,19 +218,23 @@ export class WorldRenderer {
       const below = run.row * GAME.tile;
       for (let row = 0; row < 2; row++) {
         for (let x = run.x; x < run.x + run.w; x += GAME.tile) {
-          const frame = bodyFrames[Math.floor(x / GAME.tile) % bodyFrames.length];
+          const atLeft = x === run.x;
+          const atRight = x + GAME.tile >= run.x + run.w;
+          const frame = atLeft ? bodyLeft : atRight ? bodyRight : bodyFrames[Math.floor(x / GAME.tile) % bodyFrames.length];
           batch.draw(frame, x + GAME.tile / 2, below - row * GAME.tile, {
             anchorY: 0,
             tint: row === 0 ? bodyTint : supportTint,
           });
         }
       }
-      const ends = [run.x + GAME.tile / 2, run.x + run.w - GAME.tile / 2];
+      const ends = [
+        { x: run.x + GAME.tile / 2, frame: bodyLeft },
+        { x: run.x + run.w - GAME.tile / 2, frame: bodyRight },
+      ];
       const supportDepth = zoneId === 'dungeon' ? 2 : 1;
       for (const end of ends) {
         for (let depth = 0; depth < supportDepth; depth++) {
-          const frame = bodyFrames[(depth + 1) % bodyFrames.length];
-          batch.draw(frame, end, below - (2 + depth) * GAME.tile, {
+          batch.draw(end.frame, end.x, below - (2 + depth) * GAME.tile, {
             anchorY: 0,
             tint: supportTint,
           });
@@ -412,6 +418,8 @@ export class WorldRenderer {
     const bodyFrames = [0, 1, 2].map((index) => (
       this.assets.getTileFrame('dungeon', 'body', index)
     )).filter(Boolean);
+    const bodyLeft = this.assets.getTileFrame('dungeon', 'bodyLeft') ?? bodyFrames[0];
+    const bodyRight = this.assets.getTileFrame('dungeon', 'bodyRight') ?? bodyFrames.at(-1);
     for (const platform of platforms) {
       for (let i = 0; i < 3; i++) {
         batch.draw(frames[i], Math.round(platform.x - 16 + i * 16), Math.round(platform.y), {
@@ -420,17 +428,16 @@ export class WorldRenderer {
         });
       }
       for (let i = 0; i < 3; i++) {
-        const frame = bodyFrames[i % bodyFrames.length];
+        const frame = i === 0 ? bodyLeft : i === 2 ? bodyRight : bodyFrames[1];
         if (!frame) continue;
         batch.draw(frame, Math.round(platform.x - 16 + i * 16), Math.round(platform.y - 16), {
           anchorY: 0,
           tint: [0.5, 0.49, 0.56],
         });
       }
-      for (const end of [platform.x - 8, platform.x + 8]) {
-        const frame = bodyFrames[0];
-        if (frame) {
-          batch.draw(frame, Math.round(end), Math.round(platform.y - 32), {
+      for (const end of [{ x: platform.x - 16, frame: bodyLeft }, { x: platform.x + 16, frame: bodyRight }]) {
+        if (end.frame) {
+          batch.draw(end.frame, Math.round(end.x), Math.round(platform.y - 32), {
             anchorY: 0,
             tint: [0.38, 0.37, 0.43],
           });

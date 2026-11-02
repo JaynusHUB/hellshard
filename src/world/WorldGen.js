@@ -231,8 +231,14 @@ function buildRoom(zone, roomIndex, data, rng, world) {
       setPlatform(data, x, FLOOR_ROW + 5, Math.min(4, start + ROOM_W - x - 2));
     }
   } else {
-    // Pit patterns are bounded by the shared jump envelope (max 3 tiles for comfort).
-    const pitCount = roomIndex === 0 ? 0 : rng.int(1, 2);
+    // Pit patterns are bounded by the shared jump envelope. The outdoor
+    // Gothicvania maps are mostly ground-hugging, so only the forest keeps a
+    // regular pit cadence; other zones get at most one shallow break.
+    const pitCount = roomIndex === 0
+      ? 0
+      : zone.id === 'forest'
+        ? rng.int(1, 2)
+        : rng.int(0, 1);
     for (let i = 0; i < pitCount; i++) {
       const minX = start + 12 + i * 10;
       const maxX = start + ROOM_W - 12;
@@ -248,13 +254,18 @@ function buildRoom(zone, roomIndex, data, rng, world) {
         kind: zone.hazards,
       });
     }
-    const shelfCount = roomIndex === 4 ? 1 : rng.int(1, 2);
+    const shelfCount = zone.id === 'forest'
+      ? rng.int(1, 2)
+      : roomIndex === 4 ? 1 : rng.int(0, 1);
     for (let i = 0; i < shelfCount; i++) {
       const sx = start + 8 + i * 12 + rng.int(0, 2);
       const sy = FLOOR_ROW + rng.int(4, 5);
       const sw = rng.int(4, 6);
       setPlatform(data, sx, sy, sw);
       if (i === 0) addChest(world, `chest-${zone.id}-${roomIndex}`, sx + 2, sy + 1);
+    }
+    if (shelfCount === 0 && (roomIndex === 0 || roomIndex === 4)) {
+      addChest(world, `chest-${zone.id}-${roomIndex}-floor`, start + ROOM_W - 7, FLOOR_ROW + 1);
     }
   }
 
@@ -387,6 +398,52 @@ function addDecor(world, zone, rng, start, surface) {
       world.layout?.mark(rect, 'prop', `${zone.id}:${prop}:${start + attempt}`, { prop });
       placed = true;
     }
+  }
+}
+
+function addCemeteryBackdrops(world, seed) {
+  const rng = new RNG(combineSeed(seed, 'cemetery-backdrops'));
+  for (let room = 0; room < ROOMS; room++) {
+    const start = room * ROOM_W;
+    const tree = rng.pick(['tree1', 'tree2', 'tree3']);
+    world.backdrops.push({
+      prop: tree,
+      x: (start + rng.int(9, 25)) * T,
+      y: world.surface,
+      tint: [0.32, 0.27, 0.38],
+      alpha: 0.62,
+      flip: rng.chance(0.5),
+    });
+    world.backdrops.push({
+      prop: 'bushLarge',
+      x: (start + rng.int(7, 27)) * T,
+      y: world.surface,
+      tint: [0.3, 0.35, 0.28],
+      alpha: 0.54,
+      flip: rng.chance(0.5),
+    });
+  }
+}
+
+function addChurchBackdrops(world) {
+  for (let room = 0; room < ROOMS; room++) {
+    const start = room * ROOM_W;
+    world.backdrops.push({
+      prop: 'column',
+      x: (start + 17) * T,
+      y: world.surface,
+      tint: [0.62, 0.58, 0.82],
+      alpha: 0.72,
+      flip: room % 2 === 0,
+    });
+    world.backdrops.push({
+      prop: 'balustrade',
+      x: (start + 17) * T,
+      y: world.surface,
+      tint: [0.5, 0.47, 0.68],
+      alpha: 0.62,
+      flip: room % 2 === 1,
+    });
   }
 }
 
@@ -692,6 +749,8 @@ export function generateZone(seed, zoneId, options = {}) {
   for (let room = 0; room < ROOMS; room++) {
     addDecor(world, zone, new RNG(combineSeed(seed, 'decor', zoneId, room)), room * ROOM_W, surface);
   }
+  if (zone.id === 'cemetery') addCemeteryBackdrops(world, seed);
+  if (zone.id === 'church') addChurchBackdrops(world);
   if (zone.id === 'dungeon') {
     addDungeonSetPieces(world);
     addDungeonSurfaceDecals(world, seed);

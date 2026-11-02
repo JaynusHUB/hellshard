@@ -18,6 +18,7 @@ npm run preview          # serve the production build
 npm test                 # Vitest logic tests
 npm run validate:world   # validate seeded worlds 1..100
 npm run validate:world -- 1 300
+npm run validate:tiles     # 16x16 frame, margin/spacing and source-bounds audit
 npm run validate:alignment # alpha-painted surface + prop/support alignment
 npm run validate:layout    # 100 seeds × 5 zones prop/platform/chest occupancy
 ```
@@ -85,6 +86,9 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
 - **Hollow Keep dressing:** six hand-authored dungeon room templates, seeded floor decals, a
   depth-graded brick floor, six parallax background layers, torch glow, platform underbodies and
   tile-framed iron gates. Missing dedicated dungeon art is recorded in `ASSET_REPORT.md`.
+- **Tilemap audit:** all five terrain catalogs are 16x16 with zero source margin/spacing and
+  left/middle/right edge frames. `npm run validate:tiles` checks every crop rectangle and the
+  supplied Tiled cemetery reference map.
 - **Layout / inspection:** occupancy-grid placement prevents props, platforms, chests and gates from
   overlapping. `npm run validate:layout` checks 100 seeds × 5 zones for overlaps, floating chests and
   unsupported single tiles. Dev-only `?zone`, `?seed`, `?peaceful`, `?fly` and `?debug=gallery`

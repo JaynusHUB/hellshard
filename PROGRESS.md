@@ -7,15 +7,18 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` - passes after the Hollow Keep map-dressing pass (64 modules, no errors; atlases are
-  generated at runtime, JS 847.27 kB / 225.12 kB gzip).
+- `npm run build` - passes after the tile-catalog/map audit (64 modules, no errors; atlases are
+  generated at runtime, JS 851.54 kB / 226.01 kB gzip).
 - Layout note: hidden breakable/fake-wall chests are registered in the layout grid after the room
   structures are indexed.
 - `npm test` — **34/34 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
   achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd).
+- `npm run validate:tiles` — **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
+  rects in bounds; cemetery Tiled reference is 300x14 tiles with
+  `Collisions Layer > Back Layer > Main Layer`.
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
-- `npm run validate:alignment` — **passed**: 5 zones, 49 ground props, 126 placed objects,
+- `npm run validate:alignment` — **passed**: 5 zones, 50 ground props, 124 placed objects,
   footSink applied, ±1px tolerance.
 - `npm run validate:layout` — **passed**: 100 seeds × 5 zones; zero overlaps, floating chests,
   clearance violations or unsupported single-tile structures.
@@ -140,14 +143,14 @@ Measured alignment:
 `npm run validate:alignment` result:
 
 ```text
-cemetery  route=0 surface=129 painted=134 footSink=5 manifestOffset=10 measuredRows=11/11/9/11 props=11
-church    route=1 surface=144 painted=144 footSink=0 manifestOffset=0 measuredRows=0 props=5
-swamp     route=2 surface=132 painted=137 footSink=5 manifestOffset=7 measuredRows=7/6/7/6/7 props=11
+cemetery  route=0 surface=129 painted=134 footSink=5 manifestOffset=10 measuredRows=11/9 props=11
+church    route=1 surface=144 painted=144 footSink=0 manifestOffset=0 measuredRows=0/0 props=6
+swamp     route=2 surface=132 painted=137 footSink=5 manifestOffset=7 measuredRows=6/7/6 props=11
 dungeon   route=-1 surface=143 painted=144 footSink=1 manifestOffset=0 measuredRows=0/0/0/0 props=9
-forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRows=0 props=13
+forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRows=0/0 props=13
 
-✓ Alignment validation passed: 5 zones, 49 props, 126 placed objects, footSink applied, ±1px tolerance.
-  ground props checked: 49; one-way ledges are at least 3 tiles wide.
+✓ Alignment validation passed: 5 zones, 50 props, 124 placed objects, footSink applied, ±1px tolerance.
+  ground props checked: 50; one-way ledges are at least 3 tiles wide.
 ```
 
 ## Known issues — facing audit and pit AI (2026-11-02)
@@ -206,8 +209,22 @@ forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRo
   most 3 same-type enemies within one 640px screen of the player, filtering both normal and elite
   picks and re-checking before placement.
 
-## Known issues — Hollow Keep map dressing (2026-11-02)
+## Known issues — tilemap audit and all-zone map dressing (2026-11-02)
 
+- [x] **Tile size/spacing audit:** every terrain sheet is 16x16 with source `margin: 0`,
+  `spacing: 0`. `npm run validate:tiles` checks all frame rectangles and reads the cemetery Tiled
+  reference map (300x14, 16x16, three layers). Dungeon remains a named-region sheet, not a guessed
+  uniform grid.
+- [x] **Edge-aware tile catalog:** each zone now has left/right top, body and deep frames. TileChunks
+  chooses them from horizontal neighbours, so pits and ledge ends close with the proper source edge
+  instead of repeating a middle brush. Hazard-filled tiles no longer put a grass top at the bottom
+  of a shaft.
+- [x] **Explicit layer order:** background, tile, prop, generated, actor, fringe, XP and particle
+  orders live in `GAME.rendering.layers`; the renderer no longer relies on scattered magic numbers.
+- [x] **Outdoor composition:** cemetery/church/swamp pits and floating shelves are reduced. Ground
+  chest fallbacks keep loot available when a room has no shelf. The forest keeps more platforming.
+- [x] **Source-density decor:** cemetery gains seeded tree/bush backdrops; church gains the supplied
+  column and balustrade as non-colliding background pieces, matching the pack's reference scene.
 - [x] **Camera composition:** `GAME.camera.offsetY` moved the world ground line from ~56% to ~70%
   of the 360px viewport. The extra vertical space exposes the new dungeon depth layers.
 - [x] **Dungeon floor depth:** body and deep dungeon tiles now darken by depth (about 26% -> 14%)
@@ -217,8 +234,10 @@ forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRo
 - [x] **Six handcrafted dungeon rooms:** `src/data/dungeonRooms.js` defines torch procession,
   cellblock, throne dais, chain pit, treasury and collapsed steps. Five are selected/ordered per
   seed; four or more set-piece types are guaranteed.
-- [x] **Dungeon backgrounds:** six layers (far wall, upper frieze, mid wall, base panel, two foreground
-  pillar silhouettes) use supplied wall-panel crops with separate parallax/tint. No new raster assets.
+- [x] **Dungeon backgrounds:** seven layers use supplied wall-panel crops with separate parallax/tint.
+  The 128x117 wall crop is split around its four transparent separator rows and stacked on matching
+  lower/upper block cadence, removing the horizontal band seen in the old screenshot. No new raster
+  assets.
 - [x] **Set pieces:** cellblock, throne/altar, chain-pit, torch corridor and treasury arrangements use
   wall panels, statues, torches, pits, ledges and chests. Statues are filtered against platform/chest/
   gate occupancy; they are no longer placed under platforms.
@@ -241,11 +260,11 @@ Layout validation result after the map-dressing pass (100 seeds × 5 zones):
 
 ```text
 zone      props  chests gates  platforms overlaps floatingChests clearanceBad tinyStructures
-cemetery  969    671    300    4694      0        0              0            0
-church    375    675    200    4692      0        0              0            0
-swamp     1069   675    200    4686      0        0              0            0
+cemetery  1017   591    300    3272      0        0              0            0
+church    498    588    200    3196      0        0              0            0
+swamp     1073   610    200    3302      0        0              0            0
 dungeon   2503   999    100    3990      0        0              0            0
-forest    1240   781    100    4933      0        0              0            0
+forest    1226   781    100    5205      0        0              0            0
 
 ✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests,
   clearance violations or unsupported single-tile structures.

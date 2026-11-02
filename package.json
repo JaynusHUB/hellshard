@@ -10,7 +10,8 @@
     "test": "vitest run",
     "validate:world": "node scripts/validate-world.js",
     "validate:alignment": "node scripts/validate-alignment.js",
-    "validate:layout": "node scripts/validate-layout.js"
+    "validate:layout": "node scripts/validate-layout.js",
+    "validate:tiles": "node scripts/validate-tiles.js"
   },
   "dependencies": {
     "@fontsource/pixelify-sans": "5.3.0",

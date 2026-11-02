@@ -898,6 +898,17 @@
           "image": "assets/church/ENVIRONMENT/column.png",
           "w": 114,
           "h": 190
+        },
+        "balustrade": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            192,
+            92,
+            80,
+            52
+          ],
+          "w": 80,
+          "h": 52
         }
       }
     },
@@ -1134,22 +1145,13 @@
   "tiles": {
     "cemetery": {
       "atlas": "gothic",
-      "groupWidth": 4,
+      "groupWidth": 2,
       "surfaceOffset": 10,
       "frames": {
         "top": [
           {
             "image": "assets/cemetery/PNG/Environment/tileset.png",
             "rect": [
-              64,
-              48,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
               80,
               48,
               16,
@@ -1160,15 +1162,6 @@
             "image": "assets/cemetery/PNG/Environment/tileset.png",
             "rect": [
               96,
-              48,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
-              112,
               48,
               16,
               16
@@ -1179,15 +1172,6 @@
           {
             "image": "assets/cemetery/PNG/Environment/tileset.png",
             "rect": [
-              64,
-              64,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
               80,
               64,
               16,
@@ -1198,15 +1182,6 @@
             "image": "assets/cemetery/PNG/Environment/tileset.png",
             "rect": [
               96,
-              64,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
-              112,
               64,
               16,
               16
@@ -1217,15 +1192,6 @@
           {
             "image": "assets/cemetery/PNG/Environment/tileset.png",
             "rect": [
-              64,
-              80,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
               80,
               80,
               16,
@@ -1240,29 +1206,87 @@
               16,
               16
             ]
-          },
-          {
-            "image": "assets/cemetery/PNG/Environment/tileset.png",
-            "rect": [
-              112,
-              80,
-              16,
-              16
-            ]
           }
-        ]
-      }
+        ],
+        "topLeft": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            64,
+            48,
+            16,
+            16
+          ]
+        },
+        "topRight": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            112,
+            48,
+            16,
+            16
+          ]
+        },
+        "bodyLeft": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            64,
+            64,
+            16,
+            16
+          ]
+        },
+        "bodyRight": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            112,
+            64,
+            16,
+            16
+          ]
+        },
+        "deepLeft": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            64,
+            80,
+            16,
+            16
+          ]
+        },
+        "deepRight": {
+          "image": "assets/cemetery/PNG/Environment/tileset.png",
+          "rect": [
+            112,
+            80,
+            16,
+            16
+          ]
+        }
+      },
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "margin": 0,
+      "spacing": 0
     },
     "church": {
       "atlas": "gothic",
-      "groupWidth": 1,
+      "groupWidth": 2,
       "surfaceOffset": 0,
       "frames": {
         "top": [
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              64,
+              16,
+              112,
+              16,
+              16
+            ]
+          },
+          {
+            "image": "assets/church/ENVIRONMENT/tileset.png",
+            "rect": [
+              32,
               112,
               16,
               16
@@ -1273,7 +1297,16 @@
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              64,
+              16,
+              128,
+              16,
+              16
+            ]
+          },
+          {
+            "image": "assets/church/ENVIRONMENT/tileset.png",
+            "rect": [
+              32,
               128,
               16,
               16
@@ -1284,62 +1317,91 @@
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              64,
-              128,
+              16,
+              144,
+              16,
+              16
+            ]
+          },
+          {
+            "image": "assets/church/ENVIRONMENT/tileset.png",
+            "rect": [
+              32,
+              144,
               16,
               16
             ]
           }
         ],
-        "wall": [
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              16,
-              32,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              32,
-              48,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              16,
-              112,
-              16,
-              16
-            ]
-          }
-        ]
-      }
+        "topLeft": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            16,
+            112,
+            16,
+            16
+          ]
+        },
+        "topRight": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            32,
+            112,
+            16,
+            16
+          ]
+        },
+        "bodyLeft": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            16,
+            128,
+            16,
+            16
+          ]
+        },
+        "bodyRight": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            32,
+            128,
+            16,
+            16
+          ]
+        },
+        "deepLeft": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            16,
+            144,
+            16,
+            16
+          ]
+        },
+        "deepRight": {
+          "image": "assets/church/ENVIRONMENT/tileset.png",
+          "rect": [
+            32,
+            144,
+            16,
+            16
+          ]
+        }
+      },
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "margin": 0,
+      "spacing": 0
     },
     "swamp": {
       "atlas": "gothic",
-      "groupWidth": 5,
+      "groupWidth": 3,
       "surfaceOffset": 7,
       "frames": {
         "top": [
           {
             "image": "assets/swamp/Evironment/tileset.png",
             "rect": [
-              32,
-              0,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
               48,
               0,
               16,
@@ -1359,15 +1421,6 @@
             "image": "assets/swamp/Evironment/tileset.png",
             "rect": [
               80,
-              0,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
-              96,
               0,
               16,
               16
@@ -1378,15 +1431,6 @@
           {
             "image": "assets/swamp/Evironment/tileset.png",
             "rect": [
-              32,
-              16,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
               48,
               16,
               16,
@@ -1406,15 +1450,6 @@
             "image": "assets/swamp/Evironment/tileset.png",
             "rect": [
               80,
-              16,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
-              96,
               16,
               16,
               16
@@ -1425,15 +1460,6 @@
           {
             "image": "assets/swamp/Evironment/tileset.png",
             "rect": [
-              32,
-              32,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
               48,
               32,
               16,
@@ -1457,17 +1483,62 @@
               16,
               16
             ]
-          },
-          {
-            "image": "assets/swamp/Evironment/tileset.png",
-            "rect": [
-              96,
-              32,
-              16,
-              16
-            ]
           }
         ],
+        "topLeft": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            32,
+            0,
+            16,
+            16
+          ]
+        },
+        "topRight": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            96,
+            0,
+            16,
+            16
+          ]
+        },
+        "bodyLeft": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            32,
+            16,
+            16,
+            16
+          ]
+        },
+        "bodyRight": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            96,
+            16,
+            16,
+            16
+          ]
+        },
+        "deepLeft": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            32,
+            32,
+            16,
+            16
+          ]
+        },
+        "deepRight": {
+          "image": "assets/swamp/Evironment/tileset.png",
+          "rect": [
+            96,
+            32,
+            16,
+            16
+          ]
+        },
         "water": {
           "image": "assets/swamp/Evironment/tileset.png",
           "rect": [
@@ -1495,7 +1566,11 @@
             56
           ]
         }
-      }
+      },
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "margin": 0,
+      "spacing": 0
     },
     "dungeon": {
       "atlas": "dungeon",
@@ -1615,12 +1690,70 @@
               16
             ]
           }
-        ]
-      }
+        ],
+        "topLeft": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            21,
+            187,
+            16,
+            16
+          ]
+        },
+        "topRight": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            117,
+            187,
+            16,
+            16
+          ]
+        },
+        "bodyLeft": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            21,
+            187,
+            16,
+            16
+          ]
+        },
+        "bodyRight": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            117,
+            187,
+            16,
+            16
+          ]
+        },
+        "deepLeft": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            21,
+            187,
+            16,
+            16
+          ]
+        },
+        "deepRight": {
+          "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+          "rect": [
+            117,
+            187,
+            16,
+            16
+          ]
+        }
+      },
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "margin": 0,
+      "spacing": 0
     },
     "forest": {
       "atlas": "forest",
-      "groupWidth": 1,
+      "groupWidth": 2,
       "surfaceOffset": 0,
       "frames": {
         "top": [
@@ -1628,6 +1761,15 @@
             "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
             "rect": [
               16,
+              16,
+              16,
+              16
+            ]
+          },
+          {
+            "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+            "rect": [
+              32,
               16,
               16,
               16
@@ -1643,9 +1785,7 @@
               16,
               16
             ]
-          }
-        ],
-        "deep": [
+          },
           {
             "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
             "rect": [
@@ -1656,6 +1796,80 @@
             ]
           }
         ],
+        "deep": [
+          {
+            "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+            "rect": [
+              16,
+              48,
+              16,
+              16
+            ]
+          },
+          {
+            "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+            "rect": [
+              32,
+              48,
+              16,
+              16
+            ]
+          }
+        ],
+        "topLeft": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            0,
+            16,
+            16,
+            16
+          ]
+        },
+        "topRight": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            48,
+            16,
+            16,
+            16
+          ]
+        },
+        "bodyLeft": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            0,
+            32,
+            16,
+            16
+          ]
+        },
+        "bodyRight": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            48,
+            32,
+            16,
+            16
+          ]
+        },
+        "deepLeft": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            0,
+            48,
+            16,
+            16
+          ]
+        },
+        "deepRight": {
+          "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
+          "rect": [
+            48,
+            48,
+            16,
+            16
+          ]
+        },
         "chunk": {
           "image": "assets/fantasy forest map/Tileset/Fantasy-TileSet.png",
           "rect": [
@@ -1665,7 +1879,11 @@
             96
           ]
         }
-      }
+      },
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "margin": 0,
+      "spacing": 0
     }
   },
   "backgrounds": {
@@ -1776,69 +1994,87 @@
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
         "parallax": 0.01,
-        "worldY": 232,
+        "worldY": 144,
         "mode": "repeat",
+        "opacity": 0.5,
         "tint": [
-          0.1,
-          0.11,
-          0.16
+          0.06,
+          0.07,
+          0.1
         ],
         "crop": [
           162,
-          5,
+          58,
           128,
-          117
+          64
         ]
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.028,
-        "worldY": 288,
+        "parallax": 0.03,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.16,
+          0.2,
+          0.21,
+          0.28
+        ],
+        "crop": [
+          162,
+          58,
+          128,
+          64
+        ]
+      },
+      {
+        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+        "parallax": 0.03,
+        "worldY": 208,
+        "mode": "repeat",
+        "tint": [
           0.17,
+          0.18,
           0.24
         ],
         "crop": [
           162,
           5,
           128,
-          48
+          47
         ]
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.045,
-        "worldY": 144,
+        "parallax": 0.03,
+        "worldY": 255,
         "mode": "repeat",
         "tint": [
-          0.28,
-          0.29,
-          0.38
+          0.14,
+          0.15,
+          0.2
+        ],
+        "crop": [
+          162,
+          58,
+          128,
+          64
+        ]
+      },
+      {
+        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+        "parallax": 0.03,
+        "worldY": 319,
+        "mode": "repeat",
+        "tint": [
+          0.11,
+          0.12,
+          0.16
         ],
         "crop": [
           162,
           5,
           128,
-          117
-        ]
-      },
-      {
-        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.075,
-        "worldY": 144,
-        "mode": "repeat",
-        "tint": [
-          0.4,
-          0.39,
-          0.48
-        ],
-        "crop": [
-          162,
-          128,
-          128,
-          48
+          47
         ]
       },
       {
@@ -1849,16 +2085,16 @@
         "single": true,
         "x": -312,
         "tint": [
+          0.09,
           0.1,
-          0.11,
-          0.16
+          0.15
         ],
         "opacity": 0.82,
         "crop": [
           162,
-          5,
+          58,
           16,
-          117
+          64
         ]
       },
       {
@@ -1869,16 +2105,16 @@
         "single": true,
         "x": 312,
         "tint": [
+          0.09,
           0.1,
-          0.11,
-          0.16
+          0.15
         ],
         "opacity": 0.82,
         "crop": [
           274,
-          5,
+          58,
           16,
-          117
+          64
         ]
       }
     ],

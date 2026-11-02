@@ -104,6 +104,9 @@ index.html
   footSink and prop support.
 - `LayoutGrid` records every prop/platform/chest/gate footprint. Decorations and chests are shifted or
   omitted on collision; `scripts/validate-layout.js` checks 100 seeds × 5 zones.
+- Terrain sheets are 16x16 with zero source margin/spacing. Each manifest tile catalog exposes
+  `top/body/deep` plus left/right edge frames. `TileChunks` chooses the edge frame from horizontal
+  neighbours; `scripts/validate-tiles.js` also audits the cemetery Tiled reference map.
 - Hollow Keep uses six hand-authored room templates in `src/data/dungeonRooms.js`; five are selected
   and ordered per seed. Steps, podiums, pits, ledges and set pieces are generated as data, then the
   occupancy grid verifies every chest and statue.
@@ -113,6 +116,8 @@ index.html
   an iron portcullis and a short lift animation before the fade.
 - `GAME.camera.offsetY` places the ground line near 70% of the viewport so background vault layers
   remain visible without covering the player.
+- `GAME.rendering.layers` is the single source for background(-100), tiles(0), props(1), generated
+  interactables(1.5), actors(2), foreground fringe(2.6), XP orbs(3) and particles(4).
 - Dev-only queries (`import.meta.env.DEV`) set zone/seed/peaceful/fly/gallery inspection modes; the
   gallery auto-scrolls a zone and `N`/`P` switch zones.
 

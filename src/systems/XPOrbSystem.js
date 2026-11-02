@@ -84,7 +84,7 @@ export class XPOrbSystem {
     });
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.frustumCulled = false;
-    this.mesh.renderOrder = 3;
+    this.mesh.renderOrder = GAME.rendering.layers.orbs;
     this.mesh.visible = false;
     scene.add(this.mesh);
     this.rng = new RNG(combineSeed(1, 'xp'));

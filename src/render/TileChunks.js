@@ -51,7 +51,7 @@ export class TileChunkManager {
       side: THREE.DoubleSide,
     });
     this.group = new THREE.Group();
-    this.group.renderOrder = 0;
+    this.group.renderOrder = GAME.rendering.layers.tiles;
     this.scene.add(this.group);
     this.buildAll();
     this.buildFringe();
@@ -109,7 +109,7 @@ export class TileChunkManager {
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4));
     geometry.setIndex(indices);
     const mesh = new THREE.Mesh(geometry, this.material);
-    mesh.renderOrder = 2.6;
+    mesh.renderOrder = GAME.rendering.layers.fringe;
     mesh.frustumCulled = false;
     this.scene.add(mesh);
     this.fringeMesh = mesh;
@@ -118,21 +118,40 @@ export class TileChunkManager {
   frameFor(x, y, type) {
     const above = this.map.getType(x, y + 1);
     const above2 = this.map.getType(x, y + 2);
-    const solidAbove = above === 1 || above === 4;
-    const solidAbove2 = above2 === 1 || above2 === 4;
+    // Hazard tiles fill a pit visually; treating them as ground above keeps a
+    // grass-top brush from appearing at the bottom of an open shaft.
+    const solidAbove = above === 1 || above === 3 || above === 4;
+    const solidAbove2 = above2 === 1 || above2 === 3 || above2 === 4;
     const width = this.groupWidth;
+    const groundLike = (neighbor) => neighbor === 1 || neighbor === 4 || neighbor === 5;
+    const edgeKind = (base, left, right) => {
+      if (!left && !right) return `${base}Left`;
+      if (!left) return `${base}Left`;
+      if (!right) return `${base}Right`;
+      return base;
+    };
     if (type === 2) {
-      return { frame: this.assets.getTileFrame(this.zoneId, 'top', x % width), color: [1, 1, 1, 1] };
+      const left = this.map.getType(x - 1, y) === 2;
+      const right = this.map.getType(x + 1, y) === 2;
+      const kind = edgeKind('top', left, right);
+      const frame = this.assets.getTileFrame(this.zoneId, kind, x % width);
+      return { frame: frame ?? this.assets.getTileFrame(this.zoneId, 'top', x % width), color: [1, 1, 1, 1] };
     }
+    const leftConnected = groundLike(this.map.getType(x - 1, y));
+    const rightConnected = groundLike(this.map.getType(x + 1, y));
     if (type === 4) {
+      const kind = edgeKind('body', leftConnected, rightConnected);
       return {
-        frame: this.assets.getTileFrame(this.zoneId, solidAbove ? 'body' : 'top', x % width),
+        frame: this.assets.getTileFrame(this.zoneId, kind, x % width)
+          ?? this.assets.getTileFrame(this.zoneId, 'body', x % width),
         color: [1.18, 0.68, 0.62, 1],
       };
     }
     if (type === 5) {
+      const kind = edgeKind('body', leftConnected, rightConnected);
       return {
-        frame: this.assets.getTileFrame(this.zoneId, solidAbove ? 'body' : 'top', (x + 1) % width),
+        frame: this.assets.getTileFrame(this.zoneId, kind, (x + 1) % width)
+          ?? this.assets.getTileFrame(this.zoneId, 'body', (x + 1) % width),
         color: [0.8, 0.72, 0.9, 0.58],
       };
     }
@@ -148,11 +167,13 @@ export class TileChunkManager {
       kind = 'deep';
       index = x % width;
     }
-    const frame = this.assets.getTileFrame(this.zoneId, kind, index);
+    kind = edgeKind(kind, leftConnected, rightConnected);
+    const frame = this.assets.getTileFrame(this.zoneId, kind, index)
+      ?? this.assets.getTileFrame(this.zoneId, kind.replace(/(Left|Right)$/, ''), index);
     let color = [1, 1, 1, 1];
     if (this.zoneId === 'dungeon') {
       const depth = Math.max(0, this.map.surfaceRow - y);
-      const shade = kind === 'top' ? 1 : Math.max(0.14, 0.94 - depth * 0.2);
+      const shade = kind.startsWith('top') ? 1 : Math.max(0.14, 0.94 - depth * 0.2);
       color = [shade, shade * 0.96, shade * 0.88, 1];
     }
     return { frame, color };

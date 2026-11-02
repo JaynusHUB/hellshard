@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GAME } from '../config/game.js';
 
 const PARTICLE_VERTEX = /* glsl */ `
   attribute vec2 iPosition;
@@ -85,7 +86,7 @@ export class ParticleSystem {
     });
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.frustumCulled = false;
-    this.mesh.renderOrder = 4;
+    this.mesh.renderOrder = GAME.rendering.layers.particles;
     this.mesh.visible = false;
     scene.add(this.mesh);
     this.additive = additive;
