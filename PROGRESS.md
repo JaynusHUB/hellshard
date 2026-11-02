@@ -8,7 +8,7 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 ## Verification (final pass)
 
 - `npm run build` - passes after the tile-catalog/map audit (64 modules, no errors; atlases are
-  generated at runtime, JS 851.54 kB / 226.01 kB gzip).
+  generated at runtime, JS 851.54 kB / 225.98 kB gzip).
 - Layout note: hidden breakable/fake-wall chests are registered in the layout grid after the room
   structures are indexed.
 - `npm test` — **34/34 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
@@ -221,6 +221,9 @@ forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRo
   of a shaft.
 - [x] **Explicit layer order:** background, tile, prop, generated, actor, fringe, XP and particle
   orders live in `GAME.rendering.layers`; the renderer no longer relies on scattered magic numbers.
+- [x] **Boot regression fixed:** `TileChunks` used `GAME.rendering.layers` without importing
+  `GAME`, causing a menu-scene `ReferenceError`. The generic boot overlay hid it as an asset error;
+  the config import is restored and `npm run build`/tests pass.
 - [x] **Outdoor composition:** cemetery/church/swamp pits and floating shelves are reduced. Ground
   chest fallbacks keep loot available when a room has no shelf. The forest keeps more platforming.
 - [x] **Source-density decor:** cemetery gains seeded tree/bush backdrops; church gains the supplied

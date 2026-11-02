@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GAME } from '../config/game.js';
 
 const TILE_VERTEX = /* glsl */ `
   attribute vec4 color;
