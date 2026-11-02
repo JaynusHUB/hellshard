@@ -1775,13 +1775,13 @@
     "dungeon": [
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.015,
-        "worldY": 261,
+        "parallax": 0.01,
+        "worldY": 232,
         "mode": "repeat",
         "tint": [
-          0.26,
-          0.26,
-          0.34
+          0.1,
+          0.11,
+          0.16
         ],
         "crop": [
           162,
@@ -1792,13 +1792,30 @@
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.015,
+        "parallax": 0.028,
+        "worldY": 288,
+        "mode": "repeat",
+        "tint": [
+          0.16,
+          0.17,
+          0.24
+        ],
+        "crop": [
+          162,
+          5,
+          128,
+          48
+        ]
+      },
+      {
+        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+        "parallax": 0.045,
         "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.34,
-          0.34,
-          0.43
+          0.28,
+          0.29,
+          0.38
         ],
         "crop": [
           162,
@@ -1809,19 +1826,59 @@
       },
       {
         "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
-        "parallax": 0.055,
+        "parallax": 0.075,
         "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.62,
-          0.6,
-          0.7
+          0.4,
+          0.39,
+          0.48
         ],
         "crop": [
           162,
           128,
           128,
           48
+        ]
+      },
+      {
+        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+        "parallax": 0.9,
+        "worldY": 144,
+        "mode": "single",
+        "single": true,
+        "x": -312,
+        "tint": [
+          0.1,
+          0.11,
+          0.16
+        ],
+        "opacity": 0.82,
+        "crop": [
+          162,
+          5,
+          16,
+          117
+        ]
+      },
+      {
+        "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
+        "parallax": 0.9,
+        "worldY": 144,
+        "mode": "single",
+        "single": true,
+        "x": 312,
+        "tint": [
+          0.1,
+          0.11,
+          0.16
+        ],
+        "opacity": 0.82,
+        "crop": [
+          274,
+          5,
+          16,
+          117
         ]
       }
     ],

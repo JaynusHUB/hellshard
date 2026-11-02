@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildZoneRoute, generateWorld, generateZone, analyzeReachability } from '../src/world/WorldGen.js';
+import { DUNGEON_ROOM_TEMPLATES } from '../src/data/dungeonRooms.js';
 import { ZONE_ORDER } from '../src/data/zones.js';
 
 describe('world generation', () => {
@@ -17,6 +18,19 @@ describe('world generation', () => {
     const a = generateZone(1, 'cemetery');
     const b = generateZone(2, 'cemetery');
     expect(Array.from(a.map.data)).not.toEqual(Array.from(b.map.data));
+  });
+
+  it('selects five of six handcrafted dungeon rooms with four or more set pieces', () => {
+    expect(DUNGEON_ROOM_TEMPLATES.length).toBeGreaterThanOrEqual(6);
+    const dungeon = generateZone(20261102, 'dungeon');
+    expect(dungeon.dungeonRooms).toHaveLength(5);
+    expect(new Set(dungeon.dungeonRooms.map((room) => room.id)).size).toBe(5);
+    const setPieces = new Set(
+      dungeon.setPieces.map((piece) => piece.type).filter((type) => type !== 'collapsed'),
+    );
+    expect(setPieces.size).toBeGreaterThanOrEqual(4);
+    expect(dungeon.platformRuns.length).toBeGreaterThan(0);
+    expect(dungeon.surfaceDecals.length).toBeGreaterThan(0);
   });
 
   it('generates all five zones', () => {

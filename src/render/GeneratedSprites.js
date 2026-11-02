@@ -87,13 +87,27 @@ function drawGate(ctx, x, y, portal = false) {
   ctx.fillStyle = glow;
   ctx.globalAlpha = 0.28;
   ctx.fillRect(x + 9, y + 10, 14, 27);
-  ctx.fillStyle = p.gold;
   ctx.globalAlpha = 1;
-  ctx.fillRect(x + 15, y + 4, 2, 40);
-  ctx.fillRect(x + 10, y + 7, 12, 1);
-  ctx.fillStyle = p.goldHi;
-  ctx.fillRect(x + 15, y + 20, 2, 2);
-  ctx.fillRect(x + 12, y + 32, 8, 1);
+  if (portal) {
+    ctx.fillStyle = p.gold;
+    ctx.fillRect(x + 15, y + 4, 2, 40);
+    ctx.fillRect(x + 10, y + 7, 12, 1);
+    ctx.fillStyle = p.goldHi;
+    ctx.fillRect(x + 15, y + 20, 2, 2);
+    ctx.fillRect(x + 12, y + 32, 8, 1);
+  } else {
+    ctx.fillStyle = p.iron;
+    for (const bx of [9, 13, 17, 21, 25]) {
+      ctx.fillRect(x + bx, y + 9, 1, 29);
+    }
+    ctx.fillRect(x + 8, y + 18, 18, 1);
+    ctx.fillRect(x + 8, y + 30, 18, 1);
+    ctx.fillStyle = p.gold;
+    ctx.fillRect(x + 16, y + 9, 1, 29);
+    ctx.fillStyle = p.goldHi;
+    ctx.fillRect(x + 16, y + 20, 1, 1);
+    ctx.fillRect(x + 16, y + 33, 1, 1);
+  }
 }
 
 function drawBrazier(ctx, x, y) {

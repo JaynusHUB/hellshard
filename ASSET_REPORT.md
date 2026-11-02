@@ -222,3 +222,35 @@ reskins.
   the column above them. Chests require solid or one-way support directly beneath their tile.
   Dungeon statues skip pits. One-way platforms shorter than three tiles are treated as invalid
   unsupported ledges by `validate:alignment`.
+
+## 12. Hollow Keep map dressing pass (2026-11-02)
+
+- **Room templates:** `src/data/dungeonRooms.js` defines six hand-authored Hollow Keep room layouts:
+  torch procession, cellblock, throne dais, chain-pit hall, treasury and collapsed steps. Five are
+  selected and ordered per seed. They add one-tile steps, raised podiums, pits, one-way ledges, chests
+  and a dais altar while keeping the entry/exit columns free.
+- **Floor depth:** dungeon body tiles now darken by distance below the surface row (about 26% at the
+  first body row down to 14% after four rows). The lower half of the screen is no longer the same
+  flat bright brick value as the walking surface.
+- **Surface decals:** moss, puddle, crack, rubble and broken-brick marks are seeded along the top
+  floor row. They are composed from slices of the supplied dungeon floor/wall crops, not separate
+  painted assets, and do not affect collision.
+- **Depth layers:** the dungeon background now uses six manifest layers: far wall, upper stone
+  frieze, mid wall, base panel, and two screen-edge foreground pillar silhouettes. Parallax and tint
+  separate the depths; the edge pillars stay outside the player's normal path.
+- **Set pieces:** cellblock, throne/altar, chain-pit, torch corridor and treasury arrangements are
+  used across the five rooms. Statues are checked against platform/chest/gate occupancy and are only
+  placed in open wall space. Torches emit the existing additive ember particles with a slow flicker;
+  the dungeon uses a slightly stronger vignette and slow floating dust.
+- **Platform dressing:** every static one-way ledge now gets a two-row body in its biome material,
+  end supports and forest/swamp log or root underlays. Dungeon ledges use brick body rows plus end
+  consoles; moving platforms receive the same underside treatment.
+- **Doors:** the generated gate keeps its generated atlas frame but is now surrounded by a stone arch
+  assembled from the active zone's tile body frames. Dungeon gates draw an iron bar grid inside the
+  opening. Approaching a door shows the existing `E` prompt with the target zone name; entering
+  animates the gate upward/outward before the existing fade transition.
+- **Still missing from the supplied art:** no dedicated dungeon arch, chain, column, cell-bar,
+  treasure-chest, altar or door sprite exists. The cellblock and chain-pit set pieces therefore use
+  the available wall panels/statues/torches and generated door/chest/altar icons. No new raster
+  asset was added to `public/assets`; the missing pieces are recorded here instead of being painted
+  into the packs.

@@ -163,6 +163,7 @@ export class FeedbackLayer {
     `;
     const wash = document.getElementById('zone-wash');
     if (wash) wash.style.background = p.fog;
+    this.setVignetteOpacity(zone.id === 'dungeon' ? 0.92 : 0.95);
     this.stage.classList.toggle('is-critical', false);
   }
 

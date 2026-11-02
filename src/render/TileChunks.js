@@ -25,7 +25,10 @@ const TILE_FRAGMENT = /* glsl */ `
 `;
 
 export class TileChunkManager {
-  constructor({ scene, map, atlas, assets, zoneId, chunkTiles = 16, tileSize = 16, fringeHeight = 0 }) {
+  constructor({
+    scene, map, atlas, assets, zoneId, chunkTiles = 16, tileSize = 16,
+    fringeHeight = 0, surfaceInset = 0,
+  }) {
     this.scene = scene;
     this.map = map;
     this.atlas = atlas;
@@ -34,6 +37,7 @@ export class TileChunkManager {
     this.chunkTiles = chunkTiles;
     this.tileSize = tileSize;
     this.fringeHeight = Math.max(0, Math.min(5, Number(fringeHeight) || 0));
+    this.surfaceInset = Math.max(0, Number(surfaceInset) || 0);
     this.fringeMesh = null;
     this.chunks = new Map();
     this.groupWidth = assets.getGroupWidth(zoneId);
@@ -73,18 +77,20 @@ export class TileChunkManager {
         if (type !== 2 && (above === 1 || above === 4)) continue;
         const frame = this.assets.getTileFrame(this.zoneId, 'top', x % width);
         if (!frame) continue;
+        const inset = Math.min(this.surfaceInset, Math.max(0, frame.h - 1));
+        const visibleTop = (y + 1) * this.tileSize - inset;
+        const fh = Math.min(this.fringeHeight, frame.h - inset, this.tileSize);
+        if (fh <= 0) continue;
         const wx = x * this.tileSize;
-        const top = (y + 1) * this.tileSize;
-        const fh = Math.min(this.fringeHeight, frame.h, this.tileSize);
-        const bottom = top - fh;
-        const vTop = frame.v1;
-        const vBottom = frame.v1 - (frame.v1 - frame.v0) * (fh / frame.h);
+        const bottom = visibleTop - fh;
+        const vTop = frame.v1 - (frame.v1 - frame.v0) * (inset / frame.h);
+        const vBottom = frame.v1 - (frame.v1 - frame.v0) * ((inset + fh) / frame.h);
         const base = positions.length / 3;
         positions.push(
           wx, bottom, 0,
           wx + this.tileSize, bottom, 0,
-          wx + this.tileSize, top, 0,
-          wx, top, 0,
+          wx + this.tileSize, visibleTop, 0,
+          wx, visibleTop, 0,
         );
         uvs.push(
           frame.u0, vBottom,
@@ -145,8 +151,9 @@ export class TileChunkManager {
     const frame = this.assets.getTileFrame(this.zoneId, kind, index);
     let color = [1, 1, 1, 1];
     if (this.zoneId === 'dungeon') {
-      if (kind === 'body') color = [0.92, 0.9, 0.9, 1];
-      else if (kind === 'deep') color = [0.68, 0.66, 0.7, 1];
+      const depth = Math.max(0, this.map.surfaceRow - y);
+      const shade = kind === 'top' ? 1 : Math.max(0.14, 0.94 - depth * 0.2);
+      color = [shade, shade * 0.96, shade * 0.88, 1];
     }
     return { frame, color };
   }

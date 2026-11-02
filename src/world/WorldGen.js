@@ -1,6 +1,7 @@
 import { GAME, PHYSICS_BOUNDS } from '../config/game.js';
 import { RNG, combineSeed } from '../core/RNG.js';
 import { ZONES, ZONE_ORDER } from '../data/zones.js';
+import { DUNGEON_ROOM_TEMPLATES } from '../data/dungeonRooms.js';
 import { TILE, Tilemap } from './Tilemap.js';
 import { LayoutGrid } from './LayoutGrid.js';
 import manifest from '../../ASSET_MANIFEST.json' with { type: 'json' };
@@ -134,7 +135,11 @@ function addChest(world, id, tileX, tileY, secret = false) {
     if (world.map?.getType(tileX + ox, tileY + 1) !== TILE.EMPTY) return;
   }
   const x = tileX * T + T / 2;
-  const y = tileY * T - (world.surfaceOffset ?? 0);
+  const supportRow = tileY - 1;
+  const flushOffset = supportRow === world.map.surfaceRow || supportType === TILE.ONE_WAY
+    ? (world.surfaceOffset ?? 0)
+    : 0;
+  const y = tileY * T - flushOffset;
   const rect = { x: x - 9, y, w: 18, h: 16 };
   if (world.layout?.overlaps(rect, (entry) => (
     entry.kind === 'gate' || entry.kind === 'chest' || entry.kind === 'chestClear' || entry.kind === 'structure'
@@ -151,11 +156,74 @@ function addChest(world, id, tileX, tileY, secret = false) {
   world.layout?.mark({ x: x - 12, y, w: 24, h: T * 2 }, 'chestClear', `${id}:clear`);
 }
 
+function levelTopY(world, level) {
+  if (level <= 0) return world.surface;
+  return (FLOOR_ROW + 1 + level) * T;
+}
+
+function buildDungeonRoom(zone, roomIndex, data, rng, world, template) {
+  const start = roomIndex * ROOM_W;
+  const surface = world.surface;
+  for (const pit of template.pits) {
+    carvePit(data, start + pit.x, pit.w);
+    world.hazards.push({
+      x: (start + pit.x) * T,
+      y: (FLOOR_ROW - 1) * T,
+      w: pit.w * T,
+      h: T * 2,
+      kind: 'spikes',
+    });
+  }
+  for (const step of template.steps) {
+    setSolidRect(data, start + step.x, FLOOR_ROW + 1, step.w, step.h);
+  }
+  for (const ledge of template.ledges) {
+    setPlatform(data, start + ledge.x, FLOOR_ROW + ledge.y, ledge.w);
+  }
+  template.chests.forEach((chest, index) => {
+    addChest(
+      world,
+      `chest-dungeon-${roomIndex}-${index}`,
+      start + chest.x,
+      FLOOR_ROW + 1 + chest.level,
+    );
+  });
+  if (template.altar) {
+    world.interactions.push({
+      id: `altar-dungeon-${roomIndex}`,
+      type: 'altar',
+      x: (start + template.altar.x) * T,
+      y: levelTopY(world, template.altar.level),
+      used: false,
+    });
+  }
+  if (roomIndex === zone.challengeRoom) {
+    world.challenge = {
+      room: roomIndex,
+      x: (start + 16) * T,
+      y: surface,
+      cleared: false,
+    };
+  }
+  world.dungeonRooms[roomIndex] = {
+    id: template.id,
+    setPiece: template.setPiece,
+    start,
+    chests: template.chests.length,
+  };
+  world.checkpoints.push({ x: (start + 3) * T, y: surface, room: roomIndex });
+}
+
 function buildRoom(zone, roomIndex, data, rng, world) {
   const start = roomIndex * ROOM_W;
   const surface = world.surface;
   const isBossRoom = roomIndex === BOSS_ROOM;
   const isChallengeRoom = roomIndex === zone.challengeRoom;
+
+  if (zone.id === 'dungeon') {
+    buildDungeonRoom(zone, roomIndex, data, rng, world, world.dungeonTemplateOrder[roomIndex]);
+    return;
+  }
 
   if (isBossRoom && zone.boss) {
     // A clean, wide arena with no pits; telegraph space is sacred.
@@ -322,41 +390,113 @@ function addDecor(world, zone, rng, start, surface) {
   }
 }
 
-function addDungeonProps(world) {
-  const place = (prop, tileX, yOffset, flip) => {
+function addDungeonSetPieces(world) {
+  const place = (prop, tileX, level, flip, options = {}) => {
     const x = tileX * T + T / 2;
-    const rect = propRect('dungeon', prop, x, world.surface, yOffset);
-    const def = manifest.props.dungeon.frames[prop];
-    const large = Number(def?.h ?? 0) > GAME.player.height * 2;
+    const y = level > 0 ? levelTopY(world, level) : world.surface;
+    const yOffset = options.yOffset ?? 0;
+    const rect = propRect('dungeon', prop, x, y, yOffset);
     if (world.layout?.overlaps(rect, (entry) => (
-      large
-        ? ['platform', 'movingPlatform', 'chest', 'chestClear', 'gate', 'prop', 'structure'].includes(entry.kind)
-        : true
-    ))) return;
-    if (yOffset === 0 && !world.map?.isSolidAt(tileX, FLOOR_ROW)) return;
+      ['platform', 'movingPlatform', 'chest', 'chestClear', 'gate', 'prop', 'structure'].includes(entry.kind)
+    ))) return false;
+    if (yOffset === 0 && !world.map?.isSolidAt(tileX, FLOOR_ROW + level)) return false;
     world.decorations.push({
       prop,
       x,
-      y: world.surface,
+      y,
       yOffset,
       flip,
       layer: 'back',
       scale: 1,
-      alpha: 1,
+      alpha: options.alpha ?? 1,
+      tint: options.tint ?? null,
+      glow: Boolean(options.glow),
     });
-    world.layout?.mark(rect, 'prop', `dungeon:${prop}:${tileX}`, { prop });
+    world.layout?.mark(rect, 'prop', `dungeon:${prop}:${tileX}:${level}`, { prop });
+    return true;
   };
 
   for (let room = 0; room < ROOMS; room++) {
     const start = room * ROOM_W;
-    for (const tileX of [start + 5, start + 29]) {
-      place('torch0', tileX, 72, tileX >= start + 17);
+    const template = world.dungeonTemplateOrder[room];
+    for (const panel of template.panels) {
+      const x = (start + panel) * T;
+      for (const level of [0, 3]) {
+        world.backdrops.push({
+          prop: 'wallLarge',
+          x,
+          y: world.surface + level * T,
+          yOffset: 0,
+          layer: 'back',
+          alpha: 0.64,
+          tint: [0.24, 0.26, 0.34],
+        });
+      }
     }
-    place(room % 2 === 0 ? 'knight' : 'robed', start + 12, 0, room % 3 === 0);
-    if (room === 0 || room === 4) {
-      place(room === 0 ? 'robed' : 'knight', start + 23, 0, room !== 0);
+    for (const tileX of template.torches) {
+      place('torch0', start + tileX, 0, tileX >= 17, {
+        yOffset: 72,
+        tint: [1.18, 1.12, 1.02],
+        glow: true,
+      });
+    }
+    for (const statue of template.statues) {
+      place(statue.prop, start + statue.x, statue.level, (statue.x + room) % 2 === 0, {
+        tint: [1.08, 1.08, 1.14],
+      });
+    }
+    world.setPieces.push({
+      room,
+      type: template.setPiece,
+      x: (start + 16) * T,
+    });
+  }
+}
+
+function addDungeonSurfaceDecals(world, seed) {
+  const rng = new RNG(combineSeed(seed, 'dungeon-decals'));
+  const kinds = ['moss', 'puddle', 'crack', 'rubble', 'broken'];
+  for (let room = 0; room < ROOMS; room++) {
+    const start = room * ROOM_W;
+    let placedDecals = 0;
+    for (let x = start + 5; x < start + 29; x++) {
+      if (world.map.getType(x, FLOOR_ROW) !== TILE.SOLID) continue;
+      if (world.map.getType(x, FLOOR_ROW + 1) !== TILE.EMPTY) continue;
+      if (!rng.chance(0.24)) continue;
+      if (world.transitions.some((transition) => Math.abs(transition.x - x * T) < 28)) continue;
+      if (world.interactions.some((interaction) => Math.abs(interaction.x - x * T) < 24)) continue;
+      world.surfaceDecals.push({
+        kind: kinds[(room * 3 + placedDecals) % kinds.length],
+        x: x * T + T / 2,
+        y: world.paintedSurface,
+        variant: rng.int(0, 3),
+        flip: rng.chance(0.5),
+        alpha: 0.24 + rng.float(0, 0.2),
+      });
+      placedDecals++;
     }
   }
+}
+
+function collectPlatformRuns(world) {
+  const runs = [];
+  for (let y = 0; y < world.map.height; y++) {
+    let start = -1;
+    for (let x = 0; x <= world.map.width; x++) {
+      const oneWay = x < world.map.width && world.map.getType(x, y) === TILE.ONE_WAY;
+      if (oneWay && start < 0) start = x;
+      if (!oneWay && start >= 0) {
+        runs.push({
+          x: start * T,
+          y: (y + 1) * T - world.surfaceOffset,
+          row: y,
+          w: (x - start) * T,
+        });
+        start = -1;
+      }
+    }
+  }
+  return runs;
 }
 
 function indexLayout(world) {
@@ -477,7 +617,8 @@ export function generateZone(seed, zoneId, options = {}) {
   const data = new Uint8Array(WIDTH * ROWS);
   fillGround(data);
   const footSink = Number(GAME.footSink[zoneId] ?? 0);
-  const surfaceOffset = Number(manifest.tiles[zoneId]?.surfaceOffset ?? 0) + footSink;
+  const paintedOffset = Number(manifest.tiles[zoneId]?.surfaceOffset ?? 0);
+  const surfaceOffset = paintedOffset + footSink;
   const surface = SURFACE - surfaceOffset;
   const worldRng = new RNG(combineSeed(seed, 'zone', zoneId));
   const world = {
@@ -488,6 +629,8 @@ export function generateZone(seed, zoneId, options = {}) {
     rows: ROWS,
     surface,
     surfaceOffset,
+    paintedOffset,
+    paintedSurface: SURFACE - paintedOffset,
     footSink,
     fringeHeight: Number(GAME.foregroundFringe[zoneId] ?? 0),
     floorRow: FLOOR_ROW,
@@ -497,6 +640,12 @@ export function generateZone(seed, zoneId, options = {}) {
     transitions: [],
     interactions: [],
     decorations: [],
+    backdrops: [],
+    surfaceDecals: [],
+    setPieces: [],
+    platformRuns: [],
+    dungeonRooms: [],
+    dungeonTemplateOrder: [],
     hazards: [],
     secrets: [],
     propsAnimated: [],
@@ -519,6 +668,12 @@ export function generateZone(seed, zoneId, options = {}) {
   world.map = map;
   world.layout = new LayoutGrid({ width: WIDTH, height: ROWS, tileSize: T });
   world.route = route;
+  if (zone.id === 'dungeon') {
+    const templateRng = new RNG(combineSeed(seed, 'dungeon-room-order'));
+    world.dungeonTemplateOrder = templateRng
+      .shuffle(DUNGEON_ROOM_TEMPLATES)
+      .slice(0, ROOMS);
+  }
   // Dungeon and forest use a centered entry; all other zones start at the left.
   world.spawn = zone.id === 'dungeon' || zone.id === 'forest'
     ? { x: 10 * T, y: surface }
@@ -537,7 +692,11 @@ export function generateZone(seed, zoneId, options = {}) {
   for (let room = 0; room < ROOMS; room++) {
     addDecor(world, zone, new RNG(combineSeed(seed, 'decor', zoneId, room)), room * ROOM_W, surface);
   }
-  if (zone.id === 'dungeon') addDungeonProps(world);
+  if (zone.id === 'dungeon') {
+    addDungeonSetPieces(world);
+    addDungeonSurfaceDecals(world, seed);
+  }
+  world.platformRuns = collectPlatformRuns(world);
   world.reachability = analyzeReachability(world);
   return world;
 }

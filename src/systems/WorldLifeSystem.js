@@ -46,9 +46,9 @@ export class WorldLifeSystem {
       vy = 5;
       life = 3.4;
     } else if (game.activeZoneId === 'dungeon') {
-      color = COLORS.stone;
-      vy = -22;
-      life = 1.4;
+      color = Math.random() < 0.35 ? COLORS.ember : COLORS.bone;
+      vy = 3 + Math.random() * 5;
+      life = 4.5;
     }
     game.glowParticles.emit({
       x,

@@ -81,7 +81,10 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
   one texture atlas per art family, instanced sprite batches and merged tile chunks. F3 shows a
   collision overlay with the green physics floor, magenta alpha-painted surface and yellow
   sprite-anchor marker. Physics and props use per-zone `surfaceOffset` and `footSink` values measured
-  from tile alpha; a foreground 4-px grass strip is drawn in front of cemetery/swamp/forest actors.
+  from tile alpha; a foreground 5-px grass strip is drawn in front of cemetery/swamp/forest actors.
+- **Hollow Keep dressing:** six hand-authored dungeon room templates, seeded floor decals, a
+  depth-graded brick floor, six parallax background layers, torch glow, platform underbodies and
+  tile-framed iron gates. Missing dedicated dungeon art is recorded in `ASSET_REPORT.md`.
 - **Layout / inspection:** occupancy-grid placement prevents props, platforms, chests and gates from
   overlapping. `npm run validate:layout` checks 100 seeds × 5 zones for overlaps, floating chests and
   unsupported single tiles. Dev-only `?zone`, `?seed`, `?peaceful`, `?fly` and `?debug=gallery`

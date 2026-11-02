@@ -4,6 +4,21 @@ import { SpriteBatch } from './SpriteBatch.js';
 import { EntityRenderer } from './EntityRenderer.js';
 import { createGeneratedSprites, createGeneratedBatch } from './GeneratedSprites.js';
 
+function sliceFrame(frame, x, y, w, h) {
+  if (!frame) return null;
+  const uScale = (frame.u1 - frame.u0) / frame.w;
+  const vScale = (frame.v1 - frame.v0) / frame.h;
+  return {
+    ...frame,
+    u0: frame.u0 + x * uScale,
+    u1: frame.u0 + (x + w) * uScale,
+    v1: frame.v1 - y * vScale,
+    v0: frame.v1 - (y + h) * vScale,
+    w,
+    h,
+  };
+}
+
 export class WorldRenderer {
   constructor(game) {
     this.game = game;
@@ -49,7 +64,12 @@ export class WorldRenderer {
     const propBatch = this.batchEntries[game.activeWorld.atlas]?.prop;
     if (propBatch) {
       propBatch.begin();
+      this.drawSurfaceDecals(propBatch);
+      this.drawBackdrops(propBatch);
+      this.drawInteractionBases(propBatch);
       this.drawDecorations(propBatch);
+      this.drawPlatformBodies(propBatch);
+      this.drawGateFrames(propBatch);
       if (game.activeZoneId === 'dungeon') this.drawDungeonPlatforms(propBatch);
       propBatch.end();
     }
@@ -60,6 +80,74 @@ export class WorldRenderer {
       this.drawHazards(this.generatedBatch);
       this.generatedBatch.end();
       this.entityRenderer.render(this.batchEntries, alpha);
+    }
+  }
+
+  drawSurfaceDecals(batch) {
+    const game = this.game;
+    if (game.activeZoneId !== 'dungeon' || !game.activeWorld.surfaceDecals?.length) return;
+    const wall = this.assets.getPropFrame('dungeon', 'wallLarge');
+    for (const decal of game.activeWorld.surfaceDecals) {
+      const tile = this.assets.getTileFrame('dungeon', 'top', decal.variant);
+      let frame = null;
+      let tint = [1, 1, 1];
+      if (decal.kind === 'moss') {
+        frame = sliceFrame(tile, 0, 10, 16, 6);
+        tint = [0.32, 0.46, 0.3];
+      } else if (decal.kind === 'puddle') {
+        frame = sliceFrame(tile, 0, 12, 16, 4);
+        tint = [0.28, 0.4, 0.52];
+      } else if (decal.kind === 'crack') {
+        frame = sliceFrame(wall, 12, 28, 16, 2);
+        tint = [0.05, 0.04, 0.04];
+      } else if (decal.kind === 'rubble') {
+        frame = sliceFrame(tile, 4, 12, 8, 4);
+        tint = [0.5, 0.48, 0.45];
+      } else {
+        frame = sliceFrame(tile, 0, 10, 16, 5);
+        tint = [0.34, 0.33, 0.32];
+      }
+      if (!frame) continue;
+      batch.draw(frame, Math.round(decal.x), Math.round(decal.y), {
+        anchorY: 0,
+        flip: decal.flip,
+        tint,
+        alpha: decal.alpha,
+      });
+    }
+  }
+
+  drawBackdrops(batch) {
+    const game = this.game;
+    if (game.activeZoneId !== 'dungeon' || !game.activeWorld.backdrops?.length) return;
+    for (const backdrop of game.activeWorld.backdrops) {
+      const frame = this.assets.getPropFrame('dungeon', backdrop.prop);
+      if (!frame) continue;
+      batch.draw(frame, Math.round(backdrop.x), Math.round(backdrop.y), {
+        anchorY: frame.anchorY ?? 1,
+        tint: backdrop.tint ?? [0.35, 0.36, 0.44],
+        alpha: backdrop.alpha ?? 0.7,
+        flip: backdrop.flip,
+      });
+    }
+  }
+
+  drawInteractionBases(batch) {
+    const game = this.game;
+    const zoneId = game.activeZoneId;
+    const baseFrame = sliceFrame(
+      this.assets.getTileFrame(zoneId, 'body', 0),
+      0, 0, 16, 4,
+    );
+    if (!baseFrame) return;
+    const tint = zoneId === 'dungeon' ? [0.2, 0.2, 0.24] : [0.3, 0.27, 0.22];
+    for (const interaction of game.activeWorld.interactions) {
+      if (interaction.type !== 'chest' && interaction.type !== 'altar') continue;
+      batch.draw(baseFrame, Math.round(interaction.x), Math.round(interaction.y + 1), {
+        anchorY: 0,
+        tint,
+        alpha: 0.62,
+      });
     }
   }
 
@@ -75,12 +163,138 @@ export class WorldRenderer {
         frame = this.assets.getFrame('dungeon', `prop:dungeon:torch${torchIndex}`) ?? frame;
       }
       if (!frame) continue;
+      const drawTint = decoration.tint
+        ? [0, 1, 2].map((i) => decoration.tint[i] * zoneTint[i])
+        : tint;
       batch.draw(frame, Math.round(decoration.x), Math.round(decoration.y + (decoration.yOffset ?? 0)), {
         anchorY: frame.anchorY ?? 1,
         flip: decoration.flip,
-        tint,
-        alpha: isDungeon ? 1 : (decoration.alpha ?? 0.8),
+        tint: drawTint,
+        alpha: isDungeon ? (decoration.alpha ?? 1) : (decoration.alpha ?? 0.8),
       });
+      if (isDungeon && decoration.glow && Math.random() < 0.035) {
+        const flicker = 0.7 + Math.sin(game.time * 18 + decoration.x) * 0.3;
+        game.glowParticles.emit({
+          x: decoration.x + (Math.random() - 0.5) * 5,
+          y: decoration.y + (decoration.yOffset ?? 0) + 42,
+          vx: 0,
+          vy: 5,
+          gravity: -2,
+          drag: 1,
+          life: 0.55,
+          sizeX: 3,
+          sizeY: 3,
+          color: COLORS.ember,
+          alpha: 0.16 * flicker,
+        });
+      }
+    }
+  }
+
+  drawPlatformBodies(batch) {
+    const game = this.game;
+    const zoneId = game.activeZoneId;
+    const runs = game.activeWorld.platformRuns;
+    if (!runs?.length) return;
+    const width = this.assets.getGroupWidth(zoneId);
+    const bodyFrames = Array.from({ length: width }, (_, index) => (
+      this.assets.getTileFrame(zoneId, 'body', index)
+    )).filter(Boolean);
+    if (!bodyFrames.length) return;
+    const tints = {
+      cemetery: [0.62, 0.58, 0.46],
+      church: [0.62, 0.6, 0.72],
+      swamp: [0.38, 0.5, 0.35],
+      dungeon: [0.52, 0.51, 0.58],
+      forest: [0.45, 0.52, 0.44],
+    };
+    const bodyTint = tints[zoneId] ?? [1, 1, 1];
+    const supportTint = bodyTint.map((v) => v * 0.66);
+    const logFrame = zoneId === 'forest' ? this.assets.getPropFrame('forest', 'log') : null;
+    const rootFrame = zoneId === 'swamp' ? this.assets.getPropFrame('swamp', 'root') : null;
+    for (const run of runs) {
+      const below = run.row * GAME.tile;
+      for (let row = 0; row < 2; row++) {
+        for (let x = run.x; x < run.x + run.w; x += GAME.tile) {
+          const frame = bodyFrames[Math.floor(x / GAME.tile) % bodyFrames.length];
+          batch.draw(frame, x + GAME.tile / 2, below - row * GAME.tile, {
+            anchorY: 0,
+            tint: row === 0 ? bodyTint : supportTint,
+          });
+        }
+      }
+      const ends = [run.x + GAME.tile / 2, run.x + run.w - GAME.tile / 2];
+      const supportDepth = zoneId === 'dungeon' ? 2 : 1;
+      for (const end of ends) {
+        for (let depth = 0; depth < supportDepth; depth++) {
+          const frame = bodyFrames[(depth + 1) % bodyFrames.length];
+          batch.draw(frame, end, below - (2 + depth) * GAME.tile, {
+            anchorY: 0,
+            tint: supportTint,
+          });
+        }
+      }
+      if (logFrame && run.w >= GAME.tile * 3) {
+        batch.draw(logFrame, run.x + run.w / 2, below - 30, {
+          anchorY: 0,
+          tint: [0.34, 0.42, 0.32],
+          alpha: 0.9,
+        });
+      } else if (rootFrame && run.w >= GAME.tile * 3) {
+        batch.draw(rootFrame, run.x + run.w / 2, below - 26, {
+          anchorY: 0,
+          tint: [0.32, 0.43, 0.3],
+          alpha: 0.9,
+        });
+      }
+    }
+  }
+
+  drawGateFrames(batch) {
+    const game = this.game;
+    const zoneId = game.activeZoneId;
+    const width = this.assets.getGroupWidth(zoneId);
+    const frames = Array.from({ length: width }, (_, index) => (
+      this.assets.getTileFrame(zoneId, 'body', index)
+    )).filter(Boolean);
+    if (!frames.length) return;
+    const stoneTint = zoneId === 'dungeon'
+      ? [0.48, 0.49, 0.58]
+      : zoneId === 'church'
+        ? [0.55, 0.5, 0.7]
+        : [0.38, 0.35, 0.32];
+    const drawFrame = (x, y, index = 0) => {
+      const frame = frames[index % frames.length];
+      batch.draw(frame, Math.round(x), Math.round(y), {
+        anchorY: 1,
+        tint: stoneTint,
+      });
+    };
+    for (const transition of game.activeWorld.transitions) {
+      const baseY = transition.y + 1;
+      const x = transition.x;
+      for (const dx of [-24, 24]) {
+        drawFrame(x + dx, baseY + 16, 0);
+        drawFrame(x + dx, baseY + 32, 1);
+        drawFrame(x + dx, baseY + 48, 2);
+      }
+      drawFrame(x - 16, baseY + 48, 3);
+      drawFrame(x + 16, baseY + 48, 3);
+      drawFrame(x, baseY + 48, 2);
+      drawFrame(x, baseY + 64, 0);
+    }
+    if (game.activeWorld.finalGate) {
+      const gate = game.activeWorld.finalGate;
+      const baseY = gate.y + 1;
+      for (const dx of [-28, 28]) {
+        drawFrame(gate.x + dx, baseY + 16, 0);
+        drawFrame(gate.x + dx, baseY + 32, 1);
+        drawFrame(gate.x + dx, baseY + 48, 2);
+      }
+      drawFrame(gate.x - 16, baseY + 48, 3);
+      drawFrame(gate.x + 16, baseY + 48, 3);
+      drawFrame(gate.x, baseY + 48, 2);
+      drawFrame(gate.x, baseY + 64, 0);
     }
   }
 
@@ -114,11 +328,30 @@ export class WorldRenderer {
       const frame = transition.type === 'portal' ? frames.portal : frames.gate;
       if (!frame) continue;
       const locked = transition.requiresBoss && !game.zoneStates[game.activeZoneId]?.bossDefeated;
-      batch.draw(frame, Math.round(transition.x), Math.round(transition.y + 1), {
+      const opening = game.transition?.gateId === transition.id
+        ? Math.max(0, Math.min(1, 1 - game.transition.timer / (game.transition.duration || 0.7)))
+        : 0;
+      const openTint = opening > 0
+        ? [1.2 + opening * 0.3, 1 + opening * 0.2, 0.68]
+        : tintFor([205, 180, 140]);
+      batch.draw(frame, Math.round(transition.x), Math.round(transition.y + 1 + opening * 7), {
         anchorY: frame.anchorY ?? 1,
-        tint: locked ? [0.8, 0.42, 0.4] : tintFor([205, 180, 140]),
-        alpha: 0.85,
+        tint: locked ? [0.8, 0.42, 0.4] : openTint,
+        alpha: 0.85 - opening * 0.45,
       });
+      if (opening > 0 && Math.random() < 0.35) {
+        game.glowParticles.emit({
+          x: transition.x + (Math.random() - 0.5) * 24,
+          y: transition.y + 8 + Math.random() * 40,
+          vx: 0,
+          vy: 12,
+          life: 0.55,
+          sizeX: 2,
+          sizeY: 2,
+          color: COLORS.gold,
+          alpha: 0.4 * opening,
+        });
+      }
     }
     if (game.activeWorld.finalGate) {
       const gate = game.activeWorld.finalGate;
@@ -176,12 +409,32 @@ export class WorldRenderer {
       this.assets.getTileFrame('dungeon', 'top', 2),
     ].filter(Boolean);
     if (frames.length < 3) return;
+    const bodyFrames = [0, 1, 2].map((index) => (
+      this.assets.getTileFrame('dungeon', 'body', index)
+    )).filter(Boolean);
     for (const platform of platforms) {
       for (let i = 0; i < 3; i++) {
         batch.draw(frames[i], Math.round(platform.x - 16 + i * 16), Math.round(platform.y), {
           anchorY: 0,
           alpha: 1,
         });
+      }
+      for (let i = 0; i < 3; i++) {
+        const frame = bodyFrames[i % bodyFrames.length];
+        if (!frame) continue;
+        batch.draw(frame, Math.round(platform.x - 16 + i * 16), Math.round(platform.y - 16), {
+          anchorY: 0,
+          tint: [0.5, 0.49, 0.56],
+        });
+      }
+      for (const end of [platform.x - 8, platform.x + 8]) {
+        const frame = bodyFrames[0];
+        if (frame) {
+          batch.draw(frame, Math.round(end), Math.round(platform.y - 32), {
+            anchorY: 0,
+            tint: [0.38, 0.37, 0.43],
+          });
+        }
       }
     }
   }
@@ -199,6 +452,11 @@ export class WorldRenderer {
         ? [0.72, 0.75, 0.8]
         : [1, 0.96, 0.86];
     for (const platform of platforms) {
+      batch.draw(frame, Math.round(platform.x), Math.round(platform.y - 6), {
+        anchorY: 0,
+        tint: tint.map((value) => value * 0.52),
+        alpha: 0.82,
+      });
       batch.draw(frame, Math.round(platform.x), Math.round(platform.y), {
         anchorY: 0,
         tint,

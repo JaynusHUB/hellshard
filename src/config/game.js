@@ -11,7 +11,9 @@ export const GAME = {
     lookAhead: 42,
     horizontalSmooth: 9,
     verticalSmooth: 7,
-    offsetY: 24,
+    // Camera sits above the actor so the ground line lands near 70% of the
+    // 360px viewport, leaving room for background depth and vault work.
+    offsetY: 72,
     shakeDecay: 8.5,
     shakeMax: 7,
   },
@@ -153,18 +155,18 @@ export const GAME = {
     galleryHeight: 32,
   },
   footSink: {
-    cemetery: 3,
+    cemetery: 5,
     church: 0,
-    swamp: 3,
+    swamp: 5,
     dungeon: 1,
-    forest: 3,
+    forest: 5,
   },
   foregroundFringe: {
-    cemetery: 4,
+    cemetery: 5,
     church: 0,
-    swamp: 4,
+    swamp: 5,
     dungeon: 0,
-    forest: 4,
+    forest: 5,
   },
 };
 

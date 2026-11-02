@@ -98,7 +98,7 @@ export class InteractionSystem {
         game.audio.play('empty');
         return;
       }
-      this.startTransition(interaction.target);
+      this.startTransition(interaction.target, interaction.id);
     }
   }
 
@@ -158,11 +158,11 @@ export class InteractionSystem {
     if (reward.type === 'upgrade') game.ui?.toast(reward.data.nameKey, {}, { icon: reward.data.icon });
   }
 
-  startTransition(targetZoneId) {
+  startTransition(targetZoneId, gateId = null) {
     const game = this.game;
     if (game.state !== 'playing') return;
     game.state = 'transition';
-    game.transition = { target: targetZoneId, timer: 0.42 };
+    game.transition = { target: targetZoneId, gateId, timer: 0.7, duration: 0.7 };
     game.ui?.clearToasts?.();
     game.ui?.setFade(true);
     game.audio.play('gate');

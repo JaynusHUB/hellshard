@@ -104,6 +104,15 @@ index.html
   footSink and prop support.
 - `LayoutGrid` records every prop/platform/chest/gate footprint. Decorations and chests are shifted or
   omitted on collision; `scripts/validate-layout.js` checks 100 seeds × 5 zones.
+- Hollow Keep uses six hand-authored room templates in `src/data/dungeonRooms.js`; five are selected
+  and ordered per seed. Steps, podiums, pits, ledges and set pieces are generated as data, then the
+  occupancy grid verifies every chest and statue.
+- Dungeon rendering uses a depth-graded brick floor, atlas-crop surface decals, six parallax layers
+  (including screen-edge foreground pillars) and torch ember particles. Static and moving platforms
+  receive underbodies/supports from their active biome tile family; gates get a stepped tile arch,
+  an iron portcullis and a short lift animation before the fade.
+- `GAME.camera.offsetY` places the ground line near 70% of the viewport so background vault layers
+  remain visible without covering the player.
 - Dev-only queries (`import.meta.env.DEV`) set zone/seed/peaceful/fly/gallery inspection modes; the
   gallery auto-scrolls a zone and `N`/`P` switch zones.
 

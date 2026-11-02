@@ -83,6 +83,7 @@ export class ZoneSceneManager {
       chunkTiles: GAME.world.chunkTiles,
       tileSize: GAME.tile,
       fringeHeight: world.fringeHeight ?? 0,
+      surfaceInset: world.paintedOffset ?? 0,
     });
     game.water = new WaterLayer({
       scene: game.renderer.scene,
