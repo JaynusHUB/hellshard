@@ -15,6 +15,11 @@ describe('sprite manifest', () => {
     }
   });
 
+  it('marks the side-view skeleton sheets as source-left', () => {
+    expect(manifest.sprites.bone_thrall.facing).toBe('left');
+    expect(manifest.sprites.wight.facing).toBe('left');
+  });
+
   it('gives every normal enemy walk/attack/hurt coverage', () => {
     for (const enemy of ENEMIES) {
       const sprite = manifest.sprites[enemy.sprite];

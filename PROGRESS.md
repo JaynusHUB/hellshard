@@ -8,10 +8,10 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 ## Verification (final pass)
 
 - `npm run build` - passes after the crowd-variation pass (63 modules, no errors; atlases are
-  generated at runtime, JS 838.31 kB / 222.52 kB gzip).
+  generated at runtime, JS 838.17 kB / 222.47 kB gzip).
 - Layout note: hidden breakable/fake-wall chests are registered in the layout grid after the room
   structures are indexed.
-- `npm test` — **32/32 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
+- `npm test` — **33/33 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
   achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
@@ -191,8 +191,13 @@ forest    route=3 surface=141 painted=144 footSink=3 manifestOffset=0 measuredRo
 - [x] **Layout validation:** `npm run validate:layout` checks 100 seeds × 5 zones for prop/platform/
   chest/gate overlaps, floating or clearance-bad chests, and unsupported single-tile structures.
 - [x] **Facing page controls:** every sprite card has a `TERS` button; it flips only the page-local
-  facing, redraws both game-path states, and updates the copyable JSON at the bottom. Manifest values
-  are not changed until the user returns the JSON.
+  facing, redraws both game-path states, and updates the copyable JSON at the bottom.
+- [x] **Skeleton facing fix:** `bone_thrall` and `wight` source sheets face left; their manifest
+  `facing` values were corrected from `right` to `left`, so they walk toward the player instead of
+  away from them. Remaining sprites still use the audit page before any further manifest change.
+- [x] **Walker hop removed:** ground chasers no longer roll a random jump while approaching from
+  range. Bone thralls/wights now stay grounded and only jump when the pit AI detects a crossable gap;
+  bouncer slimes keep their intentional jump behavior.
 - [x] **Pit/trap hardening:** ground enemies probe gaps and jump within the physics envelope or
   retreat/despawn; spikes damage both player and enemies; despawns refund spawn budget; separation
   requires same-level support. `tests/pit-ai.test.js` covers the 10-second outcome.

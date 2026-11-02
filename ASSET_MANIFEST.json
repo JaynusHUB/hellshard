@@ -350,7 +350,7 @@
     },
     "bone_thrall": {
       "atlas": "gothic",
-      "facing": "right",
+      "facing": "left",
       "animations": {
         "walk": {
           "images": [
@@ -391,7 +391,7 @@
     },
     "wight": {
       "atlas": "gothic",
-      "facing": "right",
+      "facing": "left",
       "animations": {
         "walk": {
           "images": [

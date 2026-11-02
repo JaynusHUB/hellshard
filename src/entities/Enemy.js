@@ -220,7 +220,7 @@ export class Enemy {
     } else if (this.behavior === 'bouncer') {
       this.updateBouncer(dt, world, player, dx, absDx, absDy);
     } else {
-      this.updateGroundChase(dt, world, player, dx, absDx, absDy);
+      this.updateGroundChase(dt, world, player, dx, absDx);
     }
 
     this.handlePitEdge(dt, world, player, dx, game);
@@ -254,18 +254,13 @@ export class Enemy {
     }
   }
 
-  updateGroundChase(dt, world, player, dx, absDx, absDy) {
+  updateGroundChase(dt, world, player, dx, absDx) {
     if (absDx > 600) {
       this.vx *= 0.8;
       return;
     }
     const desired = clamp(dx, -1, 1) * this.speed * this.slowFactor;
     this.vx += clamp(desired - this.vx, -900 * dt, 900 * dt);
-    if (Math.abs(absDx) > 220 && this.behavior !== 'tank' && absDy < 80 && this.onGround && this.cooldown <= 0.3) {
-      if (Math.random() < 0.015) {
-        this.vy = GAME.player.jumpSpeed * 0.65;
-      }
-    }
   }
 
   probeGap(world) {
