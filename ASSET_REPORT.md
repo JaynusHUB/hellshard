@@ -1,4 +1,4 @@
-# HELLSHARD — Asset Report (Phase 0)
+# HELLSHARD — Asset Report
 
 All findings below come from recursive scans, alpha-component analysis, pixel occupancy grids,
 and direct visual inspection of the PNGs. No external asset pack is referenced or used.
@@ -51,10 +51,10 @@ original distribution pages and are recorded in `CREDITS.md`.
 ### Characters
 | Sprite | Source | Frame | Frames / animation |
 |---|---|---|---|
-| Cemetery hero (Kael) | individual PNGs | 100×59 | idle 4, run 6, jump 4, attack 5, hurt 1 |
+| Cemetery hero (Nyx) | individual PNGs | 100×59 | idle 4, run 6, jump 4, attack 5, hurt 1 |
 | Church monk (Brakk) | `player.png` 1106×180 | 82×60, 13 cols | 36 frames; tags jump/fall/flying kick/crouch/crouch-kick/kick/hurt/idle/punch/walk |
 | Church wizard (Seraphine) | `wizard.png` 1215×66 | 81×66, 15 cols | idle 5, fire 10 |
-| Swamp hunter (Nyx) | individual PNGs | 62×54 | idle 6, run 14, jump 2, fall 2, hurt 2, shoot 3, crouch 3 |
+| Swamp hunter (Kael) | individual PNGs | 62×54 | idle 6, run 14, jump 2, fall 2, hurt 2, shoot 3, crouch 3 |
 
 ### Enemies / bosses
 | Sprite | Frame | Frames |
@@ -106,10 +106,10 @@ original distribution pages and are recorded in `CREDITS.md`.
 
 | Character | Sprite source | Distinct color / effects |
 |---|---|---|
-| Kael the Frostbow | Cemetery hero | ice-blue tint, frost arrow trails, snow burst |
+| Kael the Frostbow | Swamp hunter | ice-blue tint, bow poses, frost arrow trails, snow burst |
 | Brakk the Berserker | Church monk | ember tint, red slash arc, blood droplet particles |
 | Seraphine the Frostweaver | Church wizard | violet-white tint, levitation, orbiting ice motes |
-| Nyx the Shadowblade | Swamp hunter | indigo tint, shadow afterimages, void wisps |
+| Nyx the Shadowblade | Cemetery hero | indigo tint, sword poses, shadow afterimages, void wisps |
 
 All four use different attack logic and stats (see `src/data/characters.js`); they are not palette-only
 reskins.
@@ -127,18 +127,25 @@ reskins.
   API, while those pieces keep their native art proportions.
 - Zone tints: cemetery neutral, church cool violet, swamp moss, dungeon desaturated slate, forest green.
   Tint is applied in the instance shader; no new materials per entity.
+- The five supplied packs contain no interactable chest/altar/gate/portal/spike/moving-platform art.
+  `src/render/GeneratedSprites.js` draws these as 1× pixel icons into a separate runtime atlas using the
+  same gothic palette and integer scale. They are presentation-only; gameplay objects live in world data.
+  No generated icon imitates a supplied asset, and the generated atlas is documented here so the
+  boundary between supplied and project-made art stays explicit.
 
-## 7. World / transition plan
+## 7. World / transition implementation
 
-- Start: Cemetery (hub).
-- Cemetery ↔ Church: east gate + fade.
-- Church ↔ Swamp: east gate + fade.
-- Cemetery ↔ Dungeon: crypt door + fade (underground).
-- Swamp ↔ Forest: portal + fade (different style family).
-- Boss arenas: Cemetery (Mourning Maw), Church (Seraph of Ash), Swamp (Drowned Choir).
-- Final gate: Cemetery, opens with three Hellshards.
-- Same seed generates same room templates, platform placements, decoration sets, treasures, secrets.
-- All assets loaded locally. No external requests.
+- Start: Cemetery (hub and Final Gate).
+- Seed-generated route: `cemetery → shuffled(church, swamp) → forest`.
+- East gates connect route neighbours with a fade. Forest uses a portal because it belongs to a
+  different art family.
+- Cemetery ↔ Dungeon: crypt door in room 2 + fade (underground). This is optional and is not part of
+  the main route.
+- Boss arenas: Cemetery (Mourning Maw), Church (Seraph of Ash), Swamp (Drowned Choir). Each exit gate
+  is sealed until its boss is defeated.
+- Final gate: Cemetery, opens with three Hellshards and ends the run in victory.
+- Same seed reproduces room templates, platform placements, decoration sets, treasures and secrets.
+- All assets are loaded locally. Browser QA confirmed zero external requests and zero 404s.
 
 ## 8. Known limitations / notes
 
@@ -147,6 +154,13 @@ reskins.
 - The dungeon sheet's odd pixel dimensions mean no universal tile grid can be assumed; we deliberately
   encoded named regions after visual inspection.
 - No forest water animation frames exist. The swamp water tile is a static pack tile; animation is done
-  with a single time uniform inside the sprite shader for water quads (no per-tile JS).
+  with a single time uniform inside the water shader for pooled water quads (no per-tile JS).
+- No animated waterfall frames exist in any supplied pack, so waterfalls are not implemented.
+- No chest, altar, gate, portal, spike or moving-platform sprites exist. Small procedural 1× pixel icons
+  are generated at runtime (see section 6) instead of unmarked placeholders.
+- Boss chests reuse the generated chest icon with a gold/red seal; their upgrade reward is guaranteed by
+  the boss controller, not by visual chance.
 - All SFX and ambient music are synthesized with WebAudio (no external audio files).
 - Font is bundled locally via `@fontsource/pixelify-sans` (OFL).
+- The final boss encounter and world-map screen were stretch goals and are not implemented. The Final
+  Gate ends the run after the three shard bosses.

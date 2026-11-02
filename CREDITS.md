@@ -1,7 +1,7 @@
 # HELLSHARD — Credits and Licenses
 
 This project uses only the five supplied asset folders under `public/assets`. No CDN-hosted visuals or
-audio are loaded at runtime. No Anokolisa or Szadiart assets are used or referenced.
+audio are loaded at runtime.
 
 ## Art
 
@@ -9,7 +9,7 @@ audio are loaded at runtime. No Anokolisa or Szadiart assets are used or referen
 - Author: Luis Zuno (ansimuz)
 - Source: https://opengameart.org/content/gothicvania-cemetery-pack
 - License: **CC0 1.0 Universal**. Commercial use allowed. Credit appreciated, not required.
-- Used for: cemetery tiles, backgrounds, props, Kael sprite, skeleton, ghost, hell-gato, death FX.
+- Used for: cemetery tiles, backgrounds, props, Nyx sprite, skeleton, ghost, hell-gato, death FX.
 
 ### GothicVania — Church Pack
 - Author: Luis Zuno (ansimuz)
@@ -23,7 +23,7 @@ audio are loaded at runtime. No Anokolisa or Szadiart assets are used or referen
 - Source: https://opengameart.org/content/gotthicvania-swamp
 - License: **CC0** as verified from the original OpenGameArt listing / author statements. Commercial
   use permitted; credit appreciated.
-- Used for: swamp tiles, parallax layers, trees/props, Nyx sprite, spider, swamp thing, ghost, fire.
+- Used for: swamp tiles, parallax layers, trees/props, Kael sprite, spider, swamp thing, ghost, fire.
 
 ### 2D Medieval Castle Dungeon Tileset
 - Author: TPC / ThePixelist
@@ -50,6 +50,13 @@ audio are loaded at runtime. No Anokolisa or Szadiart assets are used or referen
 - **Vite** — MIT License.
 - **Vitest** — MIT License.
 - **pngjs** (development-only asset analysis and validation) — MIT License.
+
+## Generated art
+
+The supplied packs do not include chests, altars, gates, portals, spikes or moving platforms.
+`src/render/GeneratedSprites.js` draws those interactables as small 1× pixel icons at runtime, using an
+original palette matched to the gothic zones. No generated icon is derived from or redistributed with
+the supplied packs. The rest of the game uses only the five approved art folders.
 
 ## Audio
 
