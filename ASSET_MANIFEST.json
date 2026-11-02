@@ -1330,8 +1330,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              162,
-              128,
+              21,
+              187,
               16,
               16
             ]
@@ -1339,8 +1339,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              178,
-              128,
+              53,
+              187,
               16,
               16
             ]
@@ -1348,8 +1348,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              194,
-              128,
+              85,
+              187,
               16,
               16
             ]
@@ -1357,8 +1357,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              210,
-              128,
+              117,
+              187,
               16,
               16
             ]
@@ -1368,8 +1368,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              162,
-              160,
+              21,
+              187,
               16,
               16
             ]
@@ -1377,8 +1377,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              178,
-              160,
+              53,
+              187,
               16,
               16
             ]
@@ -1386,8 +1386,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              194,
-              160,
+              85,
+              187,
               16,
               16
             ]
@@ -1395,8 +1395,8 @@
           {
             "image": "assets/dungeon/2D Medieval Castle Dungeon Tileset Assets.png",
             "rect": [
-              210,
-              160,
+              117,
+              187,
               16,
               16
             ]
@@ -1492,62 +1492,69 @@
     "church": [
       {
         "image": "assets/church/ENVIRONMENT/backgrounds.png",
-        "parallax": 0.08,
-        "y": 56,
+        "parallax": 0.05,
+        "worldY": 144,
         "mode": "repeat",
-        "tint": [
-          0.4,
-          0.37,
-          0.58
-        ]
-      },
-      {
-        "image": "assets/church/ENVIRONMENT/backgrounds.png",
-        "parallax": 0.045,
-        "y": 168,
-        "mode": "repeat",
-        "tint": [
-          0.34,
-          0.3,
-          0.46
+        "crop": [
+          0,
+          0,
+          160,
+          192
         ],
-        "opacity": 0.9
+        "tint": [
+          0.58,
+          0.54,
+          0.82
+        ]
       }
     ],
     "swamp": [
       {
         "image": "assets/swamp/Evironment/background.png",
-        "parallax": 0.02,
-        "y": 104,
+        "parallax": 0.015,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.5,
-          0.68,
-          0.42
+          0.55,
+          0.72,
+          0.48
         ]
+      },
+      {
+        "image": "assets/swamp/Evironment/mid-layer-02.png",
+        "parallax": 0.06,
+        "worldY": 144,
+        "mode": "repeat",
+        "tint": [
+          0.56,
+          0.72,
+          0.46
+        ],
+        "opacity": 0.9
       },
       {
         "image": "assets/swamp/Evironment/mid-layer-01.png",
-        "parallax": 0.12,
-        "y": 48,
+        "parallax": 0.13,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.62,
-          0.78,
-          0.46
+          0.48,
+          0.64,
+          0.4
         ],
-        "opacity": 0.65
+        "opacity": 0.94
       },
       {
         "image": "assets/swamp/Evironment/trees.png",
-        "parallax": 0.28,
-        "y": 0,
+        "parallax": 0.24,
+        "worldY": 144,
         "mode": "repeat",
         "tint": [
-          0.5,
-          0.62,
-          0.38
-        ]
+          0.3,
+          0.4,
+          0.26
+        ],
+        "opacity": 0.92
       }
     ],
     "dungeon": [

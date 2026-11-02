@@ -65,7 +65,8 @@ export class WorldRenderer {
   drawDecorations(batch) {
     const game = this.game;
     const zoneTint = this.assets.getPresentation().zoneTints[game.activeZoneId] ?? [1, 1, 1];
-    const tint = zoneTint.map((v) => v * 0.84);
+    const isDungeon = game.activeZoneId === 'dungeon';
+    const tint = isDungeon ? [1.36, 1.38, 1.52] : zoneTint.map((v) => v * 0.84);
     for (const decoration of game.activeWorld.decorations) {
       let frame = this.assets.getPropFrame(game.activeZoneId, decoration.prop);
       if (!frame && decoration.prop.startsWith('torch')) {
@@ -76,7 +77,7 @@ export class WorldRenderer {
       batch.draw(frame, Math.round(decoration.x), Math.round(decoration.y + (decoration.yOffset ?? 0)), {
         flip: decoration.flip,
         tint,
-        alpha: decoration.alpha ?? 0.8,
+        alpha: isDungeon ? 1 : (decoration.alpha ?? 0.8),
       });
     }
   }
@@ -105,19 +106,6 @@ export class WorldRenderer {
         tint: tintFor(interaction.type === 'altar' ? [220, 175, 130] : [220, 200, 165]),
         alpha: pulse,
       });
-      if (!interaction.opened && Math.random() < 0.035) {
-        game.glowParticles.emit({
-          x: interaction.x + (Math.sin(t * 2 + interaction.x) > 0.6 ? 1 : -1),
-          y: interaction.y + 18 + Math.sin(t * 4 + interaction.x) * 2,
-          vx: 0,
-          vy: 12,
-          life: 0.25,
-          sizeX: 1,
-          sizeY: 1,
-          color: interaction.type === 'altar' ? COLORS.blood : COLORS.gold,
-          alpha: 0.4,
-        });
-      }
     }
     for (const transition of game.activeWorld.transitions) {
       const frame = transition.type === 'portal' ? frames.portal : frames.gate;
@@ -185,6 +173,7 @@ export class WorldRenderer {
         : [1, 0.96, 0.86];
     for (const platform of platforms) {
       batch.draw(frame, Math.round(platform.x), Math.round(platform.y), {
+        anchorY: 0,
         tint,
         alpha: 0.96,
       });

@@ -7,6 +7,7 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
+- `npm run build` — passes after the post-playtest fixes (60 modules, no errors).
 - `npm test` — **20/20 tests passing** in 4 suites (RNG, upgrades/evolutions, world generation,
   achievements).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
@@ -20,6 +21,31 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 - Browser screenshots verified in `.tmp` (ignored): menu, character select, HUD, settings EN/TR,
   achievements, level-up, all five zones, three bosses, result, debug overlay and stress test
   (150 enemies / ~939 particles at 11 draw calls).
+
+## Known issues — post-playtest fixes (2026-11-02)
+
+- [x] **Player sprite walked ~80px below the visible ground in all five zones.** Root cause: sprite
+  anchors measured the opaque foot from the top of the frame, but `SpriteBatch` applied the anchor with
+  the wrong sign, pushing every sprite below its world foot point. Fixed in `SpriteBatch.js`; the same
+  fix also corrects decorations, chests, gates and NPC-height props. Moving platforms now use a top
+  anchor so their visual top matches collision.
+- [x] **F3 collision diagnostics missing.** Added `CollisionDebugOverlay.js`: cyan AABB feet,
+  green tile-render floor, magenta sprite anchor/frame bounds, nearby enemy boxes and a legend. F3
+  toggles it with the existing debug overlay.
+- [x] **Top-right phase text was identical in every zone.** Added zone-specific phase labels for all
+  five zones and both languages; HUD and phase-change toasts now resolve through `zone.phaseKeys`.
+- [x] **A small white line appeared ~50px above chests.** Root cause: random 1×1 additive glow
+  particles emitted above every interaction. Removed; chests now rely on their pulsing tint only.
+- [x] **Dungeon armor statue looked hollow/transparent and ground body had no tiles.** Cropped statue
+  rendering now anchors at the floor and uses full alpha plus a brighter dungeon prop grade; dungeon
+  body/deep tile frames now reuse the brick floor strip with a darker grade instead of flat wall
+  interior crops.
+- [x] **Swamp background looked like flat color bands.** All four supplied swamp layers are now used
+  (background, mid-layer-02, mid-layer-01, trees), aligned to the same world ground line with distinct
+  parallax speeds and a foreground tree silhouette.
+- [x] **Church background had hard black gaps and a translucent rectangle.** Root cause: the 624×192
+  five-panel sheet was repeated whole, including its 16px transparent separators, and overlaid twice.
+  Replaced with a single cropped 160×192 window-panel layer aligned to the world ground.
 
 ## Completed phases
 

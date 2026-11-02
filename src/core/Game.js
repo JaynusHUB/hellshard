@@ -23,6 +23,7 @@ import { BossController } from '../systems/BossController.js';
 import { RunController } from '../systems/RunController.js';
 import { WorldLifeSystem } from '../systems/WorldLifeSystem.js';
 import { ZoneSceneManager } from '../world/ZoneSceneManager.js';
+import { CollisionDebugOverlay } from '../render/CollisionDebugOverlay.js';
 
 export class Game {
   constructor({ canvas, save, audio, assets }) {
@@ -71,6 +72,7 @@ export class Game {
     this.sceneVersion = 0;
     this.createEffects();
     this.worldRenderer = new WorldRenderer(this);
+    this.collisionDebug = new CollisionDebugOverlay(this);
     this.interactions = new InteractionSystem(this);
     this.combatDirector = new CombatDirector(this);
     this.bossController = new BossController(this);
@@ -479,10 +481,12 @@ export class Game {
       this.ui?.updateHUD(hudInfo);
     }
     this.ui?.updateDamageNumbers(dt, this.camera);
-    this.updateDebugOverlay();
+    this.updateDebugOverlay(alpha);
   }
 
-  updateDebugOverlay() {
+  updateDebugOverlay(alpha = 0) {
+    this.collisionDebug?.setVisible(this.debugVisible);
+    this.collisionDebug?.render(alpha);
     if (!this.debugVisible || !this.ui) {
       this.ui?.updateDebug(null);
       return;
@@ -531,6 +535,7 @@ export class Game {
     this.glowParticles.dispose();
     this.xpOrbs.dispose();
     this.worldRenderer.dispose();
+    this.collisionDebug?.dispose();
     this.renderer.dispose();
     this.audio.destroy();
   }

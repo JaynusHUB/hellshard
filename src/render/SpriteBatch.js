@@ -25,6 +25,31 @@ const VERTEX = /* glsl */ `
   }
 `;
 
+export function computeSpriteRect(frame, x, y, options = {}) {
+  if (!frame) return null;
+  const scale = options.scale ?? 1;
+  const width = frame.w * scale;
+  const height = frame.h * scale;
+  const anchorX = options.anchorX ?? 0.5;
+  const anchorY = options.anchorY ?? 1;
+  const offsetX = options.offsetX ?? 0;
+  const offsetY = options.offsetY ?? 0;
+  // anchorY is measured from the top of the frame. Placing the anchor point at
+  // world (x, y) puts the frame body above it, with transparent padding below.
+  const centerX = x + (0.5 - anchorX) * width + offsetX;
+  const centerY = y + (anchorY - 0.5) * height + offsetY;
+  return {
+    left: centerX - width / 2,
+    right: centerX + width / 2,
+    bottom: centerY - height / 2,
+    top: centerY + height / 2,
+    width,
+    height,
+    centerX,
+    centerY,
+  };
+}
+
 const FRAGMENT = /* glsl */ `
   precision highp float;
   uniform sampler2D uMap;
@@ -92,21 +117,15 @@ export class SpriteBatch {
 
   draw(frame, x, y, options = {}) {
     if (!frame || this.count >= this.maxInstances) return false;
-    const scale = options.scale ?? 1;
-    const w = frame.w * scale;
-    const h = frame.h * scale;
-    const anchorX = options.anchorX ?? 0.5;
-    const anchorY = options.anchorY ?? 1;
-    const offsetX = options.offsetX ?? 0;
-    const offsetY = options.offsetY ?? 0;
+    const rect = computeSpriteRect(frame, x, y, options);
     const i = this.count++;
     const i2 = i * 2;
     const i3 = i * 3;
     const i4 = i * 4;
-    this.offset[i2] = x + (0.5 - anchorX) * w + offsetX;
-    this.offset[i2 + 1] = y + (0.5 - anchorY) * h + offsetY;
-    this.size[i2] = w;
-    this.size[i2 + 1] = h;
+    this.offset[i2] = rect.centerX;
+    this.offset[i2 + 1] = rect.centerY;
+    this.size[i2] = rect.width;
+    this.size[i2 + 1] = rect.height;
     this.uv[i4] = frame.u0;
     this.uv[i4 + 1] = frame.v0;
     this.uv[i4 + 2] = frame.u1 - frame.u0;

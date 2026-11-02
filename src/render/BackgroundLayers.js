@@ -94,7 +94,9 @@ export class BackgroundLayers {
       const startX = layer.def.single
         ? Math.floor(cameraX + (layer.def.x ?? 0))
         : Math.floor(cameraX - halfW - (((scroll % layer.width) + layer.width) % layer.width));
-      const baseY = Math.floor(cameraY - halfH + layer.y);
+      const baseY = Number.isFinite(layer.def.worldY)
+        ? Math.floor(layer.def.worldY)
+        : Math.floor(cameraY - halfH + layer.y);
       for (let i = 0; i < layer.count; i++) {
         const x = layer.def.single ? startX : startX + i * layer.width + layer.width / 2;
         const y = baseY + layer.height / 2;

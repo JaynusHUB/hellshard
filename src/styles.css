@@ -1978,6 +1978,17 @@ button {
   color: #9ddd8d;
 }
 
+#collision-debug {
+  position: absolute;
+  inset: 0;
+  width: 640px;
+  height: 360px;
+  z-index: 7;
+  pointer-events: none;
+  image-rendering: pixelated;
+  display: none;
+}
+
 .debug-overlay {
   position: absolute;
   left: 8px;

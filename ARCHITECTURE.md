@@ -27,6 +27,7 @@ index.html
    ├─ render/ParticleSystem.js  pooled additive and normal particle meshes
    ├─ render/WaterLayer.js      animated water shader
    ├─ render/GeneratedSprites.js procedural 1× interactable icons
+   ├─ render/CollisionDebugOverlay.js F3 AABB/sprite/tile anchor diagnostics
    ├─ render/CameraRig.js       bounded follow camera, snap and shake
    ├─ world/WorldGen.js         seeded rooms, route, secrets, validation metadata
    ├─ world/Tilemap.js          collision queries, one-way platforms, breakables

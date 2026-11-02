@@ -151,7 +151,10 @@ export class HUD {
     }
     this.refs.zone.textContent = t(zone.nameKey);
     this.refs.seed.textContent = t('hud.seed', { seed: seed ?? run.seed });
-    if (difficulty) this.refs.difficulty.textContent = t(difficulty.labelKey);
+    if (difficulty) {
+      const phaseKey = zone.phaseKeys?.[difficulty.id] ?? difficulty.labelKey;
+      this.refs.difficulty.textContent = t(phaseKey);
+    }
     this.refs.weaponName.textContent = t(run.weaponNameKey ?? weaponNameKey(player.characterId));
     this.refs.weaponLevel.textContent = run.evolved
       ? t('evolution.already')

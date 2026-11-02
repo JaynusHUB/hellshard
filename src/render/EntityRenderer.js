@@ -144,7 +144,7 @@ export class EntityRenderer {
       ? Math.round(Math.sin(player.animTime * 3) * 1)
       : 0;
     const dashLean = player.dashTimer > 0 ? 1 : 0;
-    batch.draw(frame, pos.x + dashLean * player.facing, pos.y + 1 + hover, {
+    batch.draw(frame, pos.x + dashLean * player.facing, pos.y + hover, {
       anchorY: frame.anchorY ?? 1,
       flip: player.facing < 0,
       tint,
@@ -154,7 +154,7 @@ export class EntityRenderer {
     });
     if (player.characterId === 'brakk' && player.rageTimer > 0) {
       const aura = 0.5 + Math.sin(game.time * 10) * 0.2;
-      batch.draw(frame, pos.x, pos.y + 1, {
+      batch.draw(frame, pos.x, pos.y + hover, {
         anchorY: frame.anchorY ?? 1,
         flip: player.facing < 0,
         tint: [1.6, 0.3, 0.2],

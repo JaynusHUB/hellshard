@@ -45,7 +45,8 @@ export class SpawnDirector {
     const phase = getDifficultyPhase(elapsed);
     if (this.lastPhase !== phase.id) {
       this.lastPhase = phase.id;
-      game.ui?.toast(phase.labelKey, {}, { icon: '☠', duration: 1600 });
+      const phaseKey = game.activeZone?.phaseKeys?.[phase.id] ?? phase.labelKey;
+      game.ui?.toast(phaseKey, {}, { icon: '☠', duration: 1600 });
     }
     this.updateAdaptive(dt);
     if (this.event) {

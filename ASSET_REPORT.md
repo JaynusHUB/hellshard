@@ -164,3 +164,22 @@ reskins.
 - Font is bundled locally via `@fontsource/pixelify-sans` (OFL).
 - The final boss encounter and world-map screen were stretch goals and are not implemented. The Final
   Gate ends the run after the three shard bosses.
+
+## 9. Playtest corrections (2026-11-02)
+
+- **Church background:** the 624×192 sheet is a strip of five separate panels with 16px transparent
+  separators. The old renderer repeated the whole sheet and stacked it twice, producing black seams and
+  a translucent rectangle. The final background uses one cropped 160×192 window panel, aligned to the
+  world ground line and repeated without separators.
+- **Swamp background:** the supplied `background.png`, `mid-layer-02.png`, `mid-layer-01.png` and
+  `trees.png` are four depth layers. All four are now used, bottom-aligned to the world ground with
+  separate parallax speeds. Previously only three were used at arbitrary viewport offsets, leaving
+  flat bands.
+- **Dungeon floor body:** the old body/deep crops came from flat interior sections of the wall panel and
+  read as empty black. Body and deep frames now reuse the native brick floor strip (`y=187`) with a
+  darker runtime grade so the ground body has visible masonry.
+- **Dungeon statues:** the knight/robed props were being drawn with the inverted sprite anchor and a
+  dark, semi-transparent dungeon tint. The corrected anchor and a full-alpha, brighter dungeon prop
+  grade restore their silhouettes.
+- **Sprite anchors:** all sprite frames are now bottom-anchored by the measured opaque foot instead of
+  being placed with the frame top at the world foot point.
