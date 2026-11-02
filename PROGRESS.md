@@ -7,21 +7,22 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` - passes after the tile-catalog/map audit (64 modules, no errors; atlases are
-  generated at runtime, JS 851.54 kB / 225.98 kB gzip).
-- Layout note: hidden breakable/fake-wall chests are registered in the layout grid after the room
-  structures are indexed.
-- `npm test` — **34/34 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
-  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd).
+- `npm run build` - passes after the playability/platform refactor (64 modules, no errors; atlases
+  are generated at runtime, JS 851.80 kB / 226.11 kB gzip).
+- Layout note: generated stairs are supported solid columns; high platforms are capped at three
+  tiles and validated against the jump envelope.
+- `npm test` — **35/35 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
+  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd,
+  base-floor spawn rule).
 - `npm run validate:tiles` — **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
   rects in bounds; cemetery Tiled reference is 300x14 tiles with
   `Collisions Layer > Back Layer > Main Layer`.
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
-- `npm run validate:alignment` — **passed**: 5 zones, 50 ground props, 124 placed objects,
+- `npm run validate:alignment` — **passed**: 5 zones, 43 ground props, 110 placed objects,
   footSink applied, ±1px tolerance.
 - `npm run validate:layout` — **passed**: 100 seeds × 5 zones; zero overlaps, floating chests,
-  clearance violations or unsupported single-tile structures.
+  clearance violations, unsupported single-tile structures or unreachable platforms.
 - Production preview smoke test (`npm run preview`) — menu → achievements → character select →
   gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →
   result. **No console errors, no failed requests, no external requests.**
@@ -144,13 +145,13 @@ Measured alignment:
 
 ```text
 cemetery  route=0 surface=129 painted=134 footSink=5 manifestOffset=10 measuredRows=11/9 props=11
-church    route=1 surface=144 painted=144 footSink=0 manifestOffset=0 measuredRows=0/0 props=6
+church    route=1 surface=144 painted=144 footSink=0 manifestOffset=0 measuredRows=0/0 props=9
 swamp     route=2 surface=132 painted=137 footSink=5 manifestOffset=7 measuredRows=6/7/6 props=11
-dungeon   route=-1 surface=143 painted=144 footSink=1 manifestOffset=0 measuredRows=0/0/0/0 props=9
-forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRows=0/0 props=13
+dungeon   route=-1 surface=143 painted=144 footSink=1 manifestOffset=0 measuredRows=0/0/0/0 props=0
+forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRows=0/0 props=12
 
-✓ Alignment validation passed: 5 zones, 50 props, 124 placed objects, footSink applied, ±1px tolerance.
-  ground props checked: 50; one-way ledges are at least 3 tiles wide.
+✓ Alignment validation passed: 5 zones, 43 props, 110 placed objects, footSink applied, ±1px tolerance.
+  ground props checked: 43; one-way ledges are at least 3 tiles wide.
 ```
 
 ## Known issues — facing audit and pit AI (2026-11-02)
@@ -224,6 +225,15 @@ forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRo
 - [x] **Boot regression fixed:** `TileChunks` used `GAME.rendering.layers` without importing
   `GAME`, causing a menu-scene `ReferenceError`. The generic boot overlay hid it as an asset error;
   the config import is restored and `npm run build`/tests pass.
+- [x] **Platform reachability:** every generated ledge is capped at `GAME.world.platformMaxRise`
+  (3 tiles / 48px) and gets a supported 1-tile stair flight where the floor allows. The old
+  unreachable 5-tile shelves and boss-room ceiling ledges were removed.
+- [x] **Enemy walking rules:** ground enemies now spawn only on a continuous solid base-floor run,
+  never on raised steps or one-way platforms. A deterministic step-up hop lets them climb one- or
+  two-tile stair risers instead of stacking under a platform; the old random hop is still gone.
+- [x] **Object grounding:** dungeon statues now live in the non-colliding wall niche layer instead of
+  standing in the walking lane. Chests on ledges inherit the reachable platform height and stair
+  access. Outdoor breakable/fake-wall towers that created unreachable grass columns were removed.
 - [x] **Outdoor composition:** cemetery/church/swamp pits and floating shelves are reduced. Ground
   chest fallbacks keep loot available when a room has no shelf. The forest keeps more platforming.
 - [x] **Source-density decor:** cemetery gains seeded tree/bush backdrops; church gains the supplied
@@ -262,15 +272,15 @@ forest    route=3 surface=139 painted=144 footSink=5 manifestOffset=0 measuredRo
 Layout validation result after the map-dressing pass (100 seeds × 5 zones):
 
 ```text
-zone      props  chests gates  platforms overlaps floatingChests clearanceBad tinyStructures
-cemetery  1017   591    300    3272      0        0              0            0
-church    498    588    200    3196      0        0              0            0
-swamp     1073   610    200    3302      0        0              0            0
-dungeon   2503   999    100    3990      0        0              0            0
-forest    1226   781    100    5205      0        0              0            0
+zone      props  chests gates  platforms overlaps floatingChests clearanceBad tinyStructures unreachablePlatforms
+cemetery  1088   495    300    1372      0        0              0            0              0
+church    810    504    200    1296      0        0              0            0              0
+swamp     1063   498    200    1402      0        0              0            0              0
+dungeon   1833   667    100    3990      0        0              0            0              0
+forest    1177   590    100    3908      0        0              0            0              0
 
 ✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests,
-  clearance violations or unsupported single-tile structures.
+  clearance violations, unsupported single-tile structures or unreachable platforms.
 ```
 
 ## Completed phases

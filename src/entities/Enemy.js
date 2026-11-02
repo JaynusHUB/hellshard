@@ -67,6 +67,7 @@ export class Enemy {
     this.hoverBaseY = y;
     this.speedMultiplier = modifiers.speed ?? 1;
     this.bounceCooldown = 0;
+    this.stepCooldown = 0;
     this.stuckTimer = 0;
     this.pendingAttack = false;
     this.lastHitAt = -1;
@@ -119,6 +120,7 @@ export class Enemy {
     if (this.slowTimer <= 0) this.slowFactor = 1;
     this.cooldown = Math.max(0, this.cooldown - dt);
     this.bounceCooldown = Math.max(0, this.bounceCooldown - dt);
+    this.stepCooldown = Math.max(0, this.stepCooldown - dt);
     this.contactCooldown = Math.max(0, this.contactCooldown - dt);
     this.chooseAnimation();
     if (this.hitstun > 0) {
@@ -261,6 +263,21 @@ export class Enemy {
     }
     const desired = clamp(dx, -1, 1) * this.speed * this.slowFactor;
     this.vx += clamp(desired - this.vx, -900 * dt, 900 * dt);
+    if (this.onGround && this.stepCooldown <= 0 && Math.abs(absDx) > 8) {
+      const dir = Math.sign(dx) || this.facing || 1;
+      const footRow = Math.floor(this.y / GAME.tile) + 1;
+      const probeX = this.x + dir * (this.width / 2 + 3);
+      const tx = Math.floor(probeX / GAME.tile);
+      const wall = world.map.getType(tx, footRow);
+      const clearance = world.map.getType(tx, footRow + 1);
+      const rise = (footRow + 1) * GAME.tile - this.y;
+      if (world.map.isSolid(wall) && !world.map.isSolid(clearance)
+        && rise > 2 && rise <= GAME.tile * 2 + 2) {
+        this.vy = GAME.player.jumpSpeed * 0.8;
+        this.vx = dir * Math.max(this.speed, 40);
+        this.stepCooldown = GAME.enemyAI.stepCooldown;
+      }
+    }
   }
 
   probeGap(world) {

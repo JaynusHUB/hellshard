@@ -80,6 +80,20 @@ describe('enemy crowd variation', () => {
     expect(probe.animator.time).toBeGreaterThan(0);
   });
 
+  it('keeps ground spawns on a continuous base floor', () => {
+    const map = {
+      surfaceRow: 8,
+      isSolidAt(tx, ty) {
+        return ty === 8 && tx >= 10 && tx <= 20;
+      },
+    };
+    const world = { surface: 144, map };
+    const director = Object.create(SpawnDirector.prototype);
+    expect(director.isBaseFloorSpawn(world, 15 * GAME.tile, 144)).toBe(true);
+    expect(director.isBaseFloorSpawn(world, 15 * GAME.tile, 128)).toBe(false);
+    expect(director.isBaseFloorSpawn(world, 9 * GAME.tile, 144)).toBe(false);
+  });
+
   it('caps same-type enemies inside one screen around the player', () => {
     const player = { x: 320 };
     const enemies = Array.from({ length: 3 }, (_, index) => ({

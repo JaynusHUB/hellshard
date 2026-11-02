@@ -58,73 +58,33 @@ function setPlatform(data, x, y, w) {
   }
 }
 
-function addBreakableSecret(data, roomStart, rng, interactions, secrets, surface) {
-  let baseX = roomStart + 6 + rng.int(0, 2);
-  let supported = false;
-  for (let offset = 0; offset < 6; offset++) {
-    const candidate = roomStart + 6 + offset;
-    let clear = true;
-    for (let x = candidate; x < candidate + 6; x++) {
-      if (data[idx(x, FLOOR_ROW)] !== TILE.SOLID) {
-        clear = false;
-        break;
-      }
+function addStairway(data, platformX, platformRow, side = -1) {
+  const rise = platformRow - FLOOR_ROW;
+  if (rise <= 1) return false;
+  const build = (direction) => {
+    const positions = [];
+    for (let height = 1; height < rise; height++) {
+      positions.push({ x: platformX + direction * (rise - height), height });
     }
-    if (clear) {
-      baseX = candidate;
-      supported = true;
-      break;
+    const supported = positions.every(({ x }) => (
+      x >= 0 && x < WIDTH && data[idx(x, FLOOR_ROW)] === TILE.SOLID
+    ));
+    if (!supported) return false;
+    for (const { x, height } of positions) {
+      setSolidRect(data, x, FLOOR_ROW + 1, 1, height);
     }
-  }
-  if (!supported) return;
-  const height = 3;
-  // Exterior mass with a 2-tile-high chamber hollowed into it.
-  setSolidRect(data, baseX, FLOOR_ROW + 1, 6, height, TILE.SOLID);
-  for (let y = FLOOR_ROW + 1; y < FLOOR_ROW + height; y++) {
-    for (let x = baseX + 1; x < baseX + 5; x++) {
-      data[idx(x, y)] = TILE.EMPTY;
-    }
-  }
-  for (let x = baseX; x < baseX + 6; x++) {
-    data[idx(x, FLOOR_ROW + height)] = TILE.SOLID;
-  }
-  for (let y = FLOOR_ROW + 1; y < FLOOR_ROW + height; y++) {
-    data[idx(baseX, y)] = TILE.BREAKABLE;
-  }
-  interactions.push({
-    id: `chest-secret-${roomStart}`,
-    type: 'chest',
-    x: (baseX + 3) * T,
-    y: surface,
-    secret: true,
-    opened: false,
-  });
-  secrets.push({
-    type: 'breakable',
-    x: baseX * T,
-    y: (FLOOR_ROW + 1) * T,
-    w: T,
-    h: (height - 1) * T,
-  });
+    return true;
+  };
+  return build(side) || (side < 0 && build(1));
 }
 
-function addFakeWallSecret(data, roomStart, rng, interactions, secrets, surface) {
-  const baseX = roomStart + 24 + rng.int(0, 2);
-  const baseY = FLOOR_ROW + 1;
-  // A thin false facade, deliberately non-solid. A chest sits just beyond it.
-  for (let y = baseY; y <= baseY + 2; y++) {
-    data[idx(baseX, y)] = TILE.FAKE;
-    data[idx(baseX + 1, y)] = TILE.FAKE;
+function addStepAccess(data, roomStart, step) {
+  if (step.h <= 1) return;
+  for (const offset of [-1, step.w]) {
+    const x = roomStart + step.x + offset;
+    if (x < 0 || x >= WIDTH) continue;
+    setSolidRect(data, x, FLOOR_ROW + 1, 1, 1);
   }
-  interactions.push({
-    id: `chest-hidden-${roomStart}`,
-    type: 'chest',
-    x: (baseX + 3.1) * T,
-    y: surface,
-    secret: true,
-    opened: false,
-  });
-  secrets.push({ type: 'fake', x: baseX * T, y: baseY * T, w: T * 2, h: T * 3 });
 }
 
 function addChest(world, id, tileX, tileY, secret = false) {
@@ -164,6 +124,7 @@ function levelTopY(world, level) {
 function buildDungeonRoom(zone, roomIndex, data, rng, world, template) {
   const start = roomIndex * ROOM_W;
   const surface = world.surface;
+  const maxRise = GAME.world.platformMaxRise;
   for (const pit of template.pits) {
     carvePit(data, start + pit.x, pit.w);
     world.hazards.push({
@@ -176,16 +137,19 @@ function buildDungeonRoom(zone, roomIndex, data, rng, world, template) {
   }
   for (const step of template.steps) {
     setSolidRect(data, start + step.x, FLOOR_ROW + 1, step.w, step.h);
+    addStepAccess(data, start, step);
   }
   for (const ledge of template.ledges) {
-    setPlatform(data, start + ledge.x, FLOOR_ROW + ledge.y, ledge.w);
+    const row = FLOOR_ROW + Math.min(ledge.y, maxRise);
+    setPlatform(data, start + ledge.x, row, ledge.w);
+    addStairway(data, start + ledge.x, row);
   }
   template.chests.forEach((chest, index) => {
     addChest(
       world,
       `chest-dungeon-${roomIndex}-${index}`,
       start + chest.x,
-      FLOOR_ROW + 1 + chest.level,
+      FLOOR_ROW + 1 + Math.min(chest.level, maxRise),
     );
   });
   if (template.altar) {
@@ -226,10 +190,7 @@ function buildRoom(zone, roomIndex, data, rng, world) {
   }
 
   if (isBossRoom && zone.boss) {
-    // A clean, wide arena with no pits; telegraph space is sacred.
-    for (let x = start + 2; x < start + ROOM_W - 2; x += 9) {
-      setPlatform(data, x, FLOOR_ROW + 5, Math.min(4, start + ROOM_W - x - 2));
-    }
+    // A clean, wide arena with no pits and no unreachable ceiling ledges.
   } else {
     // Pit patterns are bounded by the shared jump envelope. The outdoor
     // Gothicvania maps are mostly ground-hugging, so only the forest keeps a
@@ -259,18 +220,18 @@ function buildRoom(zone, roomIndex, data, rng, world) {
       : roomIndex === 4 ? 1 : rng.int(0, 1);
     for (let i = 0; i < shelfCount; i++) {
       const sx = start + 8 + i * 12 + rng.int(0, 2);
-      const sy = FLOOR_ROW + rng.int(4, 5);
+      const sy = FLOOR_ROW + rng.int(2, GAME.world.platformMaxRise);
       const sw = rng.int(4, 6);
       setPlatform(data, sx, sy, sw);
+      addStairway(data, sx, sy);
       if (i === 0) addChest(world, `chest-${zone.id}-${roomIndex}`, sx + 2, sy + 1);
     }
-    if (shelfCount === 0 && (roomIndex === 0 || roomIndex === 4)) {
+    if (shelfCount === 0) {
       addChest(world, `chest-${zone.id}-${roomIndex}-floor`, start + ROOM_W - 7, FLOOR_ROW + 1);
     }
   }
 
   if (roomIndex === 1) {
-    addFakeWallSecret(data, start, rng, world.interactions, world.secrets, surface);
     addChest(world, `chest-${zone.id}-1b`, start + ROOM_W - 8, FLOOR_ROW + 1);
     const mx = (start + 16) * T;
     const my = surface + 56;
@@ -293,7 +254,10 @@ function buildRoom(zone, roomIndex, data, rng, world) {
     }
   }
   if (roomIndex === 2) {
-    addBreakableSecret(data, start, rng, world.interactions, world.secrets, surface);
+    // Keep the room readable: the old six-tile breakable tower read as a
+    // floating grass column. A ground chest preserves the reward without
+    // creating an unreachable silhouette.
+    addChest(world, `chest-${zone.id}-2b`, start + 8, FLOOR_ROW + 1);
     if (!isChallengeRoom) {
       const altarX = start + ROOM_W - 5;
       if (world.map?.isSolidAt(altarX, FLOOR_ROW)) {
@@ -306,8 +270,6 @@ function buildRoom(zone, roomIndex, data, rng, world) {
         });
       }
     }
-    setPlatform(data, start + ROOM_W - 12, FLOOR_ROW + 4, 4);
-    addChest(world, `chest-${zone.id}-2`, start + ROOM_W - 10, FLOOR_ROW + 5);
   }
 
   if (roomIndex === BOSS_ROOM && zone.boss) {
@@ -318,15 +280,9 @@ function buildRoom(zone, roomIndex, data, rng, world) {
       active: false,
       cleared: false,
     };
-  } else if (roomIndex === BOSS_ROOM && !isChallengeRoom) {
-    setPlatform(data, start + 8, FLOOR_ROW + 5, 6);
-    addChest(world, `chest-${zone.id}-3`, start + 10, FLOOR_ROW + 6);
   }
 
   if (isChallengeRoom) {
-    for (let i = 0; i < 3; i++) {
-      setPlatform(data, start + 7 + i * 8, FLOOR_ROW + 4 + (i % 2), 4);
-    }
     world.challenge = {
       room: roomIndex,
       x: (start + 8) * T,
@@ -498,8 +454,14 @@ function addDungeonSetPieces(world) {
       });
     }
     for (const statue of template.statues) {
-      place(statue.prop, start + statue.x, statue.level, (statue.x + room) % 2 === 0, {
-        tint: [1.08, 1.08, 1.14],
+      // Statues live in the wall niche, not in the player's walking lane.
+      world.backdrops.push({
+        prop: statue.prop,
+        x: (start + statue.x) * T + T / 2,
+        y: world.surface,
+        tint: [0.62, 0.63, 0.72],
+        alpha: 0.62,
+        flip: (statue.x + room) % 2 === 0,
       });
     }
     world.setPieces.push({

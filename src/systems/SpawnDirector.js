@@ -179,15 +179,16 @@ export class SpawnDirector {
     const baseDistance = GAME.internalWidth / 2 + 40 + this.rng.float(0, 170);
     const choices = [side, -side];
     for (const direction of choices) {
-      for (let attempt = 0; attempt < 5; attempt++) {
+      for (let attempt = 0; attempt < 8; attempt++) {
         const x = player.x + direction * (baseDistance + attempt * 40);
         if (x < 32 || x > world.width * GAME.tile - 32) continue;
         const nearChest = world.interactions.some((interaction) => (
           interaction.type === 'chest' && Math.abs(interaction.x - x) < 4 * GAME.tile
         ));
         if (nearChest) continue;
-        const groundY = this.findGround(world, x, player.y);
+        const groundY = this.findGround(world, x, world.surface);
         if (groundY === null) continue;
+        if (!def.flying && !this.isBaseFloorSpawn(world, x, groundY)) continue;
         const tileX = Math.floor(x / GAME.tile);
         const standable = world.map.isStandableTile(tileX, Math.ceil(groundY / GAME.tile));
         if (!standable) continue;
@@ -199,8 +200,18 @@ export class SpawnDirector {
     return null;
   }
 
-  findGround(world, x, playerY) {
-    const top = Math.min(world.height - 2, Math.floor(playerY / GAME.tile) + 14);
+  isBaseFloorSpawn(world, x, groundY) {
+    if (Math.abs(groundY - world.surface) > 0.5) return false;
+    const map = world.map;
+    const tx = Math.floor(x / GAME.tile);
+    for (let dx = -1; dx <= 1; dx++) {
+      if (!map.isSolidAt(tx + dx, map.surfaceRow)) return false;
+    }
+    return true;
+  }
+
+  findGround(world, x, referenceY = world.surface) {
+    const top = Math.min(world.height - 2, Math.floor(referenceY / GAME.tile) + 14);
     return world.map.getGroundYAtWorld(x, top * GAME.tile);
   }
 

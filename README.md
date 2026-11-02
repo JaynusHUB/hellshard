@@ -90,9 +90,10 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
   left/middle/right edge frames. `npm run validate:tiles` checks every crop rectangle and the
   supplied Tiled cemetery reference map.
 - **Layout / inspection:** occupancy-grid placement prevents props, platforms, chests and gates from
-  overlapping. `npm run validate:layout` checks 100 seeds × 5 zones for overlaps, floating chests and
-  unsupported single tiles. Dev-only `?zone`, `?seed`, `?peaceful`, `?fly` and `?debug=gallery`
-  parameters support world inspection.
+  overlapping. Ledges are jump-reachable (max 3 tiles) and gain supported stairs; ground enemies
+  spawn only on continuous base-floor runs. `npm run validate:layout` checks 100 seeds × 5 zones for
+  overlaps, floating chests, unreachable platforms and unsupported single tiles. Dev-only `?zone`,
+  `?seed`, `?peaceful`, `?fly` and `?debug=gallery` parameters support world inspection.
 - **UI:** main menu, character select, HUD, pause, settings, achievements, level-up cards,
   seed entry, credits, boss bar and result screen. English and Turkish localization.
 - **Determinism / QA:** fixed 60 Hz simulation with interpolation, seeded generation and a

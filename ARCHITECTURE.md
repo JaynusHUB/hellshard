@@ -110,6 +110,9 @@ index.html
 - Hollow Keep uses six hand-authored room templates in `src/data/dungeonRooms.js`; five are selected
   and ordered per seed. Steps, podiums, pits, ledges and set pieces are generated as data, then the
   occupancy grid verifies every chest and statue.
+- Ledges are capped by `GAME.world.platformMaxRise` and receive supported stair flights where the
+  base floor allows. Ground enemies spawn only on a continuous base-floor run; a deterministic
+  step-up hop handles 1-2 tile risers without reintroducing random hopping.
 - Dungeon rendering uses a depth-graded brick floor, atlas-crop surface decals, six parallax layers
   (including screen-edge foreground pillars) and torch ember particles. Static and moving platforms
   receive underbodies/supports from their active biome tile family; gates get a stepped tile arch,

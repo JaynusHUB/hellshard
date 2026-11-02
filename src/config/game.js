@@ -27,6 +27,7 @@ export const GAME = {
     spawnOffset: 5,
     fallDeathY: -48,
     roomTagCount: 5,
+    platformMaxRise: 3,
   },
   player: {
     width: 12,
@@ -148,6 +149,7 @@ export const GAME = {
     pitStuckSeconds: 5,
     pitFallDepth: 8,
     despawnY: -40,
+    stepCooldown: 0.8,
     crowd: {
       maxSameTypePerScreen: 3,
       speedVariance: 0.08,

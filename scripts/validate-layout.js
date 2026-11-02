@@ -1,4 +1,4 @@
-import { GAME } from '../src/config/game.js';
+import { GAME, PHYSICS_BOUNDS } from '../src/config/game.js';
 import { ZONE_ORDER } from '../src/data/zones.js';
 import { generateWorld } from '../src/world/WorldGen.js';
 import { TILE } from '../src/world/Tilemap.js';
@@ -18,6 +18,7 @@ for (const zoneId of ZONE_ORDER) {
     floatingChests: 0,
     clearanceBad: 0,
     tinyStructures: 0,
+    unreachablePlatforms: 0,
   };
 }
 
@@ -87,6 +88,15 @@ for (let seed = 1; seed <= 100; seed++) {
     row.chests += chests.length;
     row.gates += gates.length;
     row.platforms += platforms.length;
+    for (const platform of zone.platformRuns ?? []) {
+      const rise = (platform.row - zone.floorRow) * T;
+      if (rise > PHYSICS_BOUNDS.maxJumpHeight + 0.5) {
+        row.unreachablePlatforms++;
+        if (failures.length < 60) {
+          failures.push(`${seed}:${zoneId}: platform row ${platform.row} is ${rise}px above floor`);
+        }
+      }
+    }
 
     for (const prop of props) {
       for (const other of entries) {
@@ -129,20 +139,20 @@ for (let seed = 1; seed <= 100; seed++) {
   }
 }
 
-const columns = ['zone', 'props', 'chests', 'gates', 'platforms', 'overlaps', 'floatingChests', 'clearanceBad', 'tinyStructures'];
-const widths = [10, 7, 7, 7, 10, 9, 15, 13, 15];
+const columns = ['zone', 'props', 'chests', 'gates', 'platforms', 'overlaps', 'floatingChests', 'clearanceBad', 'tinyStructures', 'unreachablePlatforms'];
+const widths = [10, 7, 7, 7, 10, 9, 15, 13, 15, 21];
 console.log(columns.map((column, index) => column.padEnd(widths[index])).join(''));
 for (const zoneId of ZONE_ORDER) {
   const row = stats[zoneId];
-  const values = [zoneId, row.props, row.chests, row.gates, row.platforms, row.overlaps, row.floatingChests, row.clearanceBad, row.tinyStructures];
+  const values = [zoneId, row.props, row.chests, row.gates, row.platforms, row.overlaps, row.floatingChests, row.clearanceBad, row.tinyStructures, row.unreachablePlatforms];
   console.log(values.map((value, index) => String(value).padEnd(widths[index])).join(''));
 }
 const totalBad = Object.values(stats).reduce((sum, row) => (
-  sum + row.overlaps + row.floatingChests + row.clearanceBad + row.tinyStructures
+  sum + row.overlaps + row.floatingChests + row.clearanceBad + row.tinyStructures + row.unreachablePlatforms
 ), 0);
 if (totalBad > 0) {
   console.error(`\n✗ Layout validation failed with ${totalBad} issue(s).`);
   for (const failure of failures) console.error(`  - ${failure}`);
   process.exit(1);
 }
-console.log('\n✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests, clearance violations or unsupported single-tile structures.');
+console.log('\n✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests, clearance violations, unsupported single-tile structures or unreachable platforms.');
