@@ -6,6 +6,7 @@ import { AudioManager } from './core/AudioManager.js';
 import { AssetLibrary } from './render/AssetLibrary.js';
 import { Game } from './core/Game.js';
 import { UIManager } from './ui/UIManager.js';
+import { mountFacingDebug } from './ui/FacingDebugPage.js';
 import { translate } from './ui/strings.js';
 
 function setBoot(progress, text) {
@@ -19,12 +20,22 @@ async function boot() {
   const save = new SaveStore();
   const language = save.settings.language ?? 'en';
   const t = (key, vars) => translate(language, key, vars);
+  const facingDebug = new URLSearchParams(window.location.search).get('debug') === 'facing';
   setBoot(0.02, t('game.loading'));
   const audio = new AudioManager(save.settings);
   const assets = new AssetLibrary();
   await assets.loadAll((progress) => {
     setBoot(0.05 + progress * 0.62, t('game.assets'));
   });
+  if (facingDebug) {
+    const page = mountFacingDebug(assets);
+    setBoot(1, 'Facing audit ready');
+    const bootOverlay = document.getElementById('boot-overlay');
+    bootOverlay?.classList.add('done');
+    window.setTimeout(() => bootOverlay?.remove(), 900);
+    window.HELLSHARD = { assets, facingDebug: page };
+    return;
+  }
   setBoot(0.7, t('game.loading'));
   await Promise.all(ZONE_ORDER.map((zoneId) => assets.loadZoneBackgrounds(zoneId)));
   setBoot(0.94, t('game.loading'));

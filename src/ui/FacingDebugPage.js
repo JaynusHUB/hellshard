@@ -1,0 +1,177 @@
+import * as THREE from 'three';
+import { SpriteBatch } from '../render/SpriteBatch.js';
+import { CHARACTERS } from '../data/characters.js';
+import { ENEMIES } from '../data/enemies.js';
+import { BOSSES } from '../data/bosses.js';
+
+const CARD_SIZE = 160;
+const CARD_SCALE = 1.5;
+
+const STYLE = `
+  html, body { margin: 0; background: #0b0910; color: #ded3c2; }
+  body { font-family: "Pixelify Sans", monospace; }
+  #facing-debug {
+    height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box;
+    background: radial-gradient(ellipse at 50% 0%, #221522 0%, #0b0910 60%);
+  }
+  .facing-header { max-width: 1220px; margin: 0 auto 20px; }
+  .facing-header h1 { margin: 0 0 6px; font-size: 24px; color: #f0d89b; font-weight: normal; }
+  .facing-header p { margin: 4px 0; color: #9d8f9f; font-size: 13px; max-width: 900px; line-height: 1.5; }
+  .facing-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 12px; color: #c9b7d1; }
+  .facing-legend b { color: #f0d89b; font-weight: normal; }
+  .facing-grid { max-width: 1220px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .facing-card { border: 1px solid #3e2a40; background: rgba(20, 14, 24, 0.9); padding: 10px 12px 12px; }
+  .facing-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; color: #f0d89b; font-size: 16px; }
+  .facing-used { color: #806d85; font-size: 10px; text-align: right; }
+  .facing-meta { color: #958297; font-size: 10px; margin: 3px 0 8px; }
+  .facing-meta b { color: #e9d29b; font-weight: normal; }
+  .facing-states { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .facing-state { margin: 0; }
+  .facing-state canvas { display: block; width: 100%; image-rendering: pixelated; border: 1px solid #3b2b3e; background-color: #17111d; background-image: linear-gradient(45deg, #201728 25%, transparent 25%), linear-gradient(-45deg, #201728 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #201728 75%), linear-gradient(-45deg, transparent 75%, #201728 75%); background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0; }
+  .facing-state figcaption { margin-top: 4px; color: #9d8f9f; font-size: 9px; line-height: 1.35; }
+  .facing-state figcaption b { color: #e9d29b; font-weight: normal; }
+  .facing-note { max-width: 1220px; margin: 18px auto 0; color: #75687a; font-size: 11px; }
+  @media (max-width: 900px) {
+    .facing-grid { grid-template-columns: 1fr; }
+    #facing-debug { padding: 12px; }
+  }
+`;
+
+function spriteUsage() {
+  const usage = new Map();
+  const add = (sprite, label) => {
+    if (!usage.has(sprite)) usage.set(sprite, []);
+    usage.get(sprite).push(label);
+  };
+  for (const character of CHARACTERS) add(character.sprite, character.id);
+  for (const enemy of ENEMIES) add(enemy.sprite, enemy.id);
+  for (const boss of Object.values(BOSSES)) add(boss.sprite, boss.id);
+  return usage;
+}
+
+function chooseClip(sprite) {
+  const clips = Object.keys(sprite.animations);
+  const preferred = ['walk', 'run', 'float', 'bounce', 'idle', 'cast'];
+  return preferred.find((clip) => clips.includes(clip)) ?? clips[0];
+}
+
+function drawRaw(canvas, assets, sprite, frame) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const atlas = assets.atlases[sprite.atlas];
+  if (!atlas) return;
+  const scale = Math.max(1, Math.min(3, Math.floor(120 / Math.max(1, frame.w, frame.h))));
+  const w = frame.w * scale;
+  const h = frame.h * scale;
+  const x = Math.floor((canvas.width - w) / 2);
+  const y = Math.floor((canvas.height - h) / 2);
+  ctx.drawImage(atlas.canvas, frame.sx, frame.sy, frame.w, frame.h, x, y, w, h);
+}
+
+function drawGameState(canvas, renderer, scene, batches, assets, sprite, frame, direction) {
+  for (const batch of batches.values()) batch.mesh.visible = false;
+  const batch = batches.get(sprite.atlas);
+  if (!batch) return;
+  const flip = assets.shouldFlipSprite(sprite.id ?? '', direction);
+  batch.begin();
+  batch.draw(frame, 0, -frame.h / 2, {
+    anchorY: frame.anchorY ?? 1,
+    flip,
+  });
+  batch.end();
+  batch.mesh.visible = true;
+  renderer.render(scene, renderer.userData.camera);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(renderer.domElement, 0, 0);
+}
+
+export function mountFacingDebug(assets) {
+  document.getElementById('stage')?.style.setProperty('display', 'none');
+  const app = document.getElementById('app') ?? document.body;
+  const page = document.createElement('main');
+  page.id = 'facing-debug';
+  const usage = spriteUsage();
+  const atlases = Object.values(assets.atlases);
+  const cards = [];
+
+  page.innerHTML = `
+    <header class="facing-header">
+      <h1>HELLSHARD · sprite facing audit</h1>
+      <p>Raw source frame vs the game's own atlas + SpriteBatch path. Left and right states are
+      produced by the same <b>shouldFlipSprite</b> helper used by EntityRenderer, with the target
+      direction passed directly. Compare each pair against the raw art and decide which sprites
+      need a different manifest <b>facing</b> value.</p>
+      <div class="facing-legend">
+        <span><b>RAW</b> source crop + manifest facing</span>
+        <span><b>LEFT</b> target on the left / movement to the left</span>
+        <span><b>RIGHT</b> target on the right / movement to the right</span>
+      </div>
+    </header>
+    <section class="facing-grid" data-facing-grid></section>
+    <p class="facing-note">No gameplay is running on this page. This is a static render audit.</p>
+  `;
+  app.appendChild(page);
+
+  const grid = page.querySelector('[data-facing-grid]');
+  const style = document.createElement('style');
+  style.textContent = STYLE;
+  document.head.appendChild(style);
+
+  const gl = new THREE.WebGLRenderer({
+    alpha: true,
+    antialias: false,
+    preserveDrawingBuffer: true,
+    powerPreference: 'low-power',
+  });
+  gl.setPixelRatio(1);
+  gl.setSize(CARD_SIZE, CARD_SIZE, false);
+  gl.setClearColor(0x000000, 0);
+  gl.outputColorSpace = THREE.SRGBColorSpace;
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-80, 80, 80, -80, 0.1, 10);
+  camera.position.z = 5;
+  gl.userData.camera = camera;
+  const batches = new Map();
+  for (const atlas of atlases) {
+    const batch = new SpriteBatch(atlas.texture, 4);
+    batch.mesh.visible = false;
+    scene.add(batch.mesh);
+    batches.set(atlas.family, batch);
+  }
+
+  const spriteEntries = Object.entries(assets.manifest.sprites)
+    .filter(([id]) => id !== 'fireball' && id !== 'death_burst');
+
+  for (const [spriteId, sprite] of spriteEntries) {
+    const clipName = chooseClip(sprite);
+    const animation = assets.getAnimation(spriteId, clipName);
+    const frame = animation?.frames?.[0];
+    if (!frame) continue;
+    const usedBy = usage.get(spriteId) ?? [];
+    const usedLabel = usedBy.length ? `used by: ${usedBy.join(', ')}` : '';
+    const card = document.createElement('article');
+    card.className = 'facing-card';
+    card.dataset.sprite = spriteId;
+    card.innerHTML = `
+      <div class="facing-title"><span>${spriteId}</span><span class="facing-used">${usedLabel}</span></div>
+      <div class="facing-meta">frame ${frame.w}×${frame.h} · clip <b>${clipName}</b> · manifest facing: <b>${sprite.facing ?? 'right'}</b></div>
+      <div class="facing-states">
+        <figure class="facing-state"><canvas width="${CARD_SIZE}" height="${CARD_SIZE}"></canvas><figcaption><b>RAW</b><br>source frame · ${sprite.facing ?? 'right'}</figcaption></figure>
+        <figure class="facing-state"><canvas width="${CARD_SIZE}" height="${CARD_SIZE}"></canvas><figcaption><b>LEFT</b><br>target left · flip ${assets.shouldFlipSprite(spriteId, -1)}</figcaption></figure>
+        <figure class="facing-state"><canvas width="${CARD_SIZE}" height="${CARD_SIZE}"></canvas><figcaption><b>RIGHT</b><br>target right · flip ${assets.shouldFlipSprite(spriteId, 1)}</figcaption></figure>
+      </div>
+    `;
+    grid.appendChild(card);
+    const canvases = card.querySelectorAll('canvas');
+    drawRaw(canvases[0], assets, { ...sprite, id: spriteId }, frame);
+    drawGameState(canvases[1], gl, scene, batches, assets, { ...sprite, id: spriteId }, frame, -1);
+    drawGameState(canvases[2], gl, scene, batches, assets, { ...sprite, id: spriteId }, frame, 1);
+    cards.push(card);
+  }
+
+  gl.domElement.style.display = 'none';
+  return { page, renderer: gl, camera, batches, cards };
+}

@@ -174,6 +174,7 @@ export class Game {
       speed: modifiers.speed ?? 1,
       zoneTint,
     });
+    enemy.spawnCost = this.getEnemyCost(enemyId) * (modifiers.elite ? 1.4 : 1);
     this.enemies.push(enemy);
     this.glowParticles.burst([COLORS.soul, COLORS.shadow], px, y + enemy.height / 2, 10, {
       speed: 45,
@@ -274,6 +275,14 @@ export class Game {
     for (const enemy of this.enemies) {
       enemy.update(dt, this.activeWorld, player, this);
     }
+    for (const enemy of this.enemies) {
+      if (enemy.dead) continue;
+      const fellBelowGround = !enemy.flying && enemy.y < this.activeWorld.surface - GAME.enemyAI.pitFallDepth;
+      if (enemy.y < GAME.enemyAI.despawnY || fellBelowGround) {
+        this.despawnEnemy(enemy, 'fall');
+      }
+    }
+    this.combatDirector.applySpikeDamage();
     this.separateEnemies();
     this.combatDirector.handlePlayerEvents(player.consumeEvents());
     this.buildSpatialHash();
@@ -369,6 +378,16 @@ export class Game {
     this.buildSpatialHash();
   }
 
+  despawnEnemy(enemy, reason = 'despawn') {
+    if (!enemy || enemy.dead || enemy.isBoss) return;
+    enemy.dead = true;
+    enemy.despawned = true;
+    enemy.despawnReason = reason;
+    enemy.deathTimer = 0;
+    enemy.countedDeath = true;
+    this.spawnDirector?.refund(enemy.spawnCost ?? 0);
+  }
+
   separateEnemies() {
     const world = this.activeWorld;
     if (!world || this.enemies.length < 2) return;
@@ -415,6 +434,8 @@ export class Game {
     const half = enemy.width / 2;
     const map = this.activeWorld?.map;
     if (!map) return false;
+    const support = map.getGroundYAtWorld(x, enemy.y + 4);
+    if (support === null || Math.abs(support - enemy.y) > 4) return false;
     return !map.rectHitsSolid(x - half + 1, enemy.y + 2, enemy.width - 2, Math.max(1, enemy.height - 4));
   }
 

@@ -91,6 +91,11 @@ export class SpawnDirector {
     });
   }
 
+  refund(cost) {
+    const value = Number(cost);
+    if (Number.isFinite(value) && value > 0) this.budget += value;
+  }
+
   timeHealthScale(elapsed) {
     if (elapsed < 600) return 1;
     return 1 + ((elapsed - 600) / 60) * DIFFICULTY.timeScale.hpPerMinuteAfter10;

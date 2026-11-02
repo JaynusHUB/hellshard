@@ -21,6 +21,14 @@ npm run validate:world -- 1 300
 npm run validate:alignment # alpha-painted surface + prop/support alignment
 ```
 
+Facing audit page (dev or preview):
+
+```text
+http://127.0.0.1:5173/?debug=facing
+http://127.0.0.1:4173/?debug=facing
+```
+```
+
 All runtime assets are local under `public/assets`; there are no CDN requests.
 
 ## Controls
@@ -45,6 +53,9 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
 - **Combat:** basic/heavy/special attacks, projectiles, melee arcs, i-frame dashes, hitstop,
   knockback, crits, status effects, pooled particles, screen shake, damage numbers and synthesized SFX.
 - **Enemies:** 10 normal enemy types plus 2 elites with distinct movement and attack state machines.
+  Ground enemies probe pits, jump when their physics envelope permits, retreat/reposition otherwise,
+  and safely despawn with spawn-budget refunds. Spike hazards damage enemies too, using configured
+  multipliers.
 - **Three phased bosses:** Mourning Maw, Seraph of Ash and the Drowned Choir. Each drops a Hellshard
   and a guaranteed upgrade chest.
 - **Progression:** XP crystals, magnetic pickup, level-up choices, 13 capped upgrades, weapon levels,

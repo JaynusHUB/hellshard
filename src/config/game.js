@@ -127,6 +127,21 @@ export const GAME = {
   spatial: {
     cellSize: 48,
   },
+  enemyAI: {
+    pitProbeTiles: 1,
+    pitMaxGapTiles: 4,
+    pitJumpSpeed: 190,
+    pitJumpHeight: 330,
+    pitRetreatSeconds: 0.55,
+    pitStuckSeconds: 5,
+    pitFallDepth: 8,
+    despawnY: -40,
+  },
+  hazards: {
+    spikeDamage: 12,
+    enemyDamageMultiplier: 1.25,
+    enemyHitInterval: 0.65,
+  },
 };
 
 export const PHYSICS_BOUNDS = {

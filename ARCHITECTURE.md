@@ -52,6 +52,7 @@ index.html
    ├─ ui/MenuScreens.js         menu/char-select/settings/achievements HTML
    ├─ ui/SettingsViews.js       settings and achievements behavior
    ├─ ui/FeedbackLayer.js       toasts, damage numbers, debug overlay
+   ├─ ui/FacingDebugPage.js    ?debug=facing raw/Batch left/right audit
    ├─ ui/HUD.js                 in-run HUD
    └─ ui/strings.js             every user-facing string in en/tr
 ```
@@ -82,7 +83,10 @@ index.html
 - Fixed timestep `1/60`. `Loop` clamps accumulated time, discards stale time after tab hide, and caps
   substeps to avoid the spiral of death. Rendering interpolates and snaps visual positions.
 - Input edges are latched and cleared after each fixed update. UI screens can disable gameplay input.
-- Hitstop freezes world simulation for 1–4 frames while rendering/UI/audio continue.
+- Hitstop freezes world simulation for 1-4 frames while rendering/UI/audio continue.
+- Ground AI probes pits with `Enemy.probeGap`; jump-capable types use the configured jump envelope,
+  others retreat and eventually despawn. Despawns refund the spawn budget. Spike damage uses
+  `GAME.hazards` multipliers and is applied by `CombatDirector.applySpikeDamage`.
 - Collision is AABB vs. tilemap. One-way platforms collide only when falling. A spatial hash answers
   melee/projectile queries against active enemies.
 - World layout is deterministic from `seed + zone + room`. Gameplay RNG is a separate stream, so

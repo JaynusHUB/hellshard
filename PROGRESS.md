@@ -7,10 +7,10 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` — passes after the alignment pass (61 modules, no errors; atlases are generated at
-  runtime, JS ~817 kB / 215 kB gzip).
-- `npm test` — **25/25 tests passing** in 6 suites (RNG, upgrades/evolutions, world generation,
-  achievements, sprite manifest facing/coverage, localization).
+- `npm run build` — passes after the facing/pit-AI pass (62 modules, no errors; atlases are generated
+  at runtime, JS ~828 kB / 219 kB gzip).
+- `npm test` — **29/29 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
+  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
 - `npm run validate:alignment` — **passed**: 5 zones, 41 ground props, 120 placed objects,
@@ -145,6 +145,28 @@ forest    route=3 surface=144 manifestOffset=0 measuredRows=0 props=8
 ✓ Alignment validation passed: 5 zones, 41 props, 120 placed objects, ±1px tolerance.
   ground props checked: 41; one-way ledges are at least 3 tiles wide.
 ```
+
+## Known issues — facing audit and pit AI (2026-11-02)
+
+- [x] **Facing audit page added at `?debug=facing`.** `src/ui/FacingDebugPage.js` renders every
+  player/enemy/boss sprite as raw frame + manifest facing, then through the game's own atlas,
+  `SpriteBatch` and `shouldFlipSprite` path for `target LEFT` and `target RIGHT`. No facing values
+  were guessed or changed in this pass; the user can compare the cards and name the wrong ones.
+- [x] **Ground enemies no longer walk into pits.** `Enemy.probeGap()` checks the first tile ahead and
+  scans up to `PHYSICS_BOUNDS.maxGapTiles` for a same-height landing. Jump-capable species leap when
+  a landing exists; others stop/retreat instead of accumulating at the edge.
+- [x] **Chargers check pits during their strike.** A charger that reaches a gap either clears it with
+  a pit jump or cancels into recovery; it does not run into the pit.
+- [x] **Spike damage:** `CombatDirector.applySpikeDamage()` damages enemies on `kind: 'spikes'`
+  hazards with `GAME.hazards.spikeDamage * enemyDamageMultiplier`; the multiplier and hit interval
+  are in `src/config/game.js`.
+- [x] **Despawn + spawn budget refund:** enemies that fall below `pitFallDepth` or make no forward
+  progress for `pitStuckSeconds` are despawned without kill/XP rewards; `SpawnDirector.refund()`
+  returns their spawn cost to the budget.
+- [x] **Separation respects pits:** `Game.canSeparateTo()` now requires same-level ground support, so
+  the push cannot shove an enemy over a gap.
+- [x] **Deterministic 1D pit simulation:** `tests/pit-ai.test.js` verifies a jump-capable enemy
+  crosses a two-tile pit and a non-jumping enemy either crosses or safely despawns inside 10 seconds.
 
 ## Completed phases
 

@@ -10,6 +10,30 @@ export class CombatDirector {
     if (!enemy.dead) enemy.update(dt, this.game.activeWorld, this.game.player, this.game);
   }
 
+  applySpikeDamage() {
+    const game = this.game;
+    const world = game.activeWorld;
+    if (!world?.hazards?.length) return;
+    for (const enemy of game.enemies) {
+      if (enemy.dead || enemy.hazardCooldown > 0) continue;
+      const b = enemy.getBounds();
+      const onSpikes = world.hazards.some((hazard) => (
+        hazard.kind === 'spikes' &&
+        b.x < hazard.x + hazard.w &&
+        b.x + b.w > hazard.x &&
+        b.y < hazard.y + hazard.h &&
+        b.y + b.h > hazard.y
+      ));
+      if (!onSpikes) continue;
+      enemy.hazardCooldown = GAME.hazards.enemyHitInterval;
+      game.combat.damageEnemy(enemy, GAME.hazards.spikeDamage * GAME.hazards.enemyDamageMultiplier, {
+        element: 'trap',
+        knockback: 0,
+        sourceX: enemy.x,
+      });
+    }
+  }
+
   handleEnemyEvents(events) {
     const game = this.game;
     for (const event of events) {

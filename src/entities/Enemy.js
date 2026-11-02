@@ -1,4 +1,4 @@
-import { GAME } from '../config/game.js';
+import { GAME, PHYSICS_BOUNDS } from '../config/game.js';
 import { ANIMATION } from '../config/animations.js';
 import { ENEMY_BY_ID } from '../data/enemies.js';
 import { Animator } from '../render/Animator.js';
@@ -72,6 +72,17 @@ export class Enemy {
     this.slowFactor = 1;
     this.hurtTimer = 0;
     this.deathTimer = 0;
+    this.hazardCooldown = 0;
+    this.pitBlockedTime = 0;
+    this.pitEngaged = false;
+    this.retreatTimer = 0;
+    this.pitJumpTimer = 0;
+    this.pitJumpDirection = 1;
+    this.stuckTimer = 0;
+    this.progressAnchorX = x;
+    this.spawnCost = 0;
+    this.despawned = false;
+    this.canJumpGap = Boolean(def.canJumpGap);
     this.paletteFrame = null;
     this.playAnimation('idle', { restart: true });
   }
@@ -92,6 +103,7 @@ export class Enemy {
     this.prevX = this.x;
     this.prevY = this.y;
     this.hurtTimer = Math.max(0, this.hurtTimer - dt);
+    this.hazardCooldown = Math.max(0, this.hazardCooldown - dt);
     this.flashTimer = Math.max(0, this.flashTimer - dt);
     this.iframes = Math.max(0, this.iframes - dt);
     this.spawnGrace = Math.max(0, this.spawnGrace - dt);
@@ -177,6 +189,20 @@ export class Enemy {
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
     this.facing = dx >= 0 ? 1 : -1;
+
+    if (this.pitJumpTimer > 0) {
+      this.pitJumpTimer -= dt;
+      this.vx = this.pitJumpDirection * GAME.enemyAI.pitJumpSpeed;
+      this.applyPhysics(dt, world);
+      if (this.onGround) {
+        this.pitJumpTimer = 0;
+        this.pitBlockedTime = 0;
+        this.progressAnchorX = this.x;
+        this.stuckTimer = 0;
+      }
+      return;
+    }
+
     if (this.behavior === 'ranged') {
       this.updateRanged(dt, world, player, dx, absDx, absDy, game);
     } else if (this.behavior === 'flyer') {
@@ -188,11 +214,36 @@ export class Enemy {
     } else {
       this.updateGroundChase(dt, world, player, dx, absDx, absDy);
     }
+
+    this.handlePitEdge(dt, world, player, dx, game);
+    if (this.dead) return;
+    if (this.pitJumpTimer > 0) return;
     if (this.tryAttack(player, absDx, absDy)) {
       this.setState('windup');
     }
     this.applyPhysics(dt, world);
+    this.trackProgress(dt, player, game);
     this.checkContactDamage(player, game);
+  }
+
+  trackProgress(dt, player, game) {
+    if (this.flying || this.behavior === 'ranged' || this.behavior === 'teleporter' || this.isBoss) return;
+    if (!player || player.dead) return;
+    const toward = Math.sign(player.x - this.x) || 1;
+    const advance = (this.x - this.progressAnchorX) * toward;
+    if (advance > 1.2) {
+      this.progressAnchorX = this.x;
+      this.stuckTimer = 0;
+      return;
+    }
+    if (Math.abs(player.x - this.x) > 80) {
+      this.stuckTimer += dt;
+      if (this.stuckTimer >= GAME.enemyAI.pitStuckSeconds) {
+        game?.despawnEnemy?.(this, 'noProgress');
+      }
+    } else {
+      this.stuckTimer = 0;
+    }
   }
 
   updateGroundChase(dt, world, player, dx, absDx, absDy) {
@@ -202,20 +253,79 @@ export class Enemy {
     }
     const desired = clamp(dx, -1, 1) * this.speed * this.slowFactor;
     this.vx += clamp(desired - this.vx, -900 * dt, 900 * dt);
-    const aheadX = this.x + this.facing * (this.width / 2 + 6);
-    const gap = this.behavior !== 'walker' ? false : !this.hasGroundAhead(world, aheadX);
-    if (gap && this.onGround) {
-      if (absDx < 150 && this.behavior !== 'tank') {
-        this.vy = GAME.player.jumpSpeed * 0.72;
-        this.onGround = false;
-      } else {
-        this.vx = 0;
-      }
-    }
     if (Math.abs(absDx) > 220 && this.behavior !== 'tank' && absDy < 80 && this.onGround && this.cooldown <= 0.3) {
       if (Math.random() < 0.015) {
         this.vy = GAME.player.jumpSpeed * 0.65;
       }
+    }
+  }
+
+  probeGap(world) {
+    const map = world.map;
+    const dir = this.facing || 1;
+    const aheadX = this.x + dir * (this.width / 2 + GAME.enemyAI.pitProbeTiles * 4);
+    const here = map.getGroundYAtWorld(aheadX, this.y + 8);
+    if (here !== null && Math.abs(here - this.y) <= 4) {
+      return { safe: true, landing: null };
+    }
+    const maxGap = Math.min(GAME.enemyAI.pitMaxGapTiles, PHYSICS_BOUNDS.maxGapTiles);
+    for (let step = 1; step <= maxGap + 1; step++) {
+      const x = this.x + dir * step * GAME.tile;
+      const groundY = map.getGroundYAtWorld(x, this.y + 8);
+      if (groundY !== null && Math.abs(groundY - this.y) <= 4) {
+        return { safe: false, landing: { x, tiles: step - 1 } };
+      }
+    }
+    return { safe: false, landing: null };
+  }
+
+  handlePitEdge(dt, world, player, dx, game) {
+    if (this.flying || this.isBoss || this.behavior === 'teleporter') return;
+    const probe = this.probeGap(world);
+    if (probe.safe) {
+      this.retreatTimer = 0;
+      if (this.pitEngaged) {
+        // A safe retreat does not erase a failed pit crossing. Keep the
+        // encounter timer until the player is close on this side or a jump
+        // succeeds, otherwise a kiting enemy would oscillate forever.
+        if (player && Math.abs(player.x - this.x) < 120) {
+          this.pitEngaged = false;
+          this.pitBlockedTime = 0;
+        } else {
+          this.pitBlockedTime += dt;
+          if (this.pitBlockedTime >= GAME.enemyAI.pitStuckSeconds) {
+            game?.despawnEnemy?.(this, 'pitStuck');
+          }
+        }
+      }
+      return;
+    }
+    this.pitEngaged = true;
+    this.pitBlockedTime += dt;
+
+    const maxGap = Math.min(GAME.enemyAI.pitMaxGapTiles, PHYSICS_BOUNDS.maxGapTiles);
+    if (this.canJumpGap && probe.landing && probe.landing.tiles <= maxGap) {
+      const dir = Math.sign(dx) || this.facing || 1;
+      this.vx = dir * GAME.enemyAI.pitJumpSpeed;
+      this.vy = GAME.enemyAI.pitJumpHeight;
+      this.pitJumpDirection = dir;
+      this.pitJumpTimer = 0.9;
+      this.facing = dir;
+      this.onGround = false;
+      this.ridingPlatform = null;
+      this.pitBlockedTime = 0;
+      this.pitEngaged = false;
+      this.events.push({ type: 'pitJump', enemy: this });
+      return;
+    }
+
+    this.retreatTimer = Math.max(this.retreatTimer, GAME.enemyAI.pitRetreatSeconds);
+    if (this.retreatTimer > 0) {
+      this.retreatTimer -= dt;
+      this.vx = -Math.sign(dx) * Math.max(this.speed, 42);
+    }
+    if (this.pitBlockedTime >= GAME.enemyAI.pitStuckSeconds) {
+      game?.despawnEnemy?.(this, 'pitStuck');
     }
   }
 
@@ -307,6 +417,24 @@ export class Enemy {
   updateStrike(dt, world, player, game) {
     this.stateTimer -= dt;
     if (this.behavior === 'charger') {
+      if (this.onGround && this.vx !== 0) {
+        const probe = this.probeGap(world);
+        if (!probe.safe) {
+          const maxGap = Math.min(GAME.enemyAI.pitMaxGapTiles, PHYSICS_BOUNDS.maxGapTiles);
+          if (this.canJumpGap && probe.landing && probe.landing.tiles <= maxGap) {
+            this.vx = this.facing * GAME.enemyAI.pitJumpSpeed;
+            this.vy = GAME.enemyAI.pitJumpHeight;
+            this.pitJumpDirection = this.facing;
+            this.pitJumpTimer = 0.9;
+            this.onGround = false;
+            this.state = 'chase';
+            return;
+          }
+          this.vx = 0;
+          this.setState('recover');
+          return;
+        }
+      }
       this.vx = this.facing * this.def.chargeSpeed;
       this.applyPhysics(dt, world);
       if (this.onGround === false && Math.random() < 0.05) {
