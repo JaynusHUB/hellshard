@@ -203,8 +203,15 @@ export function createGeneratedSprites() {
   texture.flipY = true;
   texture.needsUpdate = true;
 
+  const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   const frames = {};
   for (const [name, x, y, w, h] of layout) {
+    let maxY = -1;
+    for (let yy = 0; yy < h; yy++) {
+      for (let xx = 0; xx < w; xx++) {
+        if (pixelData[((y + yy) * canvas.width + x + xx) * 4 + 3] >= 8) maxY = yy;
+      }
+    }
     frames[name] = {
       id: `generated:${name}`,
       u0: (x + 0.01) / canvas.width,
@@ -215,7 +222,7 @@ export function createGeneratedSprites() {
       h,
       sx: x,
       sy: y,
-      anchorY: 1,
+      anchorY: (maxY + 1) / h,
     };
   }
   return { canvas, texture, frames };

@@ -76,6 +76,7 @@ export class WorldRenderer {
       }
       if (!frame) continue;
       batch.draw(frame, Math.round(decoration.x), Math.round(decoration.y + (decoration.yOffset ?? 0)), {
+        anchorY: frame.anchorY ?? 1,
         flip: decoration.flip,
         tint,
         alpha: isDungeon ? 1 : (decoration.alpha ?? 0.8),
@@ -104,6 +105,7 @@ export class WorldRenderer {
       if (!frame) continue;
       const pulse = 0.75 + Math.sin(t * 3 + interaction.x * 0.03) * 0.15;
       batch.draw(frame, Math.round(interaction.x), Math.round(interaction.y + 1), {
+        anchorY: frame.anchorY ?? 1,
         tint: tintFor(interaction.type === 'altar' ? [220, 175, 130] : [220, 200, 165]),
         alpha: pulse,
       });
@@ -113,6 +115,7 @@ export class WorldRenderer {
       if (!frame) continue;
       const locked = transition.requiresBoss && !game.zoneStates[game.activeZoneId]?.bossDefeated;
       batch.draw(frame, Math.round(transition.x), Math.round(transition.y + 1), {
+        anchorY: frame.anchorY ?? 1,
         tint: locked ? [0.8, 0.42, 0.4] : tintFor([205, 180, 140]),
         alpha: 0.85,
       });
@@ -121,6 +124,7 @@ export class WorldRenderer {
       const gate = game.activeWorld.finalGate;
       const open = game.run.shards.length >= gate.requiresShards;
       batch.draw(frames.portal, Math.round(gate.x), Math.round(gate.y + 1), {
+        anchorY: frames.portal.anchorY ?? 1,
         tint: open ? [1.2, 1, 0.68] : [0.55, 0.5, 0.6],
         alpha: open ? 0.9 : 0.55,
       });
@@ -141,6 +145,7 @@ export class WorldRenderer {
     if (game.boss && !game.boss.dead) {
       for (const gate of game.arenaGatePositions) {
         batch.draw(frames.portal, Math.round(gate.x - 12), Math.round(gate.y + 4), {
+          anchorY: frames.portal.anchorY ?? 1,
           tint: [1.2, 0.5, 0.45],
           alpha: 0.35,
         });
@@ -225,6 +230,7 @@ export class WorldRenderer {
       for (let x = hazard.x; x < hazard.x + hazard.w; x += 16) {
         const width = Math.min(16, hazard.x + hazard.w - x);
         batch.draw(frame, Math.round(x + width / 2), Math.round(hazard.y), {
+          anchorY: frame.anchorY ?? 1,
           tint: game.activeZoneId === 'forest' ? [0.6, 0.85, 0.55] : [0.85, 0.8, 0.72],
           alpha: 0.9,
         });

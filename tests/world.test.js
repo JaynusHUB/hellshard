@@ -24,7 +24,7 @@ describe('world generation', () => {
     expect(Object.keys(world).sort()).toEqual([...ZONE_ORDER].sort());
     for (const zone of Object.values(world)) {
       expect(zone.reachability.ok).toBe(true);
-      expect(zone.map.isStandableTile(Math.floor(zone.spawn.x / 16), Math.floor(zone.spawn.y / 16))).toBe(true);
+      expect(zone.map.isStandableTile(Math.floor(zone.spawn.x / 16), Math.ceil(zone.spawn.y / 16))).toBe(true);
     }
   });
 

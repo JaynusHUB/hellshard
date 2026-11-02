@@ -1073,6 +1073,7 @@
     "cemetery": {
       "atlas": "gothic",
       "groupWidth": 4,
+      "surfaceOffset": 10,
       "frames": {
         "top": [
           {
@@ -1192,32 +1193,15 @@
     },
     "church": {
       "atlas": "gothic",
-      "groupWidth": 3,
+      "groupWidth": 1,
+      "surfaceOffset": 0,
       "frames": {
         "top": [
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              0,
-              160,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              48,
-              160,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              96,
-              160,
+              64,
+              112,
               16,
               16
             ]
@@ -1227,26 +1211,8 @@
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              0,
-              176,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              48,
-              176,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              96,
-              176,
+              64,
+              128,
               16,
               16
             ]
@@ -1256,26 +1222,8 @@
           {
             "image": "assets/church/ENVIRONMENT/tileset.png",
             "rect": [
-              0,
-              192,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              48,
-              192,
-              16,
-              16
-            ]
-          },
-          {
-            "image": "assets/church/ENVIRONMENT/tileset.png",
-            "rect": [
-              96,
-              192,
+              64,
+              128,
               16,
               16
             ]
@@ -1315,6 +1263,7 @@
     "swamp": {
       "atlas": "gothic",
       "groupWidth": 5,
+      "surfaceOffset": 7,
       "frames": {
         "top": [
           {
@@ -1489,6 +1438,7 @@
     "dungeon": {
       "atlas": "dungeon",
       "groupWidth": 4,
+      "surfaceOffset": 0,
       "frames": {
         "top": [
           {
@@ -1609,6 +1559,7 @@
     "forest": {
       "atlas": "forest",
       "groupWidth": 1,
+      "surfaceOffset": 0,
       "frames": {
         "top": [
           {

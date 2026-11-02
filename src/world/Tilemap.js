@@ -12,13 +12,19 @@ export const TILE = {
 const EPSILON = 0.001;
 
 export class Tilemap {
-  constructor(width, height, data = null) {
+  constructor(width, height, data = null, { surfaceOffset = 0, surfaceRow = 8 } = {}) {
     this.width = width;
     this.height = height;
     this.tileSize = GAME.tile;
     this.data = data ?? new Uint8Array(width * height);
+    this.surfaceOffset = Number(surfaceOffset) || 0;
+    this.surfaceRow = surfaceRow;
     this.blockers = [];
     this.version = 0;
+  }
+
+  get surfaceY() {
+    return (this.surfaceRow + 1) * this.tileSize - this.surfaceOffset;
   }
 
   index(x, y) {
@@ -68,7 +74,11 @@ export class Tilemap {
     for (let ty = bottom; ty <= top; ty++) {
       for (let tx = left; tx <= right; tx++) {
         const type = this.getType(tx, ty);
-        if (this.isSolid(type)) return true;
+        if (this.isSolid(type)) {
+          const rawSurfaceTop = this.surfaceY + this.surfaceOffset;
+          if (ty === this.surfaceRow && y <= rawSurfaceTop + 4) continue;
+          return true;
+        }
         if (includeOneWay && type === TILE.ONE_WAY) return true;
       }
     }
@@ -126,6 +136,8 @@ export class Tilemap {
     for (let ty = bottom; ty <= top; ty++) {
       for (let tx = left; tx <= right; tx++) {
         if (!this.isSolidAt(tx, ty)) continue;
+        const rawSurfaceTop = this.surfaceY + this.surfaceOffset;
+        if (ty === this.surfaceRow && actor.y <= rawSurfaceTop + 0.5) continue;
         if (dx > 0) {
           actor.x = tx * this.tileSize - halfW - EPSILON;
           hit = true;
@@ -168,7 +180,8 @@ export class Tilemap {
         const solid = this.isSolid(type);
         if (!solid && !(type === TILE.ONE_WAY && dy < 0)) continue;
         if (type === TILE.ONE_WAY) {
-          const platformTop = (ty + 1) * this.tileSize;
+          if (dy > 0) continue;
+          const platformTop = (ty + 1) * this.tileSize - this.surfaceOffset;
           if (previousBottom < platformTop - 0.01) continue;
           if (actor.dropThrough && actor.dropThrough > 0) continue;
           actor.y = platformTop + EPSILON;
@@ -178,9 +191,17 @@ export class Tilemap {
           continue;
         }
         if (dy > 0) {
+          // The top solid row is the floor the actor is standing on. Rising
+          // through it must never be treated as hitting a ceiling.
+          if (ty === this.surfaceRow) continue;
           actor.y = ty * this.tileSize - actor.height - EPSILON;
           actor.vy = 0;
           ceiling = true;
+        } else if (ty === this.surfaceRow) {
+          actor.y = this.surfaceY + EPSILON;
+          actor.vy = 0;
+          actor.onGround = true;
+          grounded = true;
         } else {
           actor.y = (ty + 1) * this.tileSize + EPSILON;
           actor.vy = 0;
@@ -214,6 +235,7 @@ export class Tilemap {
   }
 
   checkGround(actor) {
+    if ((actor.vy ?? 0) > 0.1) return false;
     const halfW = Math.max(1, actor.width / 2 - 1);
     const left = Math.floor((actor.x - halfW) / this.tileSize);
     const right = Math.floor((actor.x + halfW - EPSILON) / this.tileSize);
@@ -248,7 +270,9 @@ export class Tilemap {
     const tx = Math.max(0, Math.min(this.width - 1, Math.floor(worldX / this.tileSize)));
     const fromTy = Math.max(0, Math.min(this.height - 1, Math.floor(fromWorldY / this.tileSize)));
     for (let ty = fromTy; ty >= 0; ty--) {
-      if (this.isSolidAt(tx, ty)) return (ty + 1) * this.tileSize;
+      if (this.isSolidAt(tx, ty)) {
+        return (ty + 1) * this.tileSize - (ty === this.surfaceRow ? this.surfaceOffset : 0);
+      }
     }
     return null;
   }

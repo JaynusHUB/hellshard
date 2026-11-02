@@ -7,12 +7,14 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` — passes after the round 2 playtest fixes (61 modules, no errors; atlases are
-  generated at runtime, JS ~816 kB / 215 kB gzip).
+- `npm run build` — passes after the alignment pass (61 modules, no errors; atlases are generated at
+  runtime, JS ~817 kB / 215 kB gzip).
 - `npm test` — **25/25 tests passing** in 6 suites (RNG, upgrades/evolutions, world generation,
   achievements, sprite manifest facing/coverage, localization).
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
+- `npm run validate:alignment` — **passed**: 5 zones, 41 ground props, 120 placed objects,
+  ±1px tolerance; one-way ledges are at least 3 tiles wide.
 - Production preview smoke test (`npm run preview`) — menu → achievements → character select →
   gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →
   result. **No console errors, no failed requests, no external requests.**
@@ -99,6 +101,50 @@ Missing before this fix: wight had only `walk`; wisp only `float`; hell-gato onl
 spider and bog brute only `walk`; mire wraith only `float`; moss slime only `bounce`. Dedicated attack
 and hurt clips were assembled from their native frames; idle holds the first native frame. No death
 frames exist in any supplied pack, so death cannot be a sprite clip without inventing art.
+
+## Known issues — alignment pass (2026-11-02)
+
+- [x] **All actors/props floated above the painted ground.** Measured each zone's top tile alpha
+  with a 60% horizontal-fill threshold; the first qualifying row becomes `surfaceOffset` in
+  `ASSET_MANIFEST.json`. Physics, tilemap collision, spawn, checkpoints, props, chests, altars and
+  gates now use `tileTop - surfaceOffset`.
+- [x] **Props used the frame bottom instead of the alpha-derived foot.** `drawDecorations` now passes
+  each prop's measured `anchorY`; generated chest/altar/gate/portal/hazard frames also measure their
+  opaque bottom row and use it.
+- [x] **Church ground tiles were wrong crops.** The old top frames included transparent padding and a
+  blank frame; the body/deep frames came from small standalone ground chunks (the chess/side-lip
+  look). Church now uses one fully opaque 16×16 stone block from the large purple wall slab for
+  top/body/deep (`groupWidth: 1`, `surfaceOffset: 0`), so the background bottom and floor meet.
+- [x] **Chests/props were generated over pits and raised blocks.** `addChest` now requires a solid or
+  one-way support below the target tile; `addDecor` skips columns with raised secret/fake walls;
+  dungeon statues skip pits. The map is created before room dressing so these checks are real.
+  One-way ledges shorter than 3 tiles are rejected by alignment validation.
+- [x] **`npm run validate:alignment`** added. It measures top/body alpha, checks physics/tilemap
+  surface within ±1px, checks every placed prop/chest/altar/gate/checkpoint against its support,
+  and fails with zone/object names.
+
+Measured alignment:
+
+| Zone | Top fill rows | `surfaceOffset` | Physics surface |
+|---|---|---:|---:|
+| Cemetery | 11 / 11 / 9 / 11 | 10 | 134 |
+| Church | 0 | 0 | 144 |
+| Swamp | 7 / 6 / 7 / 6 / 7 | 7 | 137 |
+| Dungeon | 0 / 0 / 0 / 0 | 0 | 144 |
+| Forest | 0 | 0 | 144 |
+
+`npm run validate:alignment` result:
+
+```text
+cemetery  route=0 surface=134 manifestOffset=10 measuredRows=11/11/9/11 props=8
+church    route=1 surface=144 manifestOffset=0 measuredRows=0 props=8
+swamp     route=2 surface=137 manifestOffset=7 measuredRows=7/6/7/6/7 props=10
+dungeon   route=-1 surface=144 manifestOffset=0 measuredRows=0/0/0/0 props=7
+forest    route=3 surface=144 manifestOffset=0 measuredRows=0 props=8
+
+✓ Alignment validation passed: 5 zones, 41 props, 120 placed objects, ±1px tolerance.
+  ground props checked: 41; one-way ledges are at least 3 tiles wide.
+```
 
 ## Completed phases
 

@@ -89,6 +89,10 @@ index.html
   replaying a seed reproduces the map but not necessarily every combat roll.
 - Movement envelope constants live in `src/config/game.js`. Generation and `scripts/validate-world.js`
   import the same constants, so reachability validation cannot drift from the real jump physics.
+- `ASSET_MANIFEST.json` stores a per-zone `surfaceOffset`: the first top-tile alpha row with at least
+  60% horizontal fill. `WorldGen` and `Tilemap` use `tileTop - surfaceOffset` as the physical floor;
+  props, chests, gates and spawns are placed against that same line. `scripts/validate-alignment.js`
+  verifies the painted rows and prop support.
 
 ## Data / config boundary
 

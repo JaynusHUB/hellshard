@@ -203,3 +203,22 @@ reskins.
   ghoul, spider, bog brute, mire wraith and moss slime by reusing appropriate native frames. Hurt
   one-frame clips were added for every normal enemy. Death frames do not exist in the packs, so death
   uses squash/fade plus the existing palette/particle burst.
+
+## 11. Alpha surface alignment (2026-11-02)
+
+- **Painted surface measurement:** every zone's top tile rows were scanned from the PNG alpha channel.
+  The first row with at least 60% horizontal opaque coverage is the painted surface. The measured
+  offsets are stored per-zone as `tiles.<zone>.surfaceOffset` in `ASSET_MANIFEST.json`:
+  cemetery 10px, church 0px, swamp 7px, dungeon 0px, forest 0px.
+- **Church floor correction:** the old church top crops `(0,160)`, `(48,160)`, `(96,160)` included
+  transparent top padding, one blank frame and standalone ground-chunk side lips; the body/deep
+  crops were mostly transparent or split. The large purple slab at `(64,112)` is 32×32 and fully
+  opaque, and its `(64,128)` lower half continues seamlessly. Church now uses one 16×16 top/body/deep
+  column from that slab (`groupWidth: 1`), with `surfaceOffset: 0`.
+- **Prop feet:** supplied prop frames use their measured opaque-bottom anchor; generated chest,
+  altar, gate, portal, spike and moving-platform icons measure the same value from their runtime
+  canvas. `drawDecorations`, interaction rendering and hazard rendering now pass that anchor.
+- **Generator support rule:** ground decorations are skipped when a raised secret/fake wall occupies
+  the column above them. Chests require solid or one-way support directly beneath their tile.
+  Dungeon statues skip pits. One-way platforms shorter than three tiles are treated as invalid
+  unsupported ledges by `validate:alignment`.

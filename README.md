@@ -18,6 +18,7 @@ npm run preview          # serve the production build
 npm test                 # Vitest logic tests
 npm run validate:world   # validate seeded worlds 1..100
 npm run validate:world -- 1 300
+npm run validate:alignment # alpha-painted surface + prop/support alignment
 ```
 
 All runtime assets are local under `public/assets`; there are no CDN requests.
@@ -56,7 +57,9 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
   run history and 12 achievements. Saved in `localStorage`.
 - **Presentation:** 640×360 internal resolution, integer letterbox scaling, nearest filtering,
   one texture atlas per art family, instanced sprite batches and merged tile chunks. F3 shows a
-  collision overlay with AABB feet, tile-render floor and sprite-anchor markers.
+  collision overlay with the green physics floor, magenta alpha-painted surface and yellow
+  sprite-anchor marker. Physics and props use per-zone `surfaceOffset` values measured from tile
+  alpha, and `npm run validate:alignment` checks them across all five zones.
 - **UI:** main menu, character select, HUD, pause, settings, achievements, level-up cards,
   seed entry, credits, boss bar and result screen. English and Turkish localization.
 - **Determinism / QA:** fixed 60 Hz simulation with interpolation, seeded generation and a

@@ -2,6 +2,7 @@ import { GAME, PHYSICS_BOUNDS } from '../config/game.js';
 import { RNG, combineSeed } from '../core/RNG.js';
 import { ZONES, ZONE_ORDER } from '../data/zones.js';
 import { TILE, Tilemap } from './Tilemap.js';
+import manifest from '../../ASSET_MANIFEST.json' with { type: 'json' };
 
 const T = GAME.tile;
 const ROOM_W = GAME.world.roomWidth;
@@ -55,9 +56,8 @@ function setPlatform(data, x, y, w) {
   }
 }
 
-function addBreakableSecret(data, roomStart, rng, interactions, secrets) {
+function addBreakableSecret(data, roomStart, rng, interactions, secrets, surface) {
   const baseX = roomStart + 6 + rng.int(0, 2);
-  const ground = FLOOR_ROW + 1;
   const height = 3;
   // Exterior mass with a 2-tile-high chamber hollowed into it.
   setSolidRect(data, baseX, FLOOR_ROW + 1, 6, height, TILE.SOLID);
@@ -76,7 +76,7 @@ function addBreakableSecret(data, roomStart, rng, interactions, secrets) {
     id: `chest-secret-${roomStart}`,
     type: 'chest',
     x: (baseX + 3) * T,
-    y: ground,
+    y: surface,
     secret: true,
     opened: false,
   });
@@ -89,7 +89,7 @@ function addBreakableSecret(data, roomStart, rng, interactions, secrets) {
   });
 }
 
-function addFakeWallSecret(data, roomStart, rng, interactions, secrets) {
+function addFakeWallSecret(data, roomStart, rng, interactions, secrets, surface) {
   const baseX = roomStart + 24 + rng.int(0, 2);
   const baseY = FLOOR_ROW + 1;
   // A thin false facade, deliberately non-solid. A chest sits just beyond it.
@@ -101,19 +101,22 @@ function addFakeWallSecret(data, roomStart, rng, interactions, secrets) {
     id: `chest-hidden-${roomStart}`,
     type: 'chest',
     x: (baseX + 3.1) * T,
-    y: baseY * T,
+    y: surface,
     secret: true,
     opened: false,
   });
   secrets.push({ type: 'fake', x: baseX * T, y: baseY * T, w: T * 2, h: T * 3 });
 }
 
-function addChest(interactions, id, tileX, tileY, secret = false) {
-  interactions.push({
+function addChest(world, id, tileX, tileY, secret = false) {
+  const supportType = world.map?.getType(tileX, tileY - 1);
+  if (supportType !== TILE.SOLID && supportType !== TILE.ONE_WAY) return;
+  if (tileY === FLOOR_ROW + 1 && world.map?.getType(tileX, FLOOR_ROW + 1) !== TILE.EMPTY) return;
+  world.interactions.push({
     id,
     type: 'chest',
     x: tileX * T + T / 2,
-    y: tileY * T,
+    y: tileY * T - (world.surfaceOffset ?? 0),
     secret,
     opened: false,
   });
@@ -121,7 +124,7 @@ function addChest(interactions, id, tileX, tileY, secret = false) {
 
 function buildRoom(zone, roomIndex, data, rng, world) {
   const start = roomIndex * ROOM_W;
-  const surface = SURFACE;
+  const surface = world.surface;
   const isBossRoom = roomIndex === BOSS_ROOM;
   const isChallengeRoom = roomIndex === zone.challengeRoom;
 
@@ -154,15 +157,15 @@ function buildRoom(zone, roomIndex, data, rng, world) {
       const sy = FLOOR_ROW + rng.int(4, 5);
       const sw = rng.int(4, 6);
       setPlatform(data, sx, sy, sw);
-      if (i === 0) addChest(world.interactions, `chest-${zone.id}-${roomIndex}`, sx + 2, sy + 1);
+      if (i === 0) addChest(world, `chest-${zone.id}-${roomIndex}`, sx + 2, sy + 1);
     }
   }
 
   if (roomIndex === 1) {
-    addFakeWallSecret(data, start, rng, world.interactions, world.secrets);
-    addChest(world.interactions, `chest-${zone.id}-1b`, start + ROOM_W - 8, FLOOR_ROW + 1);
+    addFakeWallSecret(data, start, rng, world.interactions, world.secrets, surface);
+    addChest(world, `chest-${zone.id}-1b`, start + ROOM_W - 8, FLOOR_ROW + 1);
     const mx = (start + 16) * T;
-    const my = SURFACE + 56;
+    const my = surface + 56;
     if (!isBossRoom) {
       world.movingPlatforms.push({
         id: `${zone.id}-lifter-1`,
@@ -182,19 +185,21 @@ function buildRoom(zone, roomIndex, data, rng, world) {
     }
   }
   if (roomIndex === 2) {
-    addBreakableSecret(data, start, rng, world.interactions, world.secrets);
+    addBreakableSecret(data, start, rng, world.interactions, world.secrets, surface);
     if (!isChallengeRoom) {
       const altarX = start + ROOM_W - 5;
-      world.interactions.push({
-        id: `altar-${zone.id}`,
-        type: 'altar',
-        x: altarX * T,
-        y: surface,
-        used: false,
-      });
+      if (world.map?.isSolidAt(altarX, FLOOR_ROW)) {
+        world.interactions.push({
+          id: `altar-${zone.id}`,
+          type: 'altar',
+          x: altarX * T,
+          y: surface,
+          used: false,
+        });
+      }
     }
     setPlatform(data, start + ROOM_W - 12, FLOOR_ROW + 4, 4);
-    addChest(world.interactions, `chest-${zone.id}-2`, start + ROOM_W - 10, FLOOR_ROW + 5);
+    addChest(world, `chest-${zone.id}-2`, start + ROOM_W - 10, FLOOR_ROW + 5);
   }
 
   if (roomIndex === BOSS_ROOM && zone.boss) {
@@ -207,7 +212,7 @@ function buildRoom(zone, roomIndex, data, rng, world) {
     };
   } else if (roomIndex === BOSS_ROOM && !isChallengeRoom) {
     setPlatform(data, start + 8, FLOOR_ROW + 5, 6);
-    addChest(world.interactions, `chest-${zone.id}-3`, start + 10, FLOOR_ROW + 6);
+    addChest(world, `chest-${zone.id}-3`, start + 10, FLOOR_ROW + 6);
   }
 
   if (isChallengeRoom) {
@@ -243,7 +248,14 @@ function addDecor(world, zone, rng, start, surface) {
   for (let i = 0; i < count; i++) {
     const prop = rng.pick(zone.decor);
     if (!prop) continue;
-    const x = (start + rng.int(3, ROOM_W - 4)) * T;
+    const tileX = start + rng.int(3, ROOM_W - 4);
+    const x = tileX * T;
+    if (!world.map?.isSolidAt(tileX, FLOOR_ROW)) continue;
+    // Do not bury ground props inside a raised secret wall or under a ledge.
+    const blockedAbove = [TILE.SOLID, TILE.BREAKABLE, TILE.FAKE, TILE.ONE_WAY].some(
+      (type) => world.map.getType(tileX, FLOOR_ROW + 1) === type,
+    );
+    if (blockedAbove) continue;
     const nearTransition = world.transitions.some((tr) => Math.abs(tr.x - x) < 64);
     if (nearTransition) continue;
     const nearOther = world.decorations.some((decor) => Math.abs(decor.x - x) < 90 && Math.abs(decor.y - surface) < 16);
@@ -270,7 +282,7 @@ function addDungeonProps(world) {
       world.decorations.push({
         prop: 'torch0',
         x: tileX * T + T / 2,
-        y: SURFACE,
+        y: world.surface,
         yOffset: 72,
         flip: tileX >= start + 17,
         layer: 'back',
@@ -279,21 +291,23 @@ function addDungeonProps(world) {
       });
     }
     const statueProp = room % 2 === 0 ? 'knight' : 'robed';
-    world.decorations.push({
-      prop: statueProp,
-      x: (start + 12) * T + T / 2,
-      y: SURFACE,
-      yOffset: 0,
-      flip: room % 3 === 0,
-      layer: 'back',
-      scale: 1,
-      alpha: 1,
-    });
-    if (room === 0 || room === 4) {
+    if (world.map?.isSolidAt(start + 12, FLOOR_ROW)) {
+      world.decorations.push({
+        prop: statueProp,
+        x: (start + 12) * T + T / 2,
+        y: world.surface,
+        yOffset: 0,
+        flip: room % 3 === 0,
+        layer: 'back',
+        scale: 1,
+        alpha: 1,
+      });
+    }
+    if ((room === 0 || room === 4) && world.map?.isSolidAt(start + 23, FLOOR_ROW)) {
       world.decorations.push({
         prop: room === 0 ? 'robed' : 'knight',
         x: (start + 23) * T + T / 2,
-        y: SURFACE,
+        y: world.surface,
         yOffset: 0,
         flip: room !== 0,
         layer: 'back',
@@ -314,7 +328,7 @@ function addInteractions(zone, world, route) {
       `left-${zone.id}`,
       zone.id === 'forest' || previous === 'forest' ? 'portal' : 'gate',
       2.5 * T,
-      SURFACE,
+      world.surface,
       previous,
       'zone.return',
       { labelZone: previous, entrySide: 'right' },
@@ -328,7 +342,7 @@ function addInteractions(zone, world, route) {
       `right-${zone.id}`,
       next === 'forest' || zone.id === 'forest' ? 'portal' : 'gate',
       (WIDTH - 3) * T,
-      SURFACE,
+      world.surface,
       next,
       'action.usePortal',
       {
@@ -347,7 +361,7 @@ function addInteractions(zone, world, route) {
       `door-${door.id}`,
       door.style === 'portal' ? 'portal' : 'door',
       x,
-      SURFACE,
+      world.surface,
       door.target,
       'action.usePortal',
       { labelZone: door.target, entrySide: 'door', doorId: door.id, targetDoor: door.id },
@@ -358,7 +372,7 @@ function addInteractions(zone, world, route) {
       id: 'final-gate',
       type: 'finalGate',
       x: 24 * T,
-      y: SURFACE,
+      y: world.surface,
       requiresShards: 3,
     };
   }
@@ -370,6 +384,8 @@ export function generateZone(seed, zoneId, options = {}) {
   const route = options.route ?? buildZoneRoute(seed);
   const data = new Uint8Array(WIDTH * ROWS);
   fillGround(data);
+  const surfaceOffset = Number(manifest.tiles[zoneId]?.surfaceOffset ?? 0);
+  const surface = SURFACE - surfaceOffset;
   const worldRng = new RNG(combineSeed(seed, 'zone', zoneId));
   const world = {
     zoneId,
@@ -377,9 +393,10 @@ export function generateZone(seed, zoneId, options = {}) {
     width: WIDTH,
     height: ROWS,
     rows: ROWS,
-    surface: SURFACE,
+    surface,
+    surfaceOffset,
     floorRow: FLOOR_ROW,
-    spawn: { x: 4 * T, y: SURFACE },
+    spawn: { x: 4 * T, y: surface },
     spawnRoom: zone.spawnRoom,
     checkpoints: [],
     transitions: [],
@@ -403,6 +420,9 @@ export function generateZone(seed, zoneId, options = {}) {
     ambient: zone.weather,
   };
 
+  const map = new Tilemap(WIDTH, ROWS, data, { surfaceOffset, surfaceRow: FLOOR_ROW });
+  world.map = map;
+
   for (let room = 0; room < ROOMS; room++) {
     const roomRng = new RNG(combineSeed(seed, 'room', zoneId, room));
     world.rooms.push({ index: room, start: room * ROOM_W, width: ROOM_W });
@@ -413,10 +433,10 @@ export function generateZone(seed, zoneId, options = {}) {
   world.route = route;
   // Dungeon is reached by a crypt door at the start; keep entry safe and centered.
   world.spawn = zone.id === 'dungeon' || zone.id === 'forest'
-    ? { x: 10 * T, y: SURFACE }
-    : { x: 6 * T, y: SURFACE };
+    ? { x: 10 * T, y: surface }
+    : { x: 6 * T, y: surface };
   for (let room = 0; room < ROOMS; room++) {
-    addDecor(world, zone, new RNG(combineSeed(seed, 'decor', zoneId, room)), room * ROOM_W, SURFACE);
+    addDecor(world, zone, new RNG(combineSeed(seed, 'decor', zoneId, room)), room * ROOM_W, surface);
   }
   if (zone.id === 'dungeon') addDungeonProps(world);
   for (const transition of world.transitions) {
@@ -424,8 +444,6 @@ export function generateZone(seed, zoneId, options = {}) {
       transition.x += 64;
     }
   }
-  const map = new Tilemap(WIDTH, ROWS, data);
-  world.map = map;
   world.reachability = analyzeReachability(world);
   return world;
 }

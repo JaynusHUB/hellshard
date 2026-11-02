@@ -159,7 +159,7 @@ export class SpawnDirector {
         const groundY = this.findGround(world, x, player.y);
         if (groundY === null) continue;
         const tileX = Math.floor(x / GAME.tile);
-        const standable = world.map.isStandableTile(tileX, Math.round(groundY / GAME.tile));
+        const standable = world.map.isStandableTile(tileX, Math.ceil(groundY / GAME.tile));
         if (!standable) continue;
         const y = def.flying ? groundY + 38 + this.rng.float(0, 80) : groundY;
         if (def.flying && y < groundY + 20) continue;
@@ -171,13 +171,7 @@ export class SpawnDirector {
 
   findGround(world, x, playerY) {
     const top = Math.min(world.height - 2, Math.floor(playerY / GAME.tile) + 14);
-    const tx = Math.max(0, Math.min(world.width - 1, Math.floor(x / GAME.tile)));
-    for (let ty = top; ty >= 1; ty--) {
-      if (world.map.isSolidAt(tx, ty) && !world.map.isSolidAt(tx, ty + 1)) {
-        return (ty + 1) * GAME.tile;
-      }
-    }
-    return null;
+    return world.map.getGroundYAtWorld(x, top * GAME.tile);
   }
 
   triggerEvent(phase) {

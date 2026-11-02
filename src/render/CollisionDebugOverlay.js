@@ -4,8 +4,9 @@ import { computeSpriteRect } from './SpriteBatch.js';
 
 const COLORS = {
   hitbox: '#63e6ff',
-  tile: '#8df59a',
-  sprite: '#ff7bd5',
+  physics: '#8df59a',
+  painted: '#ff5fd2',
+  sprite: '#ffe27a',
   enemy: '#ffb05c',
   panel: 'rgba(5, 7, 10, 0.82)',
   text: '#d9e7df',
@@ -74,15 +75,15 @@ export class CollisionDebugOverlay {
       flip: player.facing < 0,
     });
 
-    // Tile-render floor: top of the first solid tile under the player.
+    // Alpha-derived painted surface: top row above the 60% alpha fill threshold.
     if (tileY !== null) {
-      this.drawLine(ctx, screenX(player.x - 56), screenY(tileY), screenX(player.x + 56), screenY(tileY), COLORS.tile);
-      this.label(ctx, `${t('debug.tileFloor')} ${tileY.toFixed(0)}`, screenX(player.x) + 20, screenY(tileY) - 8, COLORS.tile);
+      this.drawLine(ctx, screenX(player.x - 56), screenY(tileY), screenX(player.x + 56), screenY(tileY), COLORS.painted);
+      this.label(ctx, `${t('debug.tileFloor')} ${tileY.toFixed(0)}`, screenX(player.x) + 20, screenY(tileY) - 8, COLORS.painted);
     }
 
-    // Collision floor: the actor AABB bottom (feet).
-    this.drawLine(ctx, screenX(player.x - 42), screenY(collisionY), screenX(player.x + 42), screenY(collisionY), COLORS.hitbox);
-    this.label(ctx, `${t('debug.collisionFloor')} ${collisionY.toFixed(0)}`, screenX(player.x) + 20, screenY(collisionY) + 3, COLORS.hitbox);
+    // Physics floor: the actor AABB bottom (feet).
+    this.drawLine(ctx, screenX(player.x - 42), screenY(collisionY), screenX(player.x + 42), screenY(collisionY), COLORS.physics);
+    this.label(ctx, `${t('debug.collisionFloor')} ${collisionY.toFixed(0)}`, screenX(player.x) + 20, screenY(collisionY) + 3, COLORS.physics);
 
     // Sprite anchor and full frame bounds, including any transparent padding.
     if (spriteRect) {
@@ -106,7 +107,7 @@ export class CollisionDebugOverlay {
       Math.round(bounds.w),
       Math.round(bounds.h),
     );
-    this.cross(ctx, screenX(player.x), screenY(collisionY), COLORS.hitbox);
+    this.cross(ctx, screenX(player.x), screenY(collisionY), COLORS.physics);
 
     // Nearby enemy collision boxes and sprite feet for comparison.
     ctx.globalAlpha = 0.65;
@@ -150,7 +151,8 @@ export class CollisionDebugOverlay {
     for (let ty = fromTy; ty >= 0; ty--) {
       const type = map.getType(tx, ty);
       if (type === TILE.SOLID || type === TILE.ONE_WAY || type === TILE.BREAKABLE) {
-        return (ty + 1) * map.tileSize;
+        const surfaceTile = ty === map.surfaceRow || type === TILE.ONE_WAY;
+        return (ty + 1) * map.tileSize - (surfaceTile ? map.surfaceOffset : 0);
       }
     }
     return null;
@@ -195,8 +197,8 @@ export class CollisionDebugOverlay {
     ctx.fillStyle = COLORS.text;
     ctx.fillText(t('debug.collisionLegend'), x + 4, y + 3);
     const rows = [
-      [COLORS.hitbox, `${t('debug.hitbox')} ${values.hit.toFixed(0)}`],
-      [COLORS.tile, `${t('debug.tileFloor')} ${values.tile === null ? t('debug.noFloor') : values.tile.toFixed(0)}`],
+      [COLORS.physics, `${t('debug.hitbox')} ${values.hit.toFixed(0)}`],
+      [COLORS.painted, `${t('debug.tileFloor')} ${values.tile === null ? t('debug.noFloor') : values.tile.toFixed(0)}`],
       [COLORS.sprite, `${t('debug.spriteAnchor')} ${values.sprite.toFixed(0)}`],
     ];
     rows.forEach(([color, text], index) => {

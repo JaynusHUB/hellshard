@@ -72,7 +72,7 @@ for (let seed = startSeed; seed <= endSeed; seed++) {
     }
     for (const checkpoint of zone.checkpoints) {
       const tileX = Math.floor(checkpoint.x / GAME.tile);
-      const tileY = Math.floor(checkpoint.y / GAME.tile);
+      const tileY = Math.ceil(checkpoint.y / GAME.tile);
       if (!zone.map.isStandableTile(tileX, tileY)) {
         failures.push(`seed ${seed} ${zoneId}: invalid checkpoint at ${checkpoint.x},${checkpoint.y}`);
       }
