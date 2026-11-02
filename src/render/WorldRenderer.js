@@ -258,6 +258,7 @@ export class WorldRenderer {
 
   drawGateFrames(batch) {
     const game = this.game;
+    if (game.activeWorld.tiled) return;
     const zoneId = game.activeZoneId;
     const width = this.assets.getGroupWidth(zoneId);
     const frames = Array.from({ length: width }, (_, index) => (

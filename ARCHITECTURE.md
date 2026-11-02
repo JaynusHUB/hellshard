@@ -21,6 +21,7 @@ index.html
    ├─ render/AssetLibrary.js    manifest loading, runtime canvas atlases
    ├─ render/SpriteBatch.js     one InstancedMesh per atlas + tint/flash shader
    ├─ render/TileChunks.js      merged static tile geometry + front grass fringe
+   ├─ render/TiledTileChunks.js exact-GID Tiled tile layers, merged per texture
    ├─ render/WorldRenderer.js   terrain, decor, interactions, water, backgrounds
    ├─ render/BackgroundLayers.js parallax background quads
    ├─ render/EntityRenderer.js  player/enemy/boss/pickup/projectile sprite batching
@@ -30,7 +31,9 @@ index.html
    ├─ render/CollisionDebugOverlay.js F3 AABB/sprite/tile anchor diagnostics
    ├─ render/CameraRig.js       bounded follow camera, snap and shake
    ├─ world/WorldGen.js         seeded rooms, route, secrets, validation metadata
+   ├─ world/tiledLoader.js      Tiled JSON, tilesets, collision and packaged worlds
    ├─ world/Tilemap.js          collision queries, one-way platforms, breakables
+   ├─ data/maps.js              packaged Tiled map ids, layer roles and collision GIDs
    ├─ world/LayoutGrid.js       per-zone occupancy for props/platforms/chests/gates
    ├─ world/SpatialHash.js      active-enemy spatial queries
    ├─ world/ZoneSceneManager.js zone scene build/teardown and transitions
@@ -113,6 +116,11 @@ index.html
 - Ledges are capped by `GAME.world.platformMaxRise` and receive supported stair flights where the
   base floor allows. Ground enemies spawn only on a continuous base-floor run; a deterministic
   step-up hop handles 1-2 tile risers without reintroducing random hopping.
+- Packaged Tiled maps are loaded by `src/world/tiledLoader.js`; layer roles and collision GIDs live
+  in `src/data/maps.js`. `TiledTileChunks` renders the artist's Back/Main tile layers with the raw
+  tile GIDs, and a packaged map's Collisions layer becomes the physics Tilemap without footSink.
+  The cemetery demo world is bottom-aligned above the existing parallax sky; procedural generation
+  remains intact as a fallback and for the other zones.
 - Dungeon rendering uses a depth-graded brick floor, atlas-crop surface decals, six parallax layers
   (including screen-edge foreground pillars) and torch ember particles. Static and moving platforms
   receive underbodies/supports from their active biome tile family; gates get a stepped tile arch,

@@ -3,11 +3,13 @@ import { GAME } from './config/game.js';
 import { ZONE_ORDER } from './data/zones.js';
 import { SaveStore } from './core/SaveStore.js';
 import { AudioManager } from './core/AudioManager.js';
-import { AssetLibrary } from './render/AssetLibrary.js';
+import { AssetLibrary, loadImage } from './render/AssetLibrary.js';
 import { Game } from './core/Game.js';
 import { UIManager } from './ui/UIManager.js';
 import { mountFacingDebug } from './ui/FacingDebugPage.js';
 import { translate } from './ui/strings.js';
+import { PACKAGED_MAPS } from './data/maps.js';
+import { loadTiledMap } from './world/tiledLoader.js';
 
 function parseDevOptions() {
   if (!import.meta.env.DEV) return {};
@@ -19,13 +21,16 @@ function parseDevOptions() {
   const gallery = params.get('debug') === 'gallery';
   const peacefulParam = params.get('peaceful') === '1';
   const flyParam = params.get('fly') === '1';
+  const mapKey = params.get('map');
+  const packagedMap = PACKAGED_MAPS[mapKey] ? mapKey : null;
   return {
     zone,
     seed,
     gallery,
+    packagedMap,
     peaceful: peacefulParam || gallery,
     fly: flyParam || gallery,
-    autoStart: Boolean(zone || seed || peacefulParam || flyParam || gallery),
+    autoStart: Boolean(zone || seed || packagedMap || peacefulParam || flyParam || gallery),
   };
 }
 
@@ -58,10 +63,16 @@ async function boot() {
   }
   setBoot(0.7, t('game.loading'));
   await Promise.all(ZONE_ORDER.map((zoneId) => assets.loadZoneBackgrounds(zoneId)));
+  const packagedMaps = {};
+  for (const config of Object.values(PACKAGED_MAPS)) {
+    const mapUrl = new URL(config.url, document.baseURI).href;
+    const loaded = await loadTiledMap(mapUrl, { loadImage });
+    packagedMaps[config.id] = { ...loaded, config };
+  }
   setBoot(0.94, t('game.loading'));
   const canvas = document.getElementById('game');
   const devOptions = parseDevOptions();
-  const game = new Game({ canvas, save, audio, assets, devOptions });
+  const game = new Game({ canvas, save, audio, assets, packagedMaps, devOptions });
   const ui = new UIManager({ game, assets, save, audio });
   game.attachUI(ui);
   game.initialize();

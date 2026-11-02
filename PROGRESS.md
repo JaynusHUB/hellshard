@@ -7,16 +7,18 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
 
 ## Verification (final pass)
 
-- `npm run build` - passes after the playability/platform refactor (64 modules, no errors; atlases
-  are generated at runtime, JS 851.80 kB / 226.11 kB gzip).
+- `npm run build` - passes after the packaged Tiled cemetery integration (67 modules, no errors;
+  atlases are generated at runtime, JS 860.19 kB / 229.30 kB gzip).
 - Layout note: generated stairs are supported solid columns; high platforms are capped at three
   tiles and validated against the jump envelope.
-- `npm test` — **35/35 tests passing** in 8 suites (RNG, upgrades/evolutions, world generation,
+- `npm test` — **38/38 tests passing** in 9 suites (RNG, upgrades/evolutions, world generation,
   achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd,
-  base-floor spawn rule).
+  base-floor spawn rule, Tiled loader primitives).
 - `npm run validate:tiles` — **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
   rects in bounds; cemetery Tiled reference is 300x14 tiles with
   `Collisions Layer > Back Layer > Main Layer`.
+- `npm run validate:maps` — **passed**: `cemetery_demo` loads (300x14 / 4800x224), collision GIDs
+  1+2 resolve, 373 collision tiles exist, spawn is clear and the right transition exists.
 - `npm run validate:world` — **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
 - `npm run validate:alignment` — **passed**: 5 zones, 43 ground props, 110 placed objects,
@@ -282,6 +284,29 @@ forest    1177   590    100    3908      0        0              0            0 
 ✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests,
   clearance violations, unsupported single-tile structures or unreachable platforms.
 ```
+
+## Packaged Tiled cemetery (2026-11-02)
+
+- [x] **Discovery:** only `public/assets/cemetery/demo/assets/maps/map.json` is a packaged Tiled
+  map; there are no `.tmx`, `.tmj`, `.tsx` or `.tsj` files. The map is 300×14 tiles / 4800×224 px,
+  16×16, with `Collisions Layer`, `Back Layer`, `Main Layer`, embedded tilesets, JSON-array tile
+  data, no object layer/custom properties, and no flip flags. Other packs contain tilesets/mockups
+  only.
+- [x] **Loader:** `src/world/tiledLoader.js` supports finite Tiled JSON, CSV/JSON arrays,
+  uncompressed base64 (clear error for compressed), embedded and external TSJ tilesets, image
+  collection tilesets, H/V/D flip flags and map-relative asset paths.
+- [x] **Cemetery integration:** `src/data/maps.js` owns layer roles and collision GIDs. Cemetery
+  uses the artist map by default; the map's Collisions layer is the raw physics floor with no
+  footSink/surfaceOffset. `Back Layer` and `Main Layer` render with exact GIDs through
+  `src/render/TiledTileChunks.js`; procedural generation remains intact for other zones.
+- [x] **Composition:** the 14-row map is bottom-aligned in the 28-row world; the existing cemetery
+  parallax sky fills the upper area. Player starts on the left, a right-edge portal goes to the
+  next route zone, and the spawn director uses the derived collision floor.
+- [x] **Validation:** `npm run validate:maps` checks map load, GID ranges, non-empty collision,
+  spawn clearance and transition creation.
+- [ ] **Package map content limits:** the artist demo has no object layer, boss arena or Final Gate.
+  This integration exposes the right-edge route portal only; those campaign beats need separate
+  hand-authored map content, not procedural injection.
 
 ## Completed phases
 

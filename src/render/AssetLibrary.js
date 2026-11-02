@@ -3,7 +3,7 @@ import manifest from '../../ASSET_MANIFEST.json';
 
 const UV_INSET = 0.02;
 
-function loadImage(path) {
+export function loadImage(path) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.decoding = 'async';

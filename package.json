@@ -11,7 +11,8 @@
     "validate:world": "node scripts/validate-world.js",
     "validate:alignment": "node scripts/validate-alignment.js",
     "validate:layout": "node scripts/validate-layout.js",
-    "validate:tiles": "node scripts/validate-tiles.js"
+    "validate:tiles": "node scripts/validate-tiles.js",
+    "validate:maps": "node scripts/validate-maps.js"
   },
   "dependencies": {
     "@fontsource/pixelify-sans": "5.3.0",

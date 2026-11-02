@@ -19,6 +19,7 @@ npm test                 # Vitest logic tests
 npm run validate:world   # validate seeded worlds 1..100
 npm run validate:world -- 1 300
 npm run validate:tiles     # 16x16 frame, margin/spacing and source-bounds audit
+npm run validate:maps      # packaged Tiled map, GID, collision and spawn audit
 npm run validate:alignment # alpha-painted surface + prop/support alignment
 npm run validate:layout    # 100 seeds × 5 zones prop/platform/chest occupancy
 ```
@@ -28,6 +29,7 @@ Dev-only inspection URLs (`npm run dev`):
 ```text
 http://127.0.0.1:5173/?zone=cemetery&seed=20261102&peaceful=1
 http://127.0.0.1:5173/?zone=dungeon&fly=1&peaceful=1
+http://127.0.0.1:5173/?map=cemetery_demo&peaceful=1&fly=1
 http://127.0.0.1:5173/?debug=gallery&zone=church
 http://127.0.0.1:5173/?debug=facing
 ```
@@ -74,6 +76,8 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
   and one evolution per character.
 - **Five seeded zones:** cemetery, church, swamp, dungeon and forest. The route is
   `cemetery → church/swamp (seeded order) → forest`, with an optional crypt entrance to the dungeon.
+  Cemetery can use the packaged artist Tiled demo map via `?map=cemetery_demo`; its collision layer
+  is the raw physics floor and its Back/Main layers render in the packaged art order.
 - **World content:** handcrafted-by-generator rooms, platforming gaps, moving platforms, spikes, animated
   water, breakable walls, fake-wall secrets, hidden chests, altars, checkpoints and the Final Gate.
 - **Meta progression:** persistent Hellshards, character unlocks, three permanent boon tracks,

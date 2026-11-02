@@ -42,7 +42,7 @@ export class RunController {
       startTime: performance.now(),
       victory: false,
     };
-    game.worlds = generateWorld(game.seed);
+    game.worlds = generateWorld(game.seed, { packagedMaps: game.packagedMaps });
     game.player = new Player(characterId, game.assets, this.getMetaModifiers());
     game.player.devFly = Boolean(game.devFly);
     game.player.immortal = Boolean(game.devFly);

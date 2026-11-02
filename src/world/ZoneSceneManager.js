@@ -4,6 +4,7 @@ import { generateZone } from '../world/WorldGen.js';
 import { clamp } from '../core/RNG.js';
 import { BackgroundLayers } from '../render/BackgroundLayers.js';
 import { TileChunkManager } from '../render/TileChunks.js';
+import { TiledTileChunks } from '../render/TiledTileChunks.js';
 import { WaterLayer } from '../render/WaterLayer.js';
 
 export class ZoneSceneManager {
@@ -16,7 +17,9 @@ export class ZoneSceneManager {
     this.dispose();
     game.seed = Number(game.save.settings.seed ?? game.seed);
     game.menuSeed = game.seed;
-    game.menuWorld = generateZone(game.seed, 'cemetery');
+    game.menuWorld = generateZone(game.seed, 'cemetery', {
+      packagedMaps: game.packagedMaps,
+    });
     game.activeZoneId = 'cemetery';
     game.activeZone = ZONES.cemetery;
     game.activeWorld = game.menuWorld;
@@ -74,17 +77,24 @@ export class ZoneSceneManager {
       assets: game.assets,
       zoneId,
     });
-    game.tileChunks = new TileChunkManager({
-      scene: game.renderer.scene,
-      map: world.map,
-      atlas: game.assets.getAtlas(world.atlas),
-      assets: game.assets,
-      zoneId,
-      chunkTiles: GAME.world.chunkTiles,
-      tileSize: GAME.tile,
-      fringeHeight: world.fringeHeight ?? 0,
-      surfaceInset: world.paintedOffset ?? 0,
-    });
+    if (world.tiled) {
+      game.tileChunks = new TiledTileChunks({
+        scene: game.renderer.scene,
+        world,
+      });
+    } else {
+      game.tileChunks = new TileChunkManager({
+        scene: game.renderer.scene,
+        map: world.map,
+        atlas: game.assets.getAtlas(world.atlas),
+        assets: game.assets,
+        zoneId,
+        chunkTiles: GAME.world.chunkTiles,
+        tileSize: GAME.tile,
+        fringeHeight: world.fringeHeight ?? 0,
+        surfaceInset: world.paintedOffset ?? 0,
+      });
+    }
     game.water = new WaterLayer({
       scene: game.renderer.scene,
       assets: game.assets,

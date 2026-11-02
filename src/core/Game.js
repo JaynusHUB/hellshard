@@ -26,11 +26,12 @@ import { ZoneSceneManager } from '../world/ZoneSceneManager.js';
 import { CollisionDebugOverlay } from '../render/CollisionDebugOverlay.js';
 
 export class Game {
-  constructor({ canvas, save, audio, assets, devOptions = {} }) {
+  constructor({ canvas, save, audio, assets, packagedMaps = {}, devOptions = {} }) {
     this.canvas = canvas;
     this.save = save;
     this.audio = audio;
     this.assets = assets;
+    this.packagedMaps = packagedMaps;
     this.devOptions = devOptions;
     this.devFly = Boolean(devOptions.fly || devOptions.gallery);
     this.devGallery = Boolean(devOptions.gallery);

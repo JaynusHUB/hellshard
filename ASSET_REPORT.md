@@ -282,5 +282,54 @@ reskins.
   pixelated`, nearest filtering and integer-scaled 640x360 output. This audit did not add smoothing
   or fractional sprite scales.
 - **Reference use:** the cemetery `demo/assets/maps/map.json` is treated as a calibration reference
-  for tile size, layer order and ground composition. The runtime game remains seeded/procedural, so
-  it does not load the 4800px demo map wholesale.
+  for tile size, layer order and ground composition. The procedural zones remain seeded, while the
+  cemetery package map is now loaded wholesale as the packaged cemetery zone.
+
+## 14. Packaged Tiled maps
+
+Searched all of `public/assets` for `*.tmx`, `*.tmj`, `*.tsx`, `*.tsj` and Tiled-style `*.json`.
+There is **no `.tmx`, `.tmj`, `.tsx` or `.tsj`**. There is exactly one packaged Tiled map:
+
+### `public/assets/cemetery/demo/assets/maps/map.json`
+
+- Format: Tiled JSON map (`tiledversion: 1.1.4`, type `map`)
+- Orientation: orthogonal, right-down
+- Map: **300 × 14 tiles**, **4800 × 224 px**
+- Tile size: **16 × 16**
+- Infinite: false
+- Custom map properties: **none**
+- Object layers: **none**
+- Image layers / group layers: **none**
+- Tile layers, in file order:
+  - `Collisions Layer` — collision only, not rendered
+  - `Back Layer` — decorative tiles behind the main art
+  - `Main Layer` — ground/terrain art
+- Layer parallax properties: **none**. The game supplies parallax externally (`BackgroundLayers`).
+- Tile layer encoding: **JSON arrays** (CSV-equivalent), no `encoding`/`compression` fields
+- Flip flags: **none used** (H/V/D counts all zero)
+- Collision GIDs: `0` empty, `1` solid, `2` top-only/one-way (confirmed by the packaged
+  `demo/game.js`, which calls `tile.setCollision(false, false, true, false)` for index 2)
+- Embedded tilesets:
+  - `tileset`: `../environment/tileset.png`, 448 × 160 px, 28 × 10 cells, tile 16 × 16,
+    margin 0, spacing 0
+  - `objects`: `../environment/objects.png`, 624 × 192 px, 39 × 12 cells, tile 16 × 16,
+    margin 0, spacing 0
+- External tilesets: none
+- Image collection tilesets: none
+- Used GID range: 1–748 (both tilesets combined)
+
+The packaged map is used as the cemetery zone. Its raw artist collision is the physics floor;
+`GAME.footSink` is deliberately not applied to this map.
+
+### Other packs
+
+- Cemetery: the map above.
+- Church: no map; only `ENVIRONMENT/tileset.png`, `column.png` and `backgrounds.png`.
+- Swamp: no map; only `tileset.png`, background layers and prop sheet.
+- Forest: no map; only `Fantasy-TileSet.png`, decor, backgrounds and mockups.
+- Dungeon: no map; only the 305 × 215 composite sheet and `.aseprite` source. Its floor strip is
+  128 × 16, but the sheet is not a uniform 16 × 16 tileset. Large props are not grid rectangles.
+
+`npm run validate:maps` loads the packaged map, checks all visual GIDs against the embedded
+tileset ranges, checks the collision layer is non-empty, checks the spawn is clear, and builds the
+world through `src/world/tiledLoader.js`.
