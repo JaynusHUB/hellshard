@@ -21,6 +21,7 @@ export const ENEMIES = [
     flying: false,
     tint: [0.95, 0.92, 0.9],
     deathEffect: 'bone',
+    spawnSound: 'rise',
     pool: ['cemetery', 'church', 'dungeon'],
   },
   {
@@ -45,6 +46,7 @@ export const ENEMIES = [
     flying: false,
     tint: [0.8, 0.85, 0.96],
     deathEffect: 'bone',
+    spawnSound: 'rise',
     pool: ['cemetery', 'church', 'dungeon', 'swamp'],
   },
   {

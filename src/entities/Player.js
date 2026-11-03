@@ -2,7 +2,7 @@ import { GAME } from '../config/game.js';
 import { CHARACTER_BY_ID } from '../data/characters.js';
 import { clamp } from '../core/RNG.js';
 import { Animator } from '../render/Animator.js';
-import { handleActions, pickAnim, emitBasicStrike, emitProjectiles, emitHeavyStrike, useSpecial } from './PlayerCombat.js';
+import { handleActions, pickAnim, basicAttackClip, heavyAttackClip, emitBasicStrike, emitProjectiles, emitHeavyStrike, useSpecial } from './PlayerCombat.js';
 
 export class Player {
   constructor(characterId, assets, modifiers = {}) {
@@ -42,6 +42,7 @@ export class Player {
     this.basicCooldown = 0;
     this.basicAnimTimer = 0;
     this.attackAnim = 0;
+    this.attackKind = 'ground';
     this.attackPressed = false;
     this.attackHeld = false;
     this.events = [];
@@ -404,7 +405,10 @@ export class Player {
     }
     if (this.heavyPhase !== 'none' || this.attackAnim > 0) {
       if (this.characterId === 'seraphine') this.animator.play('cast');
-      else if (this.heavyPhase !== 'none' && this.assets.getAnimation(this.character.sprite, 'heavy')) this.animator.play('heavy');
+      else if (this.characterId === 'brakk') {
+        if (this.heavyPhase !== 'none') this.animator.play(heavyAttackClip(this));
+        else this.animator.play(basicAttackClip(this));
+      } else if (this.heavyPhase !== 'none' && this.assets.getAnimation(this.character.sprite, 'heavy')) this.animator.play('heavy');
       else this.animator.play('attack');
       return;
     }

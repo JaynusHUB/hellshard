@@ -56,6 +56,7 @@ export class RunController {
     game.traps = [];
     game.particles.clear();
     game.glowParticles.clear();
+    game.effects.clear();
     game.xpOrbs.clear();
     game.xpOrbs.setSeed(game.seed);
     game.hitstopFrames = 0;
@@ -174,6 +175,7 @@ export class RunController {
     game.traps = [];
     game.particles.clear();
     game.glowParticles.clear();
+    game.effects.clear();
     game.xpOrbs.clear();
     game.progression = null;
     game.boss = null;

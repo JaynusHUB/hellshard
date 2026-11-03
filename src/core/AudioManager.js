@@ -1,4 +1,5 @@
 import { clamp } from './RNG.js';
+import { AUDIO } from '../config/audio.js';
 
 const SFX = {
   jump: { type: 'sweep', from: 170, to: 330, duration: 0.12, gain: 0.12, wave: 'square' },
@@ -24,6 +25,11 @@ const SFX = {
   ui: { type: 'sweep', from: 420, to: 460, duration: 0.04, gain: 0.04, wave: 'triangle' },
 };
 
+function assetUrl(path) {
+  const base = globalThis.document?.baseURI ?? globalThis.location?.href;
+  return base ? new URL(path, base).href : path;
+}
+
 export class AudioManager {
   constructor(settings, hooks = {}) {
     this.settings = settings;
@@ -37,6 +43,14 @@ export class AudioManager {
     this.throttle = new Map();
     this.hooks = hooks;
     this.enabled = true;
+    this.samples = new Map();
+    this.sampleFailures = new Set();
+    this.sampleLoadPromise = null;
+    this.musicBuffer = null;
+    this.musicSource = null;
+    this.musicZone = null;
+    this.ambientZone = null;
+    this.mutedZone = null;
   }
 
   ensure() {
@@ -59,6 +73,7 @@ export class AudioManager {
     this.masterGain.connect(this.context.destination);
     this.applyVolumes();
     this.noiseBuffer = this.createNoiseBuffer(1.5);
+    this.loadSamples();
     return this.context;
   }
 
@@ -75,6 +90,45 @@ export class AudioManager {
     return buffer;
   }
 
+  async decodeAudio(path) {
+    const response = await fetch(assetUrl(path));
+    if (!response.ok) throw new Error(`Audio fetch failed: ${path} (${response.status})`);
+    const bytes = await response.arrayBuffer();
+    return await new Promise((resolve, reject) => {
+      const result = this.context.decodeAudioData(bytes, resolve, reject);
+      if (result?.then) result.then(resolve, reject);
+    });
+  }
+
+  loadSamples() {
+    if (this.sampleLoadPromise) return this.sampleLoadPromise;
+    const jobs = Object.entries(AUDIO.samples).map(async ([key, path]) => {
+      try {
+        this.samples.set(key, await this.decodeAudio(path));
+      } catch {
+        this.sampleFailures.add(key);
+      }
+    });
+    const musicJob = (async () => {
+      const path = AUDIO.music.cemetery;
+      if (!path) return;
+      try {
+        this.musicBuffer = await this.decodeAudio(path);
+      } catch {
+        this.musicBuffer = null;
+      }
+    })();
+    this.sampleLoadPromise = Promise.allSettled([...jobs, musicJob]).then(() => {
+      const zone = this.ambientZone;
+      if (!this.context || !zone || this.settings.musicEnabled === false) return;
+      if (AUDIO.music[zone] && this.musicBuffer && !this.musicSource) {
+        this.stopSynthAmbient();
+        this.startMusicLoop(zone);
+      }
+    });
+    return this.sampleLoadPromise;
+  }
+
   applyVolumes() {
     if (!this.context) return;
     const s = this.settings;
@@ -86,9 +140,18 @@ export class AudioManager {
   }
 
   setSettings(settings) {
+    const wasOff = this.settings.musicEnabled === false;
+    const zone = this.ambientZone;
     this.settings = settings;
     this.applyVolumes();
-    if (settings.musicEnabled === false) this.stopAmbient();
+    if (settings.musicEnabled === false) {
+      this.stopAmbient();
+      this.mutedZone = zone;
+    } else if (wasOff && this.mutedZone) {
+      const resumeZone = this.mutedZone;
+      this.mutedZone = null;
+      this.startAmbient(resumeZone);
+    }
   }
 
   isThrottled(name, ms) {
@@ -103,17 +166,25 @@ export class AudioManager {
     if (!this.enabled) return;
     const ctx = this.ensure();
     if (!ctx) return;
-    const def = SFX[name] ?? SFX.ui;
+    const binding = AUDIO.bindings[name] ?? null;
     if (this.isThrottled(name, options.throttle ?? 24)) return;
     const volume = clamp(options.volume ?? 1, 0, 2);
     const pitch = clamp(options.pitch ?? 1, 0.4, 2.4);
     const time = ctx.currentTime;
+    const sample = binding?.sample ? this.samples.get(binding.sample) : null;
+    if (sample) {
+      this.playSample(sample, binding, volume, pitch);
+      return;
+    }
+    const def = SFX[name] ?? (binding?.fallback ? SFX[binding.fallback] : null) ?? SFX.ui;
+    const gain = volume * (binding?.volume ?? 1);
+    const rate = pitch * (binding?.pitch ?? 1);
     if (def.type === 'arp') {
       def.notes.forEach((note, i) => {
         this.playTone({
-          frequency: note * pitch,
+          frequency: note * rate,
           duration: def.duration,
-          gain: def.gain * volume,
+          gain: def.gain * gain,
           wave: def.wave,
           start: time + i * def.duration * 0.8,
         });
@@ -121,18 +192,44 @@ export class AudioManager {
       return;
     }
     if (def.type === 'noise' || def.type === 'both') {
-      this.playNoise(def, pitch, volume, time);
+      this.playNoise(def, rate, gain, time);
     }
     if (def.type === 'sweep' || def.type === 'both') {
       this.playTone({
-        frequency: def.from * pitch,
-        endFrequency: def.to * pitch,
+        frequency: def.from * rate,
+        endFrequency: def.to * rate,
         duration: def.duration,
-        gain: def.gain * volume,
+        gain: def.gain * gain,
         wave: def.wave,
         start: time,
       });
     }
+  }
+
+  playSample(buffer, binding, volume, pitch) {
+    const ctx = this.context;
+    const time = ctx.currentTime;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const pitchJitter = 1 + (Math.random() * 2 - 1) * AUDIO.pitchJitter;
+    const gainJitter = 1 + (Math.random() * 2 - 1) * AUDIO.gainJitter;
+    source.playbackRate.setValueAtTime(
+      clamp(pitch * (binding.pitch ?? 1) * pitchJitter, 0.4, 2.4),
+      time,
+    );
+    const env = ctx.createGain();
+    env.gain.value = clamp(
+      volume * (binding.volume ?? 1) * gainJitter,
+      0,
+      2,
+    );
+    source.connect(env);
+    env.connect(this.sfxGain);
+    source.start(time);
+    source.onended = () => {
+      source.disconnect();
+      env.disconnect();
+    };
   }
 
   playTone({ frequency, endFrequency, duration, gain, wave = 'sine', start }) {
@@ -188,16 +285,62 @@ export class AudioManager {
   }
 
   startAmbient(zone = 'cemetery') {
-    if (!this.settings.musicEnabled) return;
+    this.ambientZone = zone;
+    if (this.settings.musicEnabled === false) return;
+    const ctx = this.ensure();
+    if (!ctx) return;
+    if (AUDIO.music[zone]) {
+      if (this.musicBuffer) {
+        this.stopSynthAmbient();
+        this.startMusicLoop(zone);
+      } else {
+        this.stopMusicLoop();
+        this.startSynthAmbient(zone);
+      }
+      return;
+    }
+    this.stopMusicLoop();
+    this.startSynthAmbient(zone);
+  }
+
+  startMusicLoop(zone) {
+    if (this.musicSource && this.musicZone === zone) return;
+    this.stopMusicLoop();
+    if (!this.musicBuffer) return;
+    const ctx = this.context;
+    const source = ctx.createBufferSource();
+    source.buffer = this.musicBuffer;
+    source.loop = true;
+    source.connect(this.musicGain);
+    source.start(ctx.currentTime);
+    this.musicSource = source;
+    this.musicZone = zone;
+  }
+
+  stopMusicLoop() {
+    if (this.musicSource) {
+      try {
+        this.musicSource.stop();
+      } catch {
+        // Already stopped.
+      }
+      this.musicSource.disconnect();
+    }
+    this.musicSource = null;
+    this.musicZone = null;
+  }
+
+  startSynthAmbient(zone) {
+    if (this.settings.musicEnabled === false) return;
     const ctx = this.ensure();
     if (!ctx) return;
     if (this.musicStarted) {
-      this.setAmbientZone(zone);
+      this.setSynthZone(zone);
       return;
     }
     this.musicStarted = true;
+    this.ambientZone = zone;
     const base = { cemetery: 55, church: 49, swamp: 46, dungeon: 41, forest: 52 }[zone] ?? 50;
-    const seconds = 6;
     const fade = ctx.createGain();
     fade.gain.setValueAtTime(0.0001, ctx.currentTime);
     fade.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 3);
@@ -227,10 +370,10 @@ export class AudioManager {
     lfoGain.connect(fade.gain);
     lfo.start();
     this.musicNodes.push({ lfo, lfoGain, extra: true });
-    this.ambientZone = zone;
+    this.synthZone = zone;
   }
 
-  setAmbientZone(zone) {
+  setSynthZone(zone) {
     if (!this.context || !this.musicStarted) return;
     const base = { cemetery: 55, church: 49, swamp: 46, dungeon: 41, forest: 52 }[zone] ?? 50;
     const now = this.context.currentTime;
@@ -242,10 +385,10 @@ export class AudioManager {
         toneIndex++;
       }
     }
-    this.ambientZone = zone;
+    this.synthZone = zone;
   }
 
-  stopAmbient() {
+  stopSynthAmbient() {
     if (!this.context || !this.musicStarted) return;
     const now = this.context.currentTime;
     for (const node of this.musicNodes) {
@@ -258,6 +401,22 @@ export class AudioManager {
     }
     this.musicNodes = [];
     this.musicStarted = false;
+    this.synthZone = null;
+  }
+
+  stopAmbient() {
+    this.stopSynthAmbient();
+    this.stopMusicLoop();
+    this.ambientZone = null;
+    this.mutedZone = null;
+  }
+
+  setAmbientZone(zone) {
+    if (!this.context) {
+      this.ambientZone = zone;
+      return;
+    }
+    this.startAmbient(zone);
   }
 
   setEnabled(enabled) {

@@ -94,6 +94,13 @@ export class Enemy {
     this.canJumpGap = Boolean(def.canJumpGap);
     this.paletteFrame = null;
     this.playAnimation('idle', { restart: true });
+    this.spawnAnimation = this.resolveAnimation('spawn');
+    this.spawnStateDuration = this.spawnAnimation
+      ? this.assets.getAnimation(this.sprite, this.spawnAnimation).frames.length
+        / ANIMATION.enemy.spawn.fps
+      : 0.45;
+    this.stateTimer = this.spawnStateDuration;
+    if (this.spawnAnimation) this.playAnimation('spawn', { restart: true });
   }
 
   get isDamageable() {
@@ -628,6 +635,7 @@ export class Enemy {
 
   resolveAnimation(state) {
     const chains = {
+      spawn: ['rise'],
       idle: this.flying
         ? ['idle', 'float', 'walk', 'run', 'bounce']
         : ['idle', 'walk', 'run', 'bounce', 'float'],
@@ -658,6 +666,10 @@ export class Enemy {
   }
 
   chooseAnimation() {
+    if (this.state === 'spawn' && this.spawnAnimation) {
+      this.playAnimation('spawn');
+      return;
+    }
     if (this.hurtTimer > 0) {
       this.playAnimation('hurt');
       return;

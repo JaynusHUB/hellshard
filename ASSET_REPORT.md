@@ -160,7 +160,8 @@ reskins.
   are generated at runtime (see section 6) instead of unmarked placeholders.
 - Boss chests reuse the generated chest icon with a gold/red seal; their upgrade reward is guaranteed by
   the boss controller, not by visual chance.
-- All SFX and ambient music are synthesized with WebAudio (no external audio files).
+- All other SFX and ambient music are synthesized with WebAudio. The cemetery also loads the demo
+  pack's `attack/hurt/jump/kill/rise` OGG effects and its music loop, with synth fallbacks.
 - Font is bundled locally via `@fontsource/pixelify-sans` (OFL).
 - The final boss encounter and world-map screen were stretch goals and are not implemented. The Final
   Gate ends the run after the three shard bosses.
@@ -333,3 +334,49 @@ The packaged map is used as the cemetery zone. Its raw artist collision is the p
 `npm run validate:maps` loads the packaged map, checks all visual GIDs against the embedded
 tileset ranges, checks the collision layer is non-empty, checks the spawn is clear, and builds the
 world through `src/world/tiledLoader.js`.
+
+## 15. Packaged audio and animation imports
+
+### Cemetery demo audio
+
+`public/assets/cemetery/demo/assets/sounds/` contains five short mono OGG effects and one long stereo
+loop:
+
+| File | Use | Notes |
+| --- | --- | --- |
+| `attack.ogg` | melee swing / heavy swing | decoded with `decodeAudioData`, ±5% playback-rate jitter |
+| `hurt.ogg` | player damage / hazard hit | synth fallback keeps working if decoding fails |
+| `jump.ogg` | player jump | |
+| `kill.ogg` | enemy death | player death keeps the synthesized cue |
+| `rise.ogg` | skeleton spawn | played from `spawnSound` on `bone_thrall` and `wight` |
+| `sci_fi_platformer04_main_loop.ogg` | cemetery music loop | 114 s stereo; **license unverified** |
+
+Paths and the key → sample bindings live in `src/config/audio.js`. Critical hits, dash, level-up, XP,
+boss warnings and ice/shadow abilities remain synthesized. The music loop uses `musicGain`, so the
+existing music volume/mute settings apply.
+
+### Church Aseprite tags
+
+`scripts/import-aseprite-json.mjs` reads the church Aseprite JSON files and rewrites frame lists,
+per-frame durations and source sheets in `ASSET_MANIFEST.json`:
+
+- `player.json` → Brakk: Idle, Walk, jump, fall, Flying Kick, chrouch, crouch-kick, Kick, Hurt, Punch.
+  Punch is the J basic, Kick is the K heavy, Flying Kick is the airborne basic, crouch-kick is the
+  down+J basic.
+- `wizard.json` → blight cultist: Idle 0–4, Fire 5–14.
+- `angel.json`: attack 0–2, idle 3–10.
+- `burning-ghoul/spritesheet/v2/burning-ghoul.json`: run 1 0–7, run 2 8–15.
+- `fx/enemy-death` (9 frames, 81×66) and `fx/fireball` (3 frames, 26×26) have no tags; all frames are
+  imported as `burst` / `fly`.
+- `burning-ghoul/spritesheet/v1` is deliberately skipped in favour of v2.
+- `cemetery/demo/assets/atlas/atlas.json` is **TexturePacker** JSON, not Aseprite. Its 48 packed frame
+  rects are reported but not converted; the manifest already uses the same frames as individual PNGs.
+
+### Death / rise effects
+
+- Cemetery: `enemy-death-1..5`, 44×52, 16 fps (matches the demo).
+- Church: `enemy-death` sheet, 9 frames, 81×66.
+- Swamp: `Enemy-Death1..6`, 39×49.
+- Dungeon reuses cemetery; forest reuses cemetery with a green tint.
+- Skeleton rise: `skeleton-rise-1..6` and `skeleton-rise-clothed-1..6`, 44×52, 7 fps, played during
+  the damage-immune `spawn` state before chase.

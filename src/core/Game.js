@@ -6,6 +6,7 @@ import { Enemy } from '../entities/Enemy.js';
 import { Renderer } from '../render/Renderer.js';
 import { CameraRig } from '../render/CameraRig.js';
 import { ParticleSystem, COLORS } from '../render/ParticleSystem.js';
+import { EffectPool } from '../render/EffectPool.js';
 import { Input } from './Input.js';
 import { FixedLoop } from './Loop.js';
 import { clamp } from './RNG.js';
@@ -115,6 +116,7 @@ export class Game {
       glowParticles: this.glowParticles,
       maxOrbs: 220,
     });
+    this.effects = new EffectPool({ assets: this.assets, size: 24 });
   }
 
   attachUI(ui) {
@@ -181,6 +183,9 @@ export class Game {
     });
     enemy.spawnCost = this.getEnemyCost(enemyId) * (modifiers.elite ? 1.4 : 1);
     this.enemies.push(enemy);
+    if (def.spawnSound) {
+      this.audio.play(def.spawnSound, { throttle: 180, volume: 0.85 });
+    }
     this.glowParticles.burst([COLORS.soul, COLORS.shadow], px, y + enemy.height / 2, 10, {
       speed: 45,
       life: 0.4,
@@ -349,6 +354,7 @@ export class Game {
     }
     this.particles.update(dt);
     this.glowParticles.update(dt);
+    this.effects.update(dt);
     this.cleanupEnemies();
     if (player.dead) {
       this.endRun('death');

@@ -14,7 +14,8 @@ index.html
    ├─ core/Game.js              orchestration hub, scene lifecycle, frame update
    ├─ core/Loop.js              fixed 60 Hz + interpolated rendering
    ├─ core/Input.js             keyboard state and edge detection
-   ├─ core/AudioManager.js      WebAudio synthesis and ambience
+   ├─ core/AudioManager.js      WebAudio synthesis + packaged demo SFX/music
+   ├─ config/audio.js           packaged sound/music paths and fallback bindings
    ├─ core/SaveStore.js         localStorage meta/settings persistence
    ├─ core/RNG.js               seeded PRNG and seed combination
    ├─ render/Renderer.js        WebGLRenderer, integer stage scaling, camera
@@ -25,6 +26,7 @@ index.html
    ├─ render/WorldRenderer.js   terrain, decor, interactions, water, backgrounds
    ├─ render/BackgroundLayers.js parallax background quads
    ├─ render/EntityRenderer.js  player/enemy/boss/pickup/projectile sprite batching
+   ├─ render/EffectPool.js      pooled one-shot enemy death effect sprites
    ├─ render/ParticleSystem.js  pooled additive and normal particle meshes
    ├─ render/WaterLayer.js      animated water shader
    ├─ render/GeneratedSprites.js procedural 1× interactable icons
@@ -34,6 +36,7 @@ index.html
    ├─ world/tiledLoader.js      Tiled JSON, tilesets, collision and packaged worlds
    ├─ world/Tilemap.js          collision queries, one-way platforms, breakables
    ├─ data/maps.js              packaged Tiled map ids, layer roles and collision GIDs
+   ├─ data/effects.js           zone → enemy death effect sprite mapping
    ├─ world/LayoutGrid.js       per-zone occupancy for props/platforms/chests/gates
    ├─ world/SpatialHash.js      active-enemy spatial queries
    ├─ world/ZoneSceneManager.js zone scene build/teardown and transitions

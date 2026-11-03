@@ -193,6 +193,7 @@ export class InteractionSystem {
     game.traps = [];
     game.particles.clear();
     game.glowParticles.clear();
+    game.effects.clear();
     game.bossHazards = [];
     game.boss = null;
     game.arenaGatePositions = [];

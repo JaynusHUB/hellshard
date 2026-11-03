@@ -29,6 +29,7 @@ export class EntityRenderer {
         else this.drawEnemy(batch, actor, alpha);
       }
       if (family === 'gothic') game.projectiles.render(batch, game.assets, alpha);
+      if (family === 'gothic') game.effects?.render(batch, family);
       batch.end();
     }
   }
@@ -46,7 +47,9 @@ export class EntityRenderer {
     const pose = this.getEnemyPose(enemy);
     const zoneTint = game.assets.getPresentation().zoneTints[game.activeZoneId] ?? [1, 1, 1];
     let tint = [0, 1, 2].map((i) => (enemy.tintBase[i] ?? 1) * zoneTint[i]);
-    let alphaValue = enemy.state === 'spawn' ? clamp(1 - enemy.stateTimer / 0.45, 0.15, 1) : 1;
+    let alphaValue = enemy.state === 'spawn'
+      ? clamp(1 - enemy.stateTimer / (enemy.spawnStateDuration ?? 0.45), 0.15, 1)
+      : 1;
     if (enemy.state === 'windup') {
       const pulse = 0.6 + Math.sin(game.time * 26) * 0.25;
       tint = [tint[0] * (1 + pulse * 0.5), tint[1] * (1 - pulse * 0.3), tint[2] * (1 - pulse * 0.25)];

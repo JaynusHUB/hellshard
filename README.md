@@ -18,6 +18,7 @@ npm run preview          # serve the production build
 npm test                 # Vitest logic tests
 npm run validate:world   # validate seeded worlds 1..100
 npm run validate:world -- 1 300
+npm run import:animations # regenerate Aseprite frame lists/durations from church JSON
 npm run validate:tiles     # 16x16 frame, margin/spacing and source-bounds audit
 npm run validate:maps      # packaged Tiled map, GID, collision and spawn audit
 npm run validate:alignment # alpha-painted surface + prop/support alignment
@@ -132,7 +133,8 @@ Detailed decisions and content mappings are in `HELLSHARD_SPEC.md`, `ARCHITECTUR
   Their native pixel size matches the 16px world scale and they are batched separately.
 - The swamp and forest are intentionally isolated art families and are reached through fades/portals;
   actors receive per-zone tint grading so styles never share a hard cut.
-- No external audio files are used. All sound and ambient music are synthesized at runtime.
+- No external audio files are used for the other zones. Cemetery plays the packaged demo's five OGG
+  effects and music loop; everything else is synthesized at runtime.
 
 ## Credits
 

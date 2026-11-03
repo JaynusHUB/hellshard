@@ -14,7 +14,7 @@ export function handleActions(p, input, world) {
       p.heavyTimer = p.character.weapon.heavy.windup ?? 0.3;
       p.heavyStrikeFired = false;
       p.attackAnim = p.heavyTimer + (p.character.weapon.heavy.recover ?? 0.3) + 0.1;
-      p.animator.play(p.character.weapon.style === 'melee' ? pickAnim(p, 'heavy', 'attack') : pickAnim(p, 'attack', 'cast'), { restart: true });
+      p.animator.play(heavyAttackClip(p), { restart: true });
       p.emit({ type: 'heavyWindup', characterId: p.characterId });
       return;
     }
@@ -22,9 +22,22 @@ export function handleActions(p, input, world) {
       p.basicCooldown = p.stats.attackCooldown;
       p.basicAnimTimer = Math.min(0.3, p.stats.attackCooldown * 0.8);
       p.attackAnim = p.basicAnimTimer;
-      p.animator.play(pickAnim(p, 'attack', 'cast'), { restart: true });
+      p.attackKind = !p.onGround ? 'air' : input.isDown('down') ? 'crouch' : 'ground';
+      p.animator.play(basicAttackClip(p), { restart: true });
       emitBasicStrike(p);
     }
+  }
+
+export function basicAttackClip(p) {
+    if (p.characterId !== 'brakk') return pickAnim(p, 'attack', 'cast');
+    if (p.attackKind === 'air') return pickAnim(p, 'flyingKick', 'punch', 'attack', 'cast');
+    if (p.attackKind === 'crouch') return pickAnim(p, 'crouchKick', 'punch', 'attack', 'cast');
+    return pickAnim(p, 'punch', 'attack', 'cast');
+  }
+
+export function heavyAttackClip(p) {
+    if (p.character.weapon.style === 'melee') return pickAnim(p, 'kick', 'heavy', 'attack');
+    return pickAnim(p, 'attack', 'cast');
   }
 
 export function pickAnim(p, ...names) {

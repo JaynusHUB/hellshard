@@ -1,6 +1,7 @@
 import { GAME } from '../config/game.js';
 import { RNG, combineSeed } from '../core/RNG.js';
 import { COLORS } from '../render/ParticleSystem.js';
+import { DEATH_EFFECTS } from '../data/effects.js';
 
 const DEATH_COLORS = {
   bone: COLORS.bone,
@@ -215,7 +216,14 @@ export class CombatSystem {
       color: effectColor,
       alpha: 0.6,
     });
-    this.audio.play('death', { volume: enemy.elite ? 1.25 : 1 });
+    const fx = DEATH_EFFECTS[this.game.activeZoneId] ?? DEATH_EFFECTS.cemetery;
+    this.game.effects?.spawn({
+      ...fx,
+      x,
+      y,
+      flip: enemy.facing < 0,
+    });
+    this.audio.play('enemyDeath', { volume: enemy.elite ? 1.25 : 1 });
     this.game.camera.addShake(enemy.elite ? 4 : 1.5);
   }
 

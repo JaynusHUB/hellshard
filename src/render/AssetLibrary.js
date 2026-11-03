@@ -231,6 +231,10 @@ export class AssetLibrary {
           frames,
           fps: animation.fps ?? 8,
           loop: animation.loop ?? true,
+          durations: Array.isArray(animation.durations)
+            && animation.durations.length === frames.length
+            ? animation.durations.map((ms) => Number(ms) / 1000)
+            : null,
         };
         frameSpecs.push(...frames);
       }

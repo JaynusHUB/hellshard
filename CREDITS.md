@@ -39,6 +39,21 @@ audio are loaded at runtime.
   redistribute the assets as-is; do not claim the art as your own.** Credit appreciated, not required.
 - Used for: forest tiles, backgrounds, trees/props, moss slime.
 
+## Audio
+
+### Cemetery demo sound effects
+- Source: bundled Gothicvania Cemetery demo (`public/assets/cemetery/demo/assets/sounds/`)
+- Files: `attack.ogg`, `hurt.ogg`, `jump.ogg`, `kill.ogg`, `rise.ogg`
+- License: **UNVERIFIED** — shipped inside the demo pack with no separate license file. Treat
+  as demo-only until the source terms are confirmed.
+- Used for: melee swing, player hurt, jump, enemy death and skeleton rise. Synthesized fallbacks
+  remain in `AudioManager` if a file fails to decode.
+
+### Music
+- `sci_fi_platformer04_main_loop.ogg` — **UNVERIFIED: music loop, source unknown**.
+  Used only for the cemetery zone; the path is a single config entry in `src/config/audio.js`.
+- Other zones continue to use the synthesized ambient bed.
+
 ## Fonts
 
 - **Pixelify Sans** — bundled locally via `@fontsource/pixelify-sans` (SIL Open Font License 1.1).
@@ -60,8 +75,9 @@ the supplied packs. The rest of the game uses only the five approved art folders
 
 ## Audio
 
-All sound effects and ambient drones are synthesized at runtime with the WebAudio API. No supplied
-sound files are shipped or loaded by HELLSHARD.
+The cemetery demo's five OGG effects and its music loop are used with synthesized WebAudio fallbacks
+(see the Audio section above). Critical hits, dash, level-up, XP, boss warnings and ice/shadow
+abilities remain fully synthesized.
 
 ## License note
 

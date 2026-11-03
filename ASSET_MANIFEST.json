@@ -139,7 +139,13 @@
             22,
             23
           ],
-          "fps": 8,
+          "durations": [
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         },
         "run": {
@@ -154,7 +160,15 @@
             34,
             35
           ],
-          "fps": 12,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         },
         "jump": {
@@ -165,7 +179,11 @@
             0,
             1
           ],
-          "fps": 8,
+          "durations": [
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         },
         "fall": {
@@ -176,10 +194,65 @@
             2,
             3
           ],
-          "fps": 8,
+          "durations": [
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         },
-        "attack": {
+        "flyingKick": {
+          "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
+          "fw": 82,
+          "fh": 60,
+          "frames": [
+            4,
+            5
+          ],
+          "durations": [
+            100,
+            100
+          ],
+          "fps": 10,
+          "loop": false
+        },
+        "crouch": {
+          "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
+          "fw": 82,
+          "fh": 60,
+          "frames": [
+            6,
+            7
+          ],
+          "durations": [
+            100,
+            300
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "crouchKick": {
+          "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
+          "fw": 82,
+          "fh": 60,
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "durations": [
+            300,
+            50,
+            50,
+            50,
+            300
+          ],
+          "fps": 6.67,
+          "loop": false
+        },
+        "kick": {
           "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
           "fw": 82,
           "fh": 60,
@@ -190,10 +263,32 @@
             16,
             17
           ],
-          "fps": 18,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         },
-        "heavy": {
+        "hurt": {
+          "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
+          "fw": 82,
+          "fh": 60,
+          "frames": [
+            18,
+            19
+          ],
+          "durations": [
+            100,
+            100
+          ],
+          "fps": 10,
+          "loop": false
+        },
+        "punch": {
           "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
           "fw": 82,
           "fh": 60,
@@ -205,18 +300,59 @@
             28,
             29
           ],
-          "fps": 14,
+          "durations": [
+            200,
+            50,
+            50,
+            50,
+            50,
+            400
+          ],
+          "fps": 7.5,
           "loop": false
         },
-        "hurt": {
+        "attack": {
           "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
           "fw": 82,
           "fh": 60,
           "frames": [
-            18,
-            19
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
           ],
-          "fps": 8,
+          "durations": [
+            200,
+            50,
+            50,
+            50,
+            50,
+            400
+          ],
+          "fps": 7.5,
+          "loop": false
+        },
+        "heavy": {
+          "sheet": "assets/church/SPRITES/player/spritesheet/player.png",
+          "fw": 82,
+          "fh": 60,
+          "frames": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         }
       },
@@ -386,6 +522,20 @@
           "h": 52,
           "fps": 8,
           "loop": false
+        },
+        "rise": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-1.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-2.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-3.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-4.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-5.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise/skeleton-rise-6.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 7,
+          "loop": false
         }
       }
     },
@@ -426,6 +576,20 @@
           "w": 44,
           "h": 52,
           "fps": 8,
+          "loop": false
+        },
+        "rise": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-1.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-2.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-3.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-4.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-5.png",
+            "assets/cemetery/PNG/Sprites/skeleton-rise-clothed/skeleton-rise-clothed-6.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 7,
           "loop": false
         }
       }
@@ -509,38 +673,85 @@
       "facing": "left",
       "animations": {
         "walk": {
-          "images": [
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-1.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-2.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-3.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-4.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-5.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-6.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-7.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-8.png"
+          "sheet": "assets/church/SPRITES/burning-ghoul/spritesheet/v2/burning-ghoul.png",
+          "fw": 57,
+          "fh": 60,
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
           ],
-          "w": 57,
-          "h": 60,
-          "fps": 11,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "walk2": {
+          "sheet": "assets/church/SPRITES/burning-ghoul/spritesheet/v2/burning-ghoul.png",
+          "fw": 57,
+          "fh": 60,
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         },
         "attack": {
-          "images": [
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-4.png",
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-5.png"
+          "sheet": "assets/church/SPRITES/burning-ghoul/spritesheet/v2/burning-ghoul.png",
+          "fw": 57,
+          "fh": 60,
+          "frames": [
+            4,
+            5
           ],
-          "w": 57,
-          "h": 60,
-          "fps": 14,
+          "durations": [
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         },
         "hurt": {
-          "images": [
-            "assets/church/SPRITES/burning-ghoul/sprites/v1/burning-ghoul-3.png"
+          "sheet": "assets/church/SPRITES/burning-ghoul/spritesheet/v2/burning-ghoul.png",
+          "fw": 57,
+          "fh": 60,
+          "frames": [
+            2
           ],
-          "w": 57,
-          "h": 60,
-          "fps": 8,
+          "durations": [
+            100
+          ],
+          "fps": 10,
           "loop": false
         }
       }
@@ -560,7 +771,14 @@
             3,
             4
           ],
-          "fps": 7,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         },
         "walk": {
@@ -574,7 +792,14 @@
             3,
             4
           ],
-          "fps": 6,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         },
         "cast": {
@@ -593,7 +818,19 @@
             13,
             14
           ],
-          "fps": 14,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            300
+          ],
+          "fps": 8.33,
           "loop": false
         },
         "hurt": {
@@ -603,7 +840,10 @@
           "frames": [
             0
           ],
-          "fps": 8,
+          "durations": [
+            100
+          ],
+          "fps": 10,
           "loop": false
         }
       }
@@ -772,7 +1012,12 @@
             1,
             2
           ],
-          "fps": 8,
+          "durations": [
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": false
         },
         "idle": {
@@ -789,7 +1034,17 @@
             9,
             10
           ],
-          "fps": 7,
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         }
       }
@@ -806,7 +1061,12 @@
             1,
             2
           ],
-          "fps": 12,
+          "durations": [
+            100,
+            100,
+            100
+          ],
+          "fps": 10,
           "loop": true
         }
       }
@@ -829,6 +1089,54 @@
             7,
             8
           ],
+          "durations": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            300
+          ],
+          "fps": 8.18,
+          "loop": false
+        }
+      }
+    },
+    "cemetery_death": {
+      "atlas": "gothic",
+      "animations": {
+        "burst": {
+          "images": [
+            "assets/cemetery/PNG/Sprites/enemy-death/enemy-death-1.png",
+            "assets/cemetery/PNG/Sprites/enemy-death/enemy-death-2.png",
+            "assets/cemetery/PNG/Sprites/enemy-death/enemy-death-3.png",
+            "assets/cemetery/PNG/Sprites/enemy-death/enemy-death-4.png",
+            "assets/cemetery/PNG/Sprites/enemy-death/enemy-death-5.png"
+          ],
+          "w": 44,
+          "h": 52,
+          "fps": 16,
+          "loop": false
+        }
+      }
+    },
+    "swamp_death": {
+      "atlas": "gothic",
+      "animations": {
+        "burst": {
+          "images": [
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death1.png",
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death2.png",
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death3.png",
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death4.png",
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death5.png",
+            "assets/swamp/Sprites/Enemy-Death/Explosion/Enemy-Death6.png"
+          ],
+          "w": 39,
+          "h": 49,
           "fps": 14,
           "loop": false
         }
@@ -1901,7 +2209,7 @@
       },
       {
         "image": "assets/cemetery/PNG/Environment/mountains.png",
-        "parallax": 0.12,
+        "parallax": 0.07,
         "y": 28,
         "mode": "repeat",
         "tint": [
@@ -1912,7 +2220,7 @@
       },
       {
         "image": "assets/cemetery/PNG/Environment/graveyard.png",
-        "parallax": 0.3,
+        "parallax": 0.25,
         "y": 8,
         "mode": "repeat",
         "tint": [

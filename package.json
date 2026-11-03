@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "import:animations": "node scripts/import-aseprite-json.mjs",
     "validate:world": "node scripts/validate-world.js",
     "validate:alignment": "node scripts/validate-alignment.js",
     "validate:layout": "node scripts/validate-layout.js",
