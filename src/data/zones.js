@@ -31,9 +31,7 @@ export const ZONES = {
     decor: ['tree1', 'tree2', 'tree3', 'statue', 'stone1', 'stone2', 'stone3', 'stone4', 'bushLarge', 'bushSmall'],
     traps: ['spikes'],
     exit: { side: 'right', target: 'church', labelKey: 'zone.church.name' },
-    doors: [
-      { id: 'crypt', target: 'dungeon', room: 2, offset: 0.72, labelKey: 'zone.dungeon.name', style: 'crypt' },
-    ],
+    doors: [],
     hasFinalGate: true,
     hazards: 'spikes',
     music: 'cemetery',
@@ -70,7 +68,7 @@ export const ZONES = {
     elitePool: ['pale_revenant', 'alpha_hound'],
     decor: ['column'],
     traps: ['spikes'],
-    exit: { side: 'right', target: 'swamp', labelKey: 'zone.swamp.name' },
+    exit: null,
     doors: [],
     hasFinalGate: false,
     hazards: 'spikes',
@@ -199,7 +197,7 @@ export const ZONES = {
   },
 };
 
-export const ZONE_ORDER = ['cemetery', 'church', 'swamp', 'dungeon', 'forest'];
+export const ZONE_ORDER = ['cemetery', 'church'];
 export const ZONE_BY_ID = ZONES;
 export const BOSS_ZONE_IDS = ['cemetery', 'church', 'swamp'];
 

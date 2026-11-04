@@ -17,8 +17,7 @@ const SURFACE = (FLOOR_ROW + 1) * T;
 const BOSS_ROOM = 3;
 
 export function buildZoneRoute(seed) {
-  const rng = new RNG(combineSeed(seed, 'zone-route'));
-  return ['cemetery', ...rng.shuffle(['church', 'swamp']), 'forest'];
+  return ['cemetery', 'church'];
 }
 
 function idx(x, y) {

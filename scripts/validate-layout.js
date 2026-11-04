@@ -155,4 +155,4 @@ if (totalBad > 0) {
   for (const failure of failures) console.error(`  - ${failure}`);
   process.exit(1);
 }
-console.log('\n✓ Layout validation passed: 100 seeds × 5 zones; zero overlaps, floating chests, clearance violations, unsupported single-tile structures or unreachable platforms.');
+console.log(`\n? Layout validation passed: 100 seeds ? ${ZONE_ORDER.length} zones; zero overlaps, floating chests, clearance violations, unsupported single-tile structures or unreachable platforms.`);

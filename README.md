@@ -1,7 +1,7 @@
 # HELLSHARD
 
 A pixel-perfect dark-fantasy action roguelite built with Three.js and vanilla ES modules.
-Descend through five seeded zones, claim three Hellshards, and open the Final Gate.
+Descend from the packaged cemetery into the church, claim Hellshards, and survive the abyss.
 
 ## Requirements
 
@@ -75,10 +75,9 @@ All runtime assets are local under `public/assets`; there are no CDN requests.
   and a guaranteed upgrade chest.
 - **Progression:** XP crystals, magnetic pickup, level-up choices, 13 capped upgrades, weapon levels,
   and one evolution per character.
-- **Five seeded zones:** cemetery, church, swamp, dungeon and forest. The route is
-  `cemetery → church/swamp (seeded order) → forest`, with an optional crypt entrance to the dungeon.
-  Cemetery can use the packaged artist Tiled demo map via `?map=cemetery_demo`; its collision layer
-  is the raw physics floor and its Back/Main layers render in the packaged art order.
+- **Two active zones:** cemetery (packaged Tiled map) and church (procedural). Swamp, dungeon and
+  forest generation is disabled because those maps were reported broken; their source assets remain in
+  `public/assets` but they are not part of the active campaign route.
 - **World content:** handcrafted-by-generator rooms, platforming gaps, moving platforms, spikes, animated
   water, breakable walls, fake-wall secrets, hidden chests, altars, checkpoints and the Final Gate.
 - **Meta progression:** persistent Hellshards, character unlocks, three permanent boon tracks,

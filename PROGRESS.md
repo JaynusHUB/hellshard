@@ -2,13 +2,15 @@
 
 ## Current status
 
-**Complete.** Phases 0–7 are implemented. The game boots into the main menu, supports a full run from
-the cemetery through the seeded church/swamp route to the Final Gate, and persists meta progression.
+**Complete.** Phases 0–7 are implemented. The active game boots into the main menu and currently ships
+two active zones: the packaged cemetery and the procedural church. Swamp, dungeon and forest are
+disabled because those maps were reported broken; their assets remain in `public/assets`. Meta
+progression persists.
 
-## Verification (final pass)
+## Verification (current)
 
 - `npm run build` - passes after packaged audio, Aseprite clips and death FX (70 modules, no errors;
-  atlases are generated at runtime, JS 870.13 kB / 231.59 kB gzip).
+  atlases are generated at runtime, JS 869.90 kB / 231.53 kB gzip).
 - Layout note: generated stairs are supported solid columns; high platforms are capped at three
   tiles and validated against the jump envelope.
 - `npm test` - **46/46 tests passing** in 10 suites (RNG, upgrades/evolutions, world generation,
@@ -21,11 +23,11 @@ the cemetery through the seeded church/swamp route to the Final Gate, and persis
   `Collisions Layer > Back Layer > Main Layer`.
 - `npm run validate:maps` - **passed**: `cemetery_demo` loads (300x14 / 4800x224), collision GIDs
   1+2 resolve, 373 collision tiles exist, spawn is clear and the right transition exists.
-- `npm run validate:world` - **passed for seeds 1..100**: 100 worlds, 500 zones, max gap 4 tiles,
+- `npm run validate:world` - **passed for seeds 1..100**: 100 worlds, 200 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
 - `npm run validate:alignment` - **passed**: 5 zones, 43 ground props, 110 placed objects,
   footSink applied, ±1px tolerance.
-- `npm run validate:layout` - **passed**: 100 seeds × 5 zones; zero overlaps, floating chests,
+- `npm run validate:layout` - **passed**: 100 seeds ? 2 active zones; zero overlaps, floating chests,
   clearance violations, unsupported single-tile structures or unreachable platforms.
 - Production preview smoke test (`npm run preview`) — menu → achievements → character select →
   gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →

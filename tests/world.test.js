@@ -33,7 +33,7 @@ describe('world generation', () => {
     expect(dungeon.surfaceDecals.length).toBeGreaterThan(0);
   });
 
-  it('generates all five zones', () => {
+  it('generates the two active campaign zones', () => {
     const world = generateWorld(20261102);
     expect(Object.keys(world).sort()).toEqual([...ZONE_ORDER].sort());
     for (const zone of Object.values(world)) {
@@ -62,29 +62,26 @@ describe('world generation', () => {
     }
   });
 
-  it('exposes the three boss arenas', () => {
+  it('exposes the two active boss arenas', () => {
     const world = generateWorld(1234);
-    for (const id of ['cemetery', 'church', 'swamp']) {
+    for (const id of ['cemetery', 'church']) {
       expect(world[id].arena).not.toBeNull();
     }
+    expect(world.swamp).toBeUndefined();
+    expect(world.dungeon).toBeUndefined();
+    expect(world.forest).toBeUndefined();
   });
 
-  it('creates a deterministic, seed-varying route through the hub', () => {
-    const a = buildZoneRoute(20261102);
-    const b = buildZoneRoute(20261102);
-    expect(a).toEqual(b);
-    expect(a[0]).toBe('cemetery');
-    expect(a[a.length - 1]).toBe('forest');
-    expect(new Set(a)).toEqual(new Set(['cemetery', 'church', 'swamp', 'forest']));
-    const variants = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => buildZoneRoute(seed).join('>')));
-    expect(variants.size).toBeGreaterThan(1);
+  it('creates the fixed cemetery to church route', () => {
+    expect(buildZoneRoute(1)).toEqual(['cemetery', 'church']);
+    expect(buildZoneRoute(20261102)).toEqual(['cemetery', 'church']);
   });
 
   it('wires the route exits to the generated neighbor', () => {
     for (const seed of [1, 7, 20261102]) {
       const route = buildZoneRoute(seed);
       const world = generateWorld(seed);
-      for (let i = 1; i < route.length - 1; i++) {
+      for (let i = 0; i < route.length - 1; i++) {
         const zone = world[route[i]];
         const right = zone.transitions.find((transition) => transition.id === `right-${route[i]}`);
         expect(right.target).toBe(route[i + 1]);
