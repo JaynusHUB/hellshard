@@ -20,7 +20,7 @@ after the Gate Warden boss.
 - [x] Secret scan: no API keys, tokens, `.env` files or credentials in the working tree or git
   history.
 - [x] Published to GitHub: https://github.com/JaynusHUB/hellshard
-- [x] Commit authorship normalized to **JaynusDEV** and linked to the JaynusHUB account.
+- [x] Commit authorship normalized to **JaynusDEV**.
 - [x] README rebuilt as a visual landing page: banner, stack badges, four gameplay screenshots,
   compact feature/command tables and collapsible technical sections.
 - [x] Re-verified: 50/50 tests, production build, map/tile/alignment/layout/world validators.
