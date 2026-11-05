@@ -24,14 +24,6 @@ export const ACHIEVEMENTS = [
     reward: 1,
   },
   {
-    id: 'trinity',
-    nameKey: 'achievement.trinity.name',
-    descKey: 'achievement.trinity.desc',
-    icon: '❖',
-    condition: { type: 'shards', target: 3 },
-    reward: 5,
-  },
-  {
     id: 'maw_silenced',
     nameKey: 'achievement.mawSilenced.name',
     descKey: 'achievement.mawSilenced.desc',
@@ -46,22 +38,6 @@ export const ACHIEVEMENTS = [
     icon: '✦',
     condition: { type: 'boss', target: 'seraph_ash' },
     reward: 2,
-  },
-  {
-    id: 'silent_choir',
-    nameKey: 'achievement.silentChoir.name',
-    descKey: 'achievement.silentChoir.desc',
-    icon: '◌',
-    condition: { type: 'boss', target: 'drowned_choir' },
-    reward: 2,
-  },
-  {
-    id: 'warden_fallen',
-    nameKey: 'achievement.wardenFallen.name',
-    descKey: 'achievement.wardenFallen.desc',
-    icon: '⌘',
-    condition: { type: 'boss', target: 'gate_warden' },
-    reward: 3,
   },
   {
     id: 'ascendant',

@@ -499,7 +499,7 @@ export class WorldRenderer {
     if (!frame) return;
     const tint = game.activeZoneId === 'forest'
       ? [0.72, 0.96, 0.78]
-      : game.activeZoneId === 'dungeon' || game.activeZoneId === 'dungeon_gate'
+      : game.activeZoneId === 'dungeon'
         ? [0.72, 0.75, 0.8]
         : [1, 0.96, 0.86];
     for (const platform of platforms) {

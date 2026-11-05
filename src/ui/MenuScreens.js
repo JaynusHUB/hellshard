@@ -1,5 +1,6 @@
 import { CHARACTERS } from '../data/characters.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_BY_ID } from '../data/achievements.js';
+import { ZONE_ORDER } from '../data/zones.js';
 import { GAME } from '../config/game.js';
 import { formatTime } from './strings.js';
 
@@ -104,7 +105,7 @@ export function mainMenuHtml({ t, seed, shards, version, bestTime, runs = 0, zon
             </div>
             <div class="ledger-constellation" aria-hidden="true">
               <span class="fragment-line"></span>
-              <span class="fragment f1"></span><span class="fragment f2"></span><span class="fragment f3"></span>
+              <span class="fragment f1"></span><span class="fragment f2"></span>
             </div>
             <div class="ledger-fragment-label">${t('menu.fragments')}</div>
             <div class="ledger-stats">
@@ -114,7 +115,7 @@ export function mainMenuHtml({ t, seed, shards, version, bestTime, runs = 0, zon
               </div>
               <div class="ledger-stat"><span>${t('menu.best')}</span><b>${bestTime > 0 ? formatTime(bestTime) : '—'}</b></div>
               <div class="ledger-stat"><span>${t('menu.runs')}</span><b>${runs}</b></div>
-              <div class="ledger-stat"><span>${t('menu.zones')}</span><b>${zonesSeen}<em>/3</em></b></div>
+              <div class="ledger-stat"><span>${t('menu.zones')}</span><b>${zonesSeen}<em>/${ZONE_ORDER.length}</em></b></div>
             </div>
             <div class="seed-box">
               <label for="menu-seed">${t('menu.seed')}</label>
@@ -435,7 +436,7 @@ export function resultHtml({ t, summary, victory, newBestTime }) {
         <div class="result-stat-grid">
           <div class="result-stat"><span>${t('result.survived')}</span><b>${formatTime(summary.elapsed)}</b></div>
           <div class="result-stat"><span>${t('result.kills')}</span><b>${summary.kills}</b></div>
-          <div class="result-stat"><span>${t('result.bosses')}</span><b>${summary.bosses.length}/3</b></div>
+          <div class="result-stat"><span>${t('result.bosses')}</span><b>${summary.bosses.length}/${ZONE_ORDER.length}</b></div>
           <div class="result-stat"><span>${t('result.level')}</span><b>${summary.level}</b></div>
           <div class="result-stat"><span>${t('result.xp')}</span><b>${summary.xp}</b></div>
           <div class="result-stat gold"><span>${t('result.shards')}</span><b>+${summary.shardsEarned} ◆</b></div>
@@ -468,7 +469,6 @@ export function creditsHtml({ t }) {
           Gothicvania Cemetery · Church · Swamp — <b>ansimuz</b> (CC0)<br/>
           2D Medieval Castle Dungeon — <b>TPC / ThePixelist</b><br/>
           Fantasy Forest Pixel Tileset — <b>KilluaKage</b><br/>
-          Dungeon Gate map &amp; level design — <b>JAYNUS</b><br/>
           <br/>
           <b>${t('credits.code')}</b><br/>
           HELLSHARD — <b>JAYNUS</b><br/>
@@ -478,7 +478,7 @@ export function creditsHtml({ t }) {
           ${t('credits.thanks')}<br/>
           <br/>
           <span>${t('credits.license')}</span><br/>
-          <span class="credits-license">© JAYNUS. Original work. See LICENSE.</span>
+          <span class="credits-license">© JAYNUS. MIT licensed. See LICENSE.</span>
         </div>
         <div class="levelup-footer" style="justify-content:center;margin-top:9px;">
           <button class="btn small" data-action="back">${t('credits.back')}</button>

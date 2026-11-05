@@ -15,7 +15,7 @@ JSON, drop it under `public/assets`, and register it in `src/data/maps.js`.
    `... Cliff`, `... Fence`, `... Rocks`, `Parallax Fog (foreground)`.
    `parallaxx`, `repeatx`, `draw_above_player` ve `autoscroll_x` özelliklerini kullan.
 5. Nesneler **`Objects`** katmanında, tipleriyle: `PlayerStart`, `Checkpoint`,
-   `Enemy`, `Boss`, `Pickup`, `Chest`, `Sign`, `MovingPlatform`, `LevelExit`.
+   `Enemy`, `Boss`, `Pickup`, `Chest`, `Sign`, `MovingPlatform`.
 6. Tetikler **`Triggers`** katmanında: `Hint`, `KillZone`, `CameraLock`,
    `MusicZone`, `Secret`. Işıklar **`Lights`** katmanında: `Light`.
 7. Haritayı `src/data/maps.js` içindeki `PACKAGED_MAPS`'e ekle; `zoneId` mevcut
@@ -62,27 +62,26 @@ standable surface below each object, so you do not need pixel-perfect anchoring.
 | `PlayerStart` | `facing` | Spawn point |
 | `Checkpoint` | `id`, `heal` | Respawn point; `heal:true` restores 35% |
 | `Enemy` | `enemy_type`, `hp`, `damage`, `ai` | Authored enemy spawn |
-| `Boss` | `arena_left`, `arena_right`, `hp` | Boss arena + Gate Warden trigger |
-| `Pickup` | `item`, `value`, `heal`, `hidden` | Coin XP / potion / key |
-| `Chest` | `loot`, `hidden` | Interaction chest; `loot: dungeon_key` |
+| `Boss` | `arena_left`, `arena_right`, `hp` | Boss arena trigger |
+| `Pickup` | `item`, `value`, `heal`, `hidden` | Coin XP / potion |
+| `Chest` | `loot`, `hidden` | Interaction chest |
 | `Sign` | `text` | Readable lore sign |
 | `MovingPlatform` | `axis`, `distance`, `speed` | Moving lift |
-| `LevelExit` | `requires_item`, `target_map` | Keyed Final Gate |
 | `Hint` (Triggers) | `text` | One-shot toast when entered |
 | `KillZone` (Triggers) | — | Registered kill volume |
 | `Light` (Lights) | `color`, `radius`, `intensity`, `flicker` | Torch halo |
 
-Enemy `enemy_type` aliases used by the current pool: `skeleton`, `ghoul`, `bat`.
-They map to `bone_thrall`/`wight`, `burning_ghoul` and `wisp`.
+Enemy `enemy_type` aliases include `skeleton`, `ghoul` and `bat`; they map to
+`bone_thrall`/`wight`, `burning_ghoul` and `wisp`.
 
 ## 4. Register the map
 
 ```js
 // src/data/maps.js
-dungeon_gate: {
-  id: 'dungeon_gate',
-  zoneId: 'dungeon_gate',
-  url: 'assets/pool/maps/dungeon_gate.json',
+my_zone: {
+  id: 'my_zone',
+  zoneId: 'my_zone',
+  url: 'assets/my_zone/maps/my_zone.json',
   layers: {
     collision: 'Collisions Layer',
     render: ['Back Layer', 'Back Decor', 'Main Layer'],
@@ -91,14 +90,9 @@ dungeon_gate: {
   collisionGids: { 1: 'solid', 2: 'oneWay', 3: 'hazard' },
   worldHeight: GAME.world.rows,
   verticalPlacement: 'bottom',
-  camera: { zoom: 2, anchor: 'bottom' },
-  parallaxOrigin: [160, 90],
   spawnFromObjects: true,
   objectLayers: ['Objects', 'Triggers', 'Lights'],
-  exitTarget: null,
-  returnTarget: 'church',
-  ambientColor: '#1a1420',
-  ambientStrength: 0.25,
+  exitTarget: 'church',
 }
 ```
 
@@ -108,12 +102,9 @@ route/boss configuration. If it is a replacement for an existing zone, only the
 
 ## 5. Camera composition
 
-The Dungeon Gate was authored for a **320×180** view. HELLSHARD renders a
-640×360 stage, so `camera.zoom = 2` reproduces the intended composition while
-keeping integer pixel scale. `camera.anchor = 'bottom'` keeps the ground line
-stable when the map is only 12 tiles tall.
-
-For a normal 640×360 map, omit `camera` (defaults to zoom 1, follow camera).
+`camera: { zoom, anchor }` is optional. A map authored for a 320×180 view can use
+`zoom: 2` and `anchor: 'bottom'` to keep the ground line stable. For a normal
+640×360 map, omit `camera` (defaults to zoom 1, follow camera).
 
 ## 6. Validation and inspection
 
@@ -122,21 +113,19 @@ npm run validate:maps
 npm run dev
 ```
 
-Dev URLs:
+Dev URLs (replace `my_zone` with your registered map id):
 
 ```text
-http://127.0.0.1:5173/?zone=dungeon_gate&seed=1
-http://127.0.0.1:5173/?zone=dungeon_gate&x=1780&y=80&fly=1
-http://127.0.0.1:5173/?map=dungeon_gate&peaceful=1&fly=1
+http://127.0.0.1:5173/?map=my_zone&peaceful=1&fly=1
+http://127.0.0.1:5173/?zone=my_zone&seed=1
+http://127.0.0.1:5173/?zone=my_zone&x=400&y=80&fly=1
 ```
 
 The validator checks: map dimensions, tile size, layer presence, image files,
-GID ranges, collision existence, spawn clearance, object layers, enemies/arena,
-and the authored LevelExit.
+GID ranges, collision existence, spawn clearance, object layers and enemies/arena.
 
 ## 7. Art and licensing
 
 Keep a map inside one style family. Do not mix 16px tiles with upscaled art in
-the same scene. The Dungeon Gate map assembly is original work by JAYNUS and is
-covered by the repository `LICENSE`; its third-party tile/background sources are
-listed in `CREDITS.md`.
+the same scene. Maps you author are your own work; add the correct credit and
+license terms for every third-party tile or background you use.

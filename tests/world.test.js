@@ -72,9 +72,9 @@ describe('world generation', () => {
     expect(world.forest).toBeUndefined();
   });
 
-  it('creates the cemetery → church → gate route', () => {
-    expect(buildZoneRoute(1)).toEqual(['cemetery', 'church', 'dungeon_gate']);
-    expect(buildZoneRoute(20261102)).toEqual(['cemetery', 'church', 'dungeon_gate']);
+  it('creates the cemetery → church route', () => {
+    expect(buildZoneRoute(1)).toEqual(['cemetery', 'church']);
+    expect(buildZoneRoute(20261102)).toEqual(['cemetery', 'church']);
   });
 
   it('wires the route exits to the generated neighbor', () => {

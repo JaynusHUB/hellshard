@@ -138,7 +138,7 @@ export class BossController {
       id: `boss-chest-${def.id}`,
       type: 'chestBoss',
       x: boss.x,
-      y: boss.y,
+      y: game.activeWorld.arena?.floorY ?? game.activeWorld.surface,
       opened: false,
     };
     if (!game.activeWorld.interactions.some((i) => i.id === chest.id)) {

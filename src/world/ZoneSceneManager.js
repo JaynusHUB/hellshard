@@ -19,10 +19,9 @@ export class ZoneSceneManager {
     this.dispose();
     game.seed = Number(game.save.settings.seed ?? game.seed);
     game.menuSeed = game.seed;
-    // The Dungeon Gate is the cinematic menu backdrop: animated torches,
-    // parallax mountains and a lit gate arch behind the title. Fall back to
-    // the cemetery if the packaged map is unavailable.
-    const menuZoneId = game.packagedMaps?.dungeon_gate ? 'dungeon_gate' : 'cemetery';
+    // The packaged Cinder Cemetery is the cinematic menu backdrop. The camera
+    // drifts across its painted graveyard, moon and parallax sky.
+    const menuZoneId = 'cemetery';
     game.menuZoneId = menuZoneId;
     game.menuWorld = generateZone(game.seed, menuZoneId, {
       packagedMaps: game.packagedMaps,
@@ -33,9 +32,7 @@ export class ZoneSceneManager {
     this.applyCameraProfile(game.menuWorld, false);
     this.buildScenery(menuZoneId, game.menuWorld);
     game.ui?.setZoneTheme(game.activeZone);
-    game.menuCameraBase = menuZoneId === 'dungeon_gate'
-      ? { x: 1120, y: 90, drift: 58, driftY: 0 }
-      : { x: game.menuWorld.spawn.x + 280, y: 214, drift: 90, driftY: 8 };
+    game.menuCameraBase = { x: game.menuWorld.spawn.x + 280, y: 214, drift: 90, driftY: 8 };
     game.camera.setBounds(
       0,
       game.menuWorld.width * GAME.tile,

@@ -3,8 +3,6 @@ dist/
 .tmp/
 coverage/
 .fallow/
-scripts/.tileset-inspect/
-.vercel/
 *.log
 .DS_Store
 Thumbs.db

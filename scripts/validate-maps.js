@@ -102,7 +102,7 @@ for (const config of Object.values(PACKAGED_MAPS)) {
       tilesets,
       images: new Map(),
       config,
-      route: ['cemetery', 'church', 'dungeon_gate'],
+      route: ['cemetery', 'church'],
       seed: 1,
     });
   } catch (error) {

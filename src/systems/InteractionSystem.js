@@ -1,5 +1,5 @@
 import { GAME } from '../config/game.js';
-import { ZONES } from '../data/zones.js';
+import { ZONES, ZONE_ORDER } from '../data/zones.js';
 import { COLORS } from '../render/ParticleSystem.js';
 
 export class InteractionSystem {
@@ -179,6 +179,12 @@ export class InteractionSystem {
       game.ui?.toast('toast.chest', {}, { icon: '✦' });
     } else {
       game.ui?.toast('toast.heal', {}, { icon: '✚' });
+    }
+    const finalZone = ZONE_ORDER[ZONE_ORDER.length - 1];
+    if (interaction.type === 'chestBoss' && game.activeZoneId === finalZone) {
+      setTimeout(() => {
+        if (game.state === 'playing') game.endRun('victory');
+      }, 1400);
     }
   }
 

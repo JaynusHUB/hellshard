@@ -17,7 +17,7 @@ const SURFACE = (FLOOR_ROW + 1) * T;
 const BOSS_ROOM = 3;
 
 export function buildZoneRoute(seed) {
-  return ['cemetery', 'church', 'dungeon_gate'];
+  return ['cemetery', 'church'];
 }
 
 function idx(x, y) {

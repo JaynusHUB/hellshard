@@ -21,7 +21,6 @@ KAPSAM: public/assets altında şu kaynaklar kullanılır:
 - cemetery, church, swamp → Gothicvania paketleri (OpenGameArt)
 - dungeon → ThePixelist 2D Medieval Castle Dungeon Tileset
 - "fantasy forest map" → Killuakage Fantasy Forest Pixel Tileset (klasör adında boşluk var; yolları buna göre işle)
-- pool → JAYNUS tarafından birleştirilen Dungeon Gate Tiled haritası; tile atlası ThePixelist, arka planlar yerel paket görselleri
 - cemetery/demo altındaki paketlenmiş sesler ve Tiled haritası
 - Final ve audio klasörleri yalnızca kaynak havuzudur; oyuna yeni bir varlık eklenirse CREDITS.md ve ASSET_REPORT.md güncellenir.
 Anokolisa Forest 16x16 ve Szadiart Rocky World bu projede YOK; referans verme. Mimari paket-bağımsız olsun: ileride paket eklenirse sadece ASSET_MANIFEST.json + bölge tanımı güncellensin, motor koduna dokunulmasın.
@@ -72,8 +71,8 @@ En az 2 (tercihen 3) boss, her biri bir bölgede kilitlenen arenada. Normal dü�
 - Sonuç ekranı: hayatta kalınan süre, yenilen düşman, yenilen boss'lar, kazanılan XP, açılan başarımlar, en güçlü yükseltmeler.
 
 ## 10. Dünya ve harita
-- Geniş açık dünya; en az 5 bölge (cemetery, church, swamp, dungeon, forest), kapı/kenar çıkışı/mağara/portal ile bağlı (zone graph, seed'den üretilir). Başlangıç: Cemetery (hub). Öneri: Cemetery ↔ Church ↔ Swamp aynı stil ailesi olduğu için doğrudan bağlanabilir; Dungeon yeraltı (mezar/kilise mahzeni girişi), Forest ayrı portal veya kapı + fade ile. Faz 0 analizine göre değiştirebilirsin.
-- Aktif kampanya rotası: Cemetery (paketlenmiş Tiled) → Church (prosedürel) → Dungeon Gate (elle tasarlanmış Tiled). Dungeon Gate'te Gate Warden boss'u, demir anahtar sandığı ve 3 parça + anahtar isteyen Final Gate bulunur.
+- Aktif sürüm iki bölge içerir: Cemetery (paketlenmiş Tiled) ve Church (prosedürel). Swamp, dungeon ve forest ileride geri eklenebilir; assetleri `public/assets` altında durur. Kaldırılan Dungeon Gate ve Gate Warden aktif oyunda yoktur.
+- Aktif kampanya rotası: Cemetery (paketlenmiş Tiled) → Church (prosedürel). Mourning Maw ve Seraph of Ash birer Hellshard düşürür; son bölgedeki boss sandığı açılınca run victory ile biter.
 - Chunk/oda tabanlı üretim: elle tasarlanmış şablonlar + seed'li varyasyon. Üretilen her yol oyuncunun hareket zarfına göre ULAŞILABİLİR olmalı; bunu doğrulayan script yaz (npm run validate:world — 1..100 seed).
 - Gizli içerik: kırılabilir duvarlar, sahte duvarlar (içinden geçilir, ince görsel ipucu), gizli mağaralar, hazine sandıkları (koşuya özgü rastgele ödül), risk/ödül sunakları, boss arenaları.
 - Canlı dünya (YALNIZCA paketlerde ilgili tile/frame varsa): animasyonlu su ve şelale (atlas frame animasyonu, tek zaman uniform'u; tile başına JS yok), hareketli platformlar (oyuncuyu taşır), tuzak/dikenler, parallax arka planlar, uzakta sise karışan katmanlar. Pakette su frame'i yoksa: paket paletiyle basit tek-uniform dalga efekti yap veya özelliği atla ve raporla.

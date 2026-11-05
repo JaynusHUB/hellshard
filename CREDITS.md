@@ -2,8 +2,8 @@
 
 Runtime visuals and audio are local files under `public/assets`. No CDN-hosted
 visuals or audio are loaded at runtime. The original HELLSHARD code, UI, game
-design, Dungeon Gate map assembly and generated sprites are © JAYNUS and are
-covered by the repository `LICENSE`. Third-party packs keep their own terms below.
+design and generated sprites are © JAYNUS and released under the MIT License.
+Third-party packs keep their own terms below.
 
 ## Art
 
@@ -41,17 +41,6 @@ covered by the repository `LICENSE`. Third-party packs keep their own terms belo
   redistribute the assets as-is; do not claim the art as your own.** Credit appreciated, not required.
 - Used for: forest tiles, backgrounds, trees/props, moss slime.
 
-### Dungeon Gate map and pool additions
-- Tiled map assembly, parallax composition and object placement: **JAYNUS**
-  (AI-assisted assembly; reviewed and integrated into HELLSHARD).
-- Source: original project asset `public/assets/pool/maps/dungeon_gate.json`.
-- Terms: original work © JAYNUS, covered by the repository `LICENSE`. Do not
-  reuse, redistribute or re-upload the map or its composition without permission.
-- The map reuses the ThePixelist dungeon tileset below for its tile atlas and
-  uses locally supplied parallax/background crops. Those crops are credited here
-  as part of the JAYNUS map assembly; if a third-party source is identified, add
-  its original author and terms before redistribution.
-
 ## Audio
 
 ### Cemetery demo sound effects
@@ -84,8 +73,7 @@ covered by the repository `LICENSE`. Third-party packs keep their own terms belo
 The supplied packs do not include chests, altars, gates, portals, spikes or moving platforms.
 `src/render/GeneratedSprites.js` draws those interactables as small 1× pixel icons at runtime, using an
 original palette matched to the gothic zones. No generated icon is derived from or redistributed with
-the supplied packs. The game also uses the local `pool` Dungeon Gate map and its tilesets; the map is
-original JAYNUS work and the tileset source is credited above.
+the supplied packs.
 
 ## Audio
 
@@ -99,8 +87,8 @@ The asset folders as delivered do not contain their own license/readme files. Th
 verified from the original listings on 2026-11-02. If this project is redistributed, keep this file with
 it and do not redistribute the dungeon/forest source art as a standalone asset collection.
 
-The original HELLSHARD project — code, UI, game design, Dungeon Gate map assembly, generated sprites,
-written content and visual direction — is **© JAYNUS. All rights reserved.** It is source-available,
-not open source. See `LICENSE`: copying, cloning, commercial use, redistribution, resale, asset reuse
-and tutorial/course reproduction require written permission, and any reference must credit **JAYNUS**
-with a link to the original repository.
+The original HELLSHARD project — code, UI, game design, generated sprites,
+written content and visual direction — is **© JAYNUS** and released under the
+**MIT License**. See `LICENSE`. Third-party art and audio keep their own terms
+described above; do not redistribute the dungeon or forest source art as a
+standalone asset collection.

@@ -123,11 +123,8 @@ index.html
   in `src/data/maps.js`. `TiledTileChunks` renders the artist's Back/Main tile layers with the raw
   tile GIDs, and a packaged map's Collisions layer becomes the physics Tilemap without footSink.
   The cemetery demo world is bottom-aligned above the existing parallax sky; procedural generation
-  remains intact as a fallback and for the other zones. `TiledBackdrop` renders Tiled image layers with
-  the map's parallax formula and repeat-x; `TiledLights` renders the authored light objects. The
-  Dungeon Gate additionally parses object/trigger layers into checkpoints, enemies, pickups, chests,
-  signs, a moving lift, the Gate Warden arena and the keyed LevelExit, and uses a 2x bottom-anchored
-  camera profile to reproduce its native 320x180 composition.
+  remains intact as a fallback and for the church. `TiledBackdrop` renders Tiled image layers with
+  the map's parallax formula and repeat-x; `TiledLights` remains available for authored light objects.
 - Dungeon rendering uses a depth-graded brick floor, atlas-crop surface decals, six parallax layers
   (including screen-edge foreground pillars) and torch ember particles. Static and moving platforms
   receive underbodies/supports from their active biome tile family; gates get a stepped tile arch,
@@ -155,18 +152,17 @@ Additional overlays: settings, achievements, seed input, credits. Meta data pers
 (`hellshard.meta.v1`, `hellshard.settings.v1`). A run is fully reset at start; the seed is selectable
 from the main menu/settings and is stored for the next run.
 
-Active route: `cemetery (packaged Tiled) → church (procedural) → dungeon_gate (hand-authored Tiled)`.
-Boss arenas gate their exits; each boss drops a shard and a guaranteed chest. The cemetery and church
-exits require their boss, so two shards are guaranteed before the gate. The Gate Warden drops the third.
-The Dungeon Gate's keyed Final Gate (3 shards + iron key) ends the run in victory. There is intentionally
-no separate post-gate dungeon level or world-map screen; those were stretch goals.
+Active route: `cemetery (packaged Tiled) → church (procedural)`. Boss arenas gate their exits; each
+boss drops a shard and a guaranteed chest. Opening the Seraph of Ash's chest in the final zone ends
+the run in victory. There is intentionally no post-boss dungeon level or world-map screen; those were
+stretch goals.
 
 ## QA / phase gates
 
 - `npm run build` must succeed.
 - `npm test` covers RNG determinism, upgrade caps/evolution gating, world generation and achievements.
 - `npm run validate:world` checks reachability, transitions, checkpoints, chest presence and arena
-  presence for seeds 1..100 (200 procedural zones); `validate:maps` covers the packaged maps.
+  presence for seeds 1..100 (200 procedural zones); `validate:maps` covers the packaged cemetery map.
 - Browser smoke tests verify menu → character select → gameplay → pause/settings → level-up →
-  boss route → Final Gate → result with no console errors or failed requests.
+  boss route → reward chest → result with no console errors or failed requests.
 - Known scope limits are recorded in `README.md` and `PROGRESS.md`.

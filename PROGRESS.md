@@ -2,11 +2,10 @@
 
 ## Current status
 
-**Complete + Dungeon Gate + UI pass.** Phases 0–7 are implemented. The active game boots into the main
-menu and ships three active zones: the packaged cemetery, the procedural church, and the hand-authored
-Dungeon Gate. Swamp, dungeon and forest generation remains disabled; their assets stay in
-`public/assets`. Meta progression persists, and the run now ends at the Dungeon Gate's keyed Final Gate
-after the Gate Warden boss.
+**Complete — Cemetery + Cathedral cut.** Phases 0–7 are implemented. The active game boots into the
+main menu and ships two active zones: the packaged Cinder Cemetery and the procedural Ashen
+Cathedral. Swamp, dungeon, forest and the removed Dungeon Gate are out of the active route. Meta
+progression persists, and the run ends after the Seraph of Ash when its reward chest is opened.
 
 ## Release cleanup — GitHub publish (2026-11-05)
 
@@ -15,47 +14,38 @@ after the Gate Warden boss.
 - [x] Removed unused exports/helpers (`approach`, `mod`, `rectsOverlap`, `screenToStage`,
   `createTileMaterial`, `summarizeTiledMap`, stale data-table aliases), export-only wrappers and
   three unused imports in `Player.js`.
-- [x] Removed the duplicate `map - Kopya.json`; ignored `.fallow/`, `scripts/.tileset-inspect/` and
-  `.vercel/`.
+- [x] Removed the duplicate `map - Kopya.json`; ignored `.fallow/`.
 - [x] Secret scan: no API keys, tokens, `.env` files or credentials in the working tree or git
   history.
 - [x] Published to GitHub: https://github.com/JaynusHUB/hellshard
 - [x] Commit authorship normalized to **JaynusDEV**.
-- [x] README rebuilt as a visual landing page: banner, stack badges, four gameplay screenshots,
-  compact feature/command tables and collapsible technical sections.
-- [x] Re-verified: 50/50 tests, production build, map/tile/alignment/layout/world validators.
+- [x] Removed the Dungeon Gate zone, the Gate Warden boss, its packaged assets, test and route
+  wiring. The final boss chest in the Ashen Cathedral now ends the run in victory.
+- [x] Relicensed the original project under the **MIT License**; third-party assets keep their own
+  terms.
+- [x] README rebuilt as a visual landing page: new cemetery banner, stack badges, four gameplay
+  screenshots, compact feature/command tables and collapsible technical sections.
+- [x] Re-verified: 46/46 tests, production build, map/tile/alignment/layout/world validators.
 
 ## Verification (current)
 
-- `npm test` - **50/50 tests passing** in 11 suites, including the new Dungeon Gate loader/object
-  coverage and the existing RNG, upgrades, world, achievement, sprite, localization and AI suites.
-- `npm run validate:maps` - passes for both `cemetery_demo` and `dungeon_gate`; the Dungeon Gate
-  reports 160x12 tiles, 6 image layers, 16 authored enemies, collision GIDs 1/2/3 and a clear spawn.
-- `npm run validate:world` - passes for seeds 1..100 (200 procedural zones, max gap 4 tiles).
-- `npm run validate:layout` - passes for 100 seeds × 2 procedural zones; no overlaps, floating
-  chests, clearance violations, unsupported structures or unreachable platforms.
-- `npm run build` - passes after packaged audio, Aseprite clips and death FX (70 modules, no errors;
-  atlases are generated at runtime, JS 869.90 kB / 231.53 kB gzip).
-- Layout note: generated stairs are supported solid columns; high platforms are capped at three
-  tiles and validated against the jump envelope.
-- `npm run import:animations -- --check` - **passed**: the manifest already matches every imported
-  Aseprite tag and per-frame duration.
-- `npm run validate:tiles` - **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
-  rects in bounds; cemetery Tiled reference is 300x14 tiles with
-  `Collisions Layer > Back Layer > Main Layer`.
-- `npm run validate:maps` - **passed**: `cemetery_demo` loads (300x14 / 4800x224), collision GIDs
-  1+2 resolve, 373 collision tiles exist, spawn is clear and the right transition exists.
+- `npm test` - **46/46 tests passing** in 10 suites: RNG, upgrades, world generation, achievements,
+  sprites, localization and AI.
+- `npm run validate:maps` - **passed**: the packaged `cemetery_demo` map loads (300x14 / 4800x224),
+  collision GIDs 1+2 resolve, 373 collision tiles exist, spawn is clear and the right transition exists.
 - `npm run validate:world` - **passed for seeds 1..100**: 100 worlds, 200 zones, max gap 4 tiles,
   max jump 70.5px, max distance 92.0px.
-- `npm run validate:alignment` - **passed**: 5 zones, 43 ground props, 110 placed objects,
+- `npm run validate:layout` - **passed**: 100 seeds × 2 procedural zones; zero overlaps, floating
+  chests, clearance violations, unsupported structures or unreachable platforms.
+- `npm run build` - **passed**: production bundle, no errors; atlases are generated at runtime.
+- `npm run validate:tiles` - **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
+  rects in bounds.
+- `npm run validate:alignment` - **passed**: 5 asset zones, ground props and placed objects,
   footSink applied, ±1px tolerance.
-- `npm run validate:layout` - **passed**: 100 seeds ? 2 active zones; zero overlaps, floating chests,
-  clearance violations, unsupported single-tile structures or unreachable platforms.
-- Production preview smoke test (`npm run preview`) — menu → achievements → character select →
-  gameplay (move/jump/dash/basic/heavy/ability) → pause → settings → resume → level-up → Final Gate →
-  result. **No console errors, no failed requests, no external requests.**
-- Full production route smoke test — all three bosses defeated, all three shards claimed, boss chests
-  spawned, Final Gate opened, victory result and meta save verified.
+- Headless Chrome smoke test - menu and packaged cemetery boot with **no console errors**; Mourning
+  Maw arena and boss bar verified.
+- Production route cut - the Seraph of Ash's reward chest triggers the victory result; no Final Gate
+  or Gate Warden remains in the active build.
 - Browser screenshots verified in `.tmp` (ignored): menu, character select, HUD, settings EN/TR,
   achievements, level-up, all five zones, three bosses, result, debug overlay and stress test
   (150 enemies / ~939 particles at 11 draw calls).

@@ -1,5 +1,6 @@
 import { GAME } from '../config/game.js';
 import { CHARACTER_BY_ID } from '../data/characters.js';
+import { ZONE_ORDER } from '../data/zones.js';
 
 import { formatTime, translate } from './strings.js';
 import { HUD } from './HUD.js';
@@ -160,7 +161,7 @@ export class UIManager {
       version: GAME.version,
       bestTime: this.save.meta.bestTime,
       runs: this.save.meta.runs ?? 0,
-      zonesSeen: Math.min(3, new Set(this.save.meta.seenZones ?? []).size),
+      zonesSeen: Math.min(ZONE_ORDER.length, new Set(this.save.meta.seenZones ?? []).size),
     });
     this.mountScreen('menu', html, {
       start: () => {

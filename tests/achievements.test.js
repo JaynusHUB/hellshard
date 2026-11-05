@@ -31,8 +31,6 @@ describe('achievements', () => {
     system.onTime(600);
     system.onBoss('mourning_maw', true);
     system.onBoss('seraph_ash');
-    system.onBoss('drowned_choir');
-    system.onBoss('gate_warden');
     expect(save.meta.achievements.sort()).toEqual([
       'ascendant',
       'ashfall',
@@ -41,15 +39,12 @@ describe('achievements', () => {
       'hundred_souls',
       'maw_silenced',
       'shardbearer',
-      'silent_choir',
       'survivor',
       'treasure_hunter',
-      'trinity',
       'untouched',
-      'warden_fallen',
     ]);
     expect(system.rewardTotal).toBeGreaterThan(0);
-    expect(system.unlockedThisRun.length).toBe(13);
+    expect(system.unlockedThisRun.length).toBe(10);
   });
 
   it('does not unlock an achievement twice', () => {
