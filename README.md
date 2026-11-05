@@ -26,10 +26,18 @@ and silence both wardens.
 |---|---|
 | **4 playable vessels** | Kael the Frostbow, Brakk the Berserker, Seraphine the Frostweaver and Nyx the Shadowblade — unique weapons, abilities, stats and evolutions. |
 | **2 connected biomes** | The packaged Tiled Cinder Cemetery and the procedural Ashen Cathedral, linked by a gate and a fade transition. |
+| **Map-maker asset packs** | `public/assets/swamp`, `Final`, `fantasy forest map` and `dungeon` are included on purpose as source tilesets/backgrounds so you can author your own maps and dungeons. See [`MAP_AUTHORING.md`](MAP_AUTHORING.md). |
 | **2 phased wardens** | Mourning Maw and the Seraph of Ash. Each guards a Hellshard and a guaranteed upgrade chest. |
 | **Roguelite runs** | Seeded worlds, magnetic XP crystals, 13 capped upgrades, weapon evolutions, meta currency and 10 achievements. |
 | **Combat feel** | Hitstop, knockback, crits, i-frame dashes, screen shake, pooled particles, damage numbers and synthesized SFX. |
 | **Pixel-perfect rendering** | 640×360 internal resolution, integer letterbox scaling, nearest filtering, 2px atlas gutters and merged tile chunks. |
+
+### Build your own map
+
+The campaign ships with the Cinder Cemetery and the Ashen Cathedral, but the extra `swamp`, `Final`,
+`fantasy forest map` and `dungeon` packs are there for you. Paint a Tiled map at 16×16, register it in
+`src/data/maps.js`, and add the zone and boss to `src/data/zones.js` and `src/data/bosses.js`.
+Start with [`MAP_AUTHORING.md`](MAP_AUTHORING.md).
 
 ## Screenshots
 

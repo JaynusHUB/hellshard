@@ -4,6 +4,11 @@ HELLSHARD already supports hand-authored Tiled JSON maps. You do **not** need to
 generate a map from code. Build it in [Tiled](https://www.mapeditor.org/), export
 JSON, drop it under `public/assets`, and register it in `src/data/maps.js`.
 
+The repository intentionally ships extra source packs under `public/assets/swamp`,
+`public/assets/Final`, `public/assets/fantasy forest map` and `public/assets/dungeon`
+for custom maps and dungeons. The active campaign only loads the packaged Cinder
+Cemetery and the procedural Ashen Cathedral.
+
 ## Hızlı özet (TR)
 
 1. Tiled'da yeni harita: **Orthogonal**, tile size **16×16**, finite map.
