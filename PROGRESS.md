@@ -19,6 +19,7 @@ after the Gate Warden boss.
   `.vercel/`.
 - [x] Secret scan: no API keys, tokens, `.env` files or credentials in the working tree or git
   history.
+- [x] Published to GitHub: https://github.com/JaynusHUB/hellshard
 - [x] Re-verified: 50/50 tests, production build, map/tile/alignment/layout/world validators.
 
 ## Verification (current)

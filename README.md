@@ -166,6 +166,8 @@ See `CREDITS.md` for asset sources. The original HELLSHARD project — code, UI,
 map assembly, generated sprites and visual direction — is **© JAYNUS, all rights reserved**. It is
 source-available, not open source.
 
+Original repository: https://github.com/JaynusHUB/hellshard
+
 If you use or reference any part of this project, you must credit **JAYNUS** and link to the original
 repository. Copying, cloning, commercial use, redistribution, resale, original-asset reuse and
 tutorial/course reproduction require written permission. See `LICENSE`.
