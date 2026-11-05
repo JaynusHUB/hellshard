@@ -29,6 +29,7 @@ export class Renderer {
       1000,
     );
     this.camera.position.set(0, 0, 500);
+    this.zoom = 1;
     this.stage = document.getElementById('stage');
     this.scale = 1;
     this.quality = 1;
@@ -53,6 +54,14 @@ export class Renderer {
     el.style.width = `${GAME.internalWidth}px`;
     el.style.height = `${GAME.internalHeight}px`;
     el.style.imageRendering = 'pixelated';
+  }
+
+  setZoom(zoom) {
+    const value = Math.max(0.5, Number(zoom) || 1);
+    if (this.zoom === value) return;
+    this.zoom = value;
+    this.camera.zoom = value;
+    this.camera.updateProjectionMatrix();
   }
 
   render(camera, alpha, time) {
@@ -98,14 +107,4 @@ export class Renderer {
     this.clearScene();
     this.renderer.dispose();
   }
-}
-
-export function screenToStage(clientX, clientY) {
-  const stage = document.getElementById('stage');
-  if (!stage) return { x: 0, y: 0 };
-  const rect = stage.getBoundingClientRect();
-  return {
-    x: ((clientX - rect.left) / rect.width) * GAME.internalWidth,
-    y: ((clientY - rect.top) / rect.height) * GAME.internalHeight,
-  };
 }

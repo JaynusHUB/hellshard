@@ -18,9 +18,14 @@ function parseDevOptions() {
   const zone = ZONE_ORDER.includes(rawZone) ? rawZone : null;
   const rawSeed = Number(params.get('seed'));
   const seed = Number.isInteger(rawSeed) && rawSeed > 0 ? rawSeed : null;
+  const rawX = params.has('x') ? Number(params.get('x')) : Number.NaN;
+  const rawY = params.has('y') ? Number(params.get('y')) : Number.NaN;
+  const spawnX = Number.isFinite(rawX) ? rawX : null;
+  const spawnY = Number.isFinite(rawY) ? rawY : null;
   const gallery = params.get('debug') === 'gallery';
   const peacefulParam = params.get('peaceful') === '1';
   const flyParam = params.get('fly') === '1';
+  const screen = params.get('screen');
   const mapKey = params.get('map');
   const packagedMap = PACKAGED_MAPS[mapKey] ? mapKey : null;
   return {
@@ -28,9 +33,13 @@ function parseDevOptions() {
     seed,
     gallery,
     packagedMap,
+    screen,
+    spawnX,
+    spawnY,
     peaceful: peacefulParam || gallery,
     fly: flyParam || gallery,
-    autoStart: Boolean(zone || seed || packagedMap || peacefulParam || flyParam || gallery),
+    autoStart: Boolean(zone || seed || packagedMap || peacefulParam || flyParam || gallery
+      || spawnX !== null || spawnY !== null),
   };
 }
 
@@ -82,6 +91,16 @@ async function boot() {
     if (devOptions.zone && devOptions.zone !== 'cemetery') {
       game.setZone(devOptions.zone, game.worlds[devOptions.zone].spawn);
     }
+    if (devOptions.packagedMap) {
+      const config = PACKAGED_MAPS[devOptions.packagedMap];
+      const world = config && game.worlds[config.zoneId];
+      if (world) game.setZone(config.zoneId, world.spawn);
+    }
+    if (devOptions.spawnX !== null && devOptions.spawnY !== null) {
+      game.player.setPosition(devOptions.spawnX, devOptions.spawnY);
+      game.run.checkpoint = { x: devOptions.spawnX, y: devOptions.spawnY };
+      game.snapCameraToPlayer();
+    }
     if (game.devGallery) {
       game.player.devFly = true;
       game.player.immortal = true;
@@ -93,6 +112,11 @@ async function boot() {
     }
   } else {
     ui.showMainMenu();
+    if (devOptions.screen === 'characters') ui.showCharacterSelect();
+    else if (devOptions.screen === 'achievements') ui.showAchievements({ from: 'menu' });
+    else if (devOptions.screen === 'settings') ui.showSettings({ inRun: false, from: 'menu' });
+    else if (devOptions.screen === 'credits') ui.showCredits();
+    else if (devOptions.screen === 'pause') ui.showPause();
   }
   setBoot(1, t('game.assets'));
   game.start();

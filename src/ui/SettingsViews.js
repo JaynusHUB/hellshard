@@ -40,6 +40,10 @@ export class SettingsViews {
         ui.toast('settings.saved');
         this.backFromSettings();
       },
+      fullscreen: () => {
+        if (document.fullscreenElement) document.exitFullscreen?.();
+        else document.documentElement.requestFullscreen?.();
+      },
       'reset-settings': () => {
         this.save.resetSettings();
         ui.settings = this.save.settings;

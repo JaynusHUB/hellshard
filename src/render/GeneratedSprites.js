@@ -153,6 +153,61 @@ function drawPlank(ctx, x, y) {
   ctx.fillRect(x + 23, y + 2, 2, 1);
 }
 
+function drawSign(ctx, x, y) {
+  const p = PALETTE;
+  ctx.fillStyle = p.ink;
+  ctx.fillRect(x + 6, y + 7, 2, 9);
+  ctx.fillStyle = p.wood;
+  ctx.fillRect(x + 1, y, 12, 8);
+  ctx.fillStyle = p.woodHi;
+  ctx.fillRect(x + 2, y + 1, 10, 1);
+  ctx.fillStyle = p.ink2;
+  ctx.fillRect(x + 3, y + 3, 8, 1);
+  ctx.fillRect(x + 3, y + 5, 6, 1);
+}
+
+function drawCoin(ctx, x, y) {
+  const p = PALETTE;
+  ctx.fillStyle = p.ink;
+  ctx.fillRect(x + 1, y + 1, 6, 6);
+  ctx.fillStyle = p.gold;
+  ctx.fillRect(x + 2, y + 1, 4, 6);
+  ctx.fillRect(x + 1, y + 2, 6, 4);
+  ctx.fillStyle = p.goldHi;
+  ctx.fillRect(x + 3, y + 2, 2, 3);
+  ctx.fillStyle = p.ink2;
+  ctx.fillRect(x + 4, y + 3, 1, 1);
+}
+
+function drawPotion(ctx, x, y) {
+  const p = PALETTE;
+  ctx.fillStyle = p.ink;
+  ctx.fillRect(x + 3, y, 2, 2);
+  ctx.fillRect(x + 2, y + 2, 4, 2);
+  ctx.fillRect(x + 1, y + 4, 6, 9);
+  ctx.fillStyle = p.bone;
+  ctx.fillRect(x + 3, y + 1, 2, 2);
+  ctx.fillStyle = p.blood;
+  ctx.fillRect(x + 2, y + 5, 4, 7);
+  ctx.fillStyle = p.goldHi;
+  ctx.fillRect(x + 3, y + 6, 1, 2);
+}
+
+function drawKey(ctx, x, y) {
+  const p = PALETTE;
+  ctx.fillStyle = p.ink;
+  ctx.fillRect(x + 1, y + 1, 5, 5);
+  ctx.fillRect(x + 5, y + 3, 7, 2);
+  ctx.fillRect(x + 9, y + 5, 1, 2);
+  ctx.fillRect(x + 11, y + 5, 1, 2);
+  ctx.fillStyle = p.gold;
+  ctx.fillRect(x + 2, y + 2, 3, 3);
+  ctx.fillRect(x + 5, y + 4, 6, 1);
+  ctx.fillStyle = p.goldHi;
+  ctx.fillRect(x + 3, y + 2, 1, 1);
+  ctx.fillRect(x + 10, y + 4, 1, 1);
+}
+
 function drawSpikes(ctx, x, y) {
   const p = PALETTE;
   ctx.fillStyle = p.ink;
@@ -191,6 +246,10 @@ export function createGeneratedSprites() {
     ['bossChest', 32, 32, 18, 14],
     ['spikes', 56, 28, 16, 10],
     ['plank', 72, 32, 48, 10],
+    ['sign', 144, 2, 14, 16],
+    ['key', 140, 30, 12, 8],
+    ['potion', 124, 38, 8, 14],
+    ['coin', 136, 44, 8, 8],
   ];
 
   drawChest(ctx, 2, 2, false);
@@ -208,6 +267,10 @@ export function createGeneratedSprites() {
   drawShard(ctx, 18, 28);
   drawSpikes(ctx, 56, 28);
   drawPlank(ctx, 72, 32);
+  drawSign(ctx, 144, 2);
+  drawKey(ctx, 140, 30);
+  drawPotion(ctx, 124, 38);
+  drawCoin(ctx, 136, 44);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.magFilter = THREE.NearestFilter;

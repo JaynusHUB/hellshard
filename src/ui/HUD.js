@@ -54,6 +54,9 @@ export class HUD {
         </div>
       </div>
       <div class="hud-bottom-right">
+        <div class="key-item hidden" data-key-item>
+          <span class="key-glyph">⌘</span><span class="key-label" data-key-label></span>
+        </div>
         <div class="shard-pips" data-shard-pips></div>
         <div class="control-hint" data-control-hint></div>
       </div>
@@ -72,6 +75,7 @@ export class HUD {
       'kills', 'kills-label', 'zone-name', 'difficulty', 'seed', 'boss', 'weapon-icon',
       'weapon-name', 'weapon-level', 'special', 'special-fill', 'special-name', 'dash',
       'dash-fill', 'dash-label', 'shard-pips', 'control-hint', 'prompt', 'prompt-text', 'elite-tag',
+      'key-item', 'key-label',
     ];
     for (const id of ids) {
       const prop = id.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
@@ -94,6 +98,7 @@ export class HUD {
     this.refs.dashLabel.textContent = t('hud.dash');
     this.refs.specialName.textContent = t('hud.special');
     this.refs.controlHint.textContent = t('hud.controls');
+    this.refs.keyLabel.textContent = t('hud.key');
     this.refs.seed.textContent = t('hud.seed', { seed: this.ui.game?.run?.seed ?? GAME.seed.default });
   }
 
@@ -121,7 +126,7 @@ export class HUD {
   }
 
   update(info) {
-    const { player, run, elapsed, difficulty, seed, zone, boss, prompt, shards } = info;
+    const { player, run, elapsed, difficulty, seed, zone, boss, prompt, shards, hasKey } = info;
     const t = this.ui.t.bind(this.ui);
     const hp = Math.max(0, Math.ceil(player.health));
     const maxHp = Math.round(player.maxHealth);
@@ -176,6 +181,10 @@ export class HUD {
       this.shardPips.forEach((pip, i) => pip.classList.toggle('filled', i < shards));
       this.refs.zone.textContent = t(zone.nameKey);
       this.cache.shards = shards;
+    }
+    if (this.cache.hasKey !== hasKey) {
+      this.refs.keyItem.classList.toggle('hidden', !hasKey);
+      this.cache.hasKey = hasKey;
     }
     if (boss && boss.active) {
       this.refs.bossHud.classList.add('visible');

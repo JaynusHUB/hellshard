@@ -2,6 +2,9 @@
   "name": "hellshard",
   "version": "0.1.0",
   "private": true,
+  "description": "HELLSHARD — a pixel-perfect dark-fantasy action roguelite built with Three.js and vanilla ES modules.",
+  "author": "JAYNUS",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +16,8 @@
     "validate:alignment": "node scripts/validate-alignment.js",
     "validate:layout": "node scripts/validate-layout.js",
     "validate:tiles": "node scripts/validate-tiles.js",
-    "validate:maps": "node scripts/validate-maps.js"
+    "validate:maps": "node scripts/validate-maps.js",
+    "inspect:tileset": "node scripts/inspect-tileset.mjs"
   },
   "dependencies": {
     "@fontsource/pixelify-sans": "5.3.0",

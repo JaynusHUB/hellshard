@@ -22,6 +22,7 @@ import { InteractionSystem } from '../systems/InteractionSystem.js';
 import { CombatDirector } from '../systems/CombatDirector.js';
 import { BossController } from '../systems/BossController.js';
 import { RunController } from '../systems/RunController.js';
+import { PickupSystem } from '../systems/PickupSystem.js';
 import { WorldLifeSystem } from '../systems/WorldLifeSystem.js';
 import { ZoneSceneManager } from '../world/ZoneSceneManager.js';
 import { CollisionDebugOverlay } from '../render/CollisionDebugOverlay.js';
@@ -84,6 +85,7 @@ export class Game {
     this.bossController = new BossController(this);
     this.runController = new RunController(this);
     this.worldLife = new WorldLifeSystem(this);
+    this.pickups = new PickupSystem(this);
     this.sceneManager = new ZoneSceneManager(this);
     this.loop = new FixedLoop({
       step: GAME.fixedStep,
@@ -218,6 +220,18 @@ export class Game {
     this.sceneManager.setZone(zoneId, spawn);
   }
 
+  spawnAuthoredEnemies(world = this.activeWorld) {
+    const spawns = world?.tiled?.enemies;
+    if (!spawns?.length || this.peaceful) return;
+    for (const spawn of spawns) {
+      this.spawnEnemy(spawn.enemyId, spawn.x, spawn.y, {
+        health: spawn.health,
+        damage: spawn.damage,
+        speed: 1,
+      });
+    }
+  }
+
   snapCameraToPlayer() {
     this.sceneManager.snapCameraToPlayer();
   }
@@ -286,8 +300,11 @@ export class Game {
     this.menuAmbientTimer -= dt;
     if (this.menuAmbientTimer <= 0) {
       this.menuAmbientTimer = 0.16;
-      const x = this.camera.x + (Math.random() - 0.5) * GAME.internalWidth;
-      const y = this.camera.y - 120 + Math.random() * 240;
+      const zoom = this.camera.zoom || 1;
+      const viewW = GAME.internalWidth / zoom;
+      const viewH = GAME.internalHeight / zoom;
+      const x = this.camera.x + (Math.random() - 0.5) * viewW;
+      const y = this.camera.y - viewH * 0.5 + Math.random() * viewH;
       this.glowParticles.emit({
         x,
         y,
@@ -342,6 +359,8 @@ export class Game {
       this.combatDirector.handleEnemyEvents(enemy.consumeEvents());
     }
     this.spawnDirector.update(dt);
+    this.pickups.update(dt);
+    this.worldLife.updateTriggers();
     this.worldLife.emitAmbient(dt);
     this.xpOrbs.update(dt, player, this.activeWorld.map, (value, orb) => {
       this.progression.addXp(value);
@@ -574,6 +593,7 @@ export class Game {
       } : null,
       prompt: this.prompt,
       shards: this.run.shards.length,
+      hasKey: Boolean(this.run.flags?.dungeon_key),
       activeEnemies: this.enemies.length,
     };
   }
@@ -585,9 +605,15 @@ export class Game {
     if (menuMode) {
       this.menuTime += dt;
       const worldW = this.menuWorld.width * GAME.tile;
-      const drift = Math.sin(this.menuTime * 0.035) * 90;
-      const x = clamp(this.menuWorld.spawn.x + 280 + drift, 320, worldW - 320);
-      const y = 214 + Math.sin(this.menuTime * 0.05) * 8;
+      const top = this.menuWorld.playableTop ?? this.menuWorld.height * GAME.tile;
+      const zoom = this.camera.zoom || 1;
+      const halfW = GAME.internalWidth / (2 * zoom);
+      const halfH = GAME.internalHeight / (2 * zoom);
+      const base = this.menuCameraBase ?? { x: this.menuWorld.spawn.x + 280, y: 214 };
+      const drift = Math.sin(this.menuTime * 0.035) * (base.drift ?? 90);
+      const driftY = Math.sin(this.menuTime * 0.05) * (base.driftY ?? 8);
+      const x = clamp(base.x + drift, halfW, Math.max(halfW, worldW - halfW));
+      const y = clamp(base.y + driftY, halfH, Math.max(halfH, top - halfH));
       this.camera.x = x;
       this.camera.y = y;
       this.camera.shakeX = 0;

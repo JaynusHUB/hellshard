@@ -163,5 +163,3 @@ export class SaveStore {
     return this.settings;
   }
 }
-
-export { DEFAULT_META, DEFAULT_SETTINGS };

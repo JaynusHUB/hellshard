@@ -303,4 +303,3 @@ export const ENEMIES = [
 ];
 
 export const ENEMY_BY_ID = Object.fromEntries(ENEMIES.map((enemy) => [enemy.id, enemy]));
-export const ELITE_IDS = ENEMIES.filter((e) => e.elite).map((e) => e.id);

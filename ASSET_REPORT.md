@@ -12,9 +12,15 @@ and direct visual inspection of the PNGs. No external asset pack is referenced o
 | `public/assets/swamp` | 77 | 843 KB | 63 | 6 | Gothicvania Swamp pack |
 | `public/assets/dungeon` | 2 | 12.6 KB | 1 | 0 | ThePixelist castle dungeon sheet + Aseprite source |
 | `public/assets/fantasy forest map` | 11 | 239 KB | 11 | 0 | KilluaKage Fantasy Forest tileset, backgrounds, decor, slime |
+| `public/assets/pool` | 17 | 689 KB | 13 | 0 | Authored Dungeon Gate Tiled map, 16×16 collision/dungeon tilesets, object markers, parallax crops, previews |
 
 No license or readme file was bundled inside `public/assets`. License findings were verified on the
 original distribution pages and are recorded in `CREDITS.md`.
+
+The `pool` map is a JAYNUS-authored Tiled 1.10 JSON map (160×12 tiles). It uses a 16×16 collision
+marker sheet (1=solid, 2=one-way, 3=hazard, 4=ladder), ThePixelist dungeon tiles for terrain/props, an
+object-marker sheet for authoring, six image layers for parallax/fog, and object/trigger/light layers.
+It is rendered through the packaged-map path; it is not part of the five Gothicvania/Forest catalogs.
 
 ## 2. Style families
 

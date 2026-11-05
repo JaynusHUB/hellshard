@@ -159,6 +159,8 @@ export class UIManager {
       shards: this.save.meta.hellshards,
       version: GAME.version,
       bestTime: this.save.meta.bestTime,
+      runs: this.save.meta.runs ?? 0,
+      zonesSeen: Math.min(3, new Set(this.save.meta.seenZones ?? []).size),
     });
     this.mountScreen('menu', html, {
       start: () => {
@@ -245,21 +247,20 @@ export class UIManager {
             this.audio?.play('shard');
             this.toast('char.select.unlockedTitle', {}, { icon: '◆' });
             this.selectedCharacterId = id;
+            this.save.meta.selectedCharacter = id;
+            this.save.saveMeta();
             this.showCharacterSelect();
           } else {
             this.toast('char.select.notEnough', {}, { error: true });
           }
           return;
         }
+        if (this.selectedCharacterId === id) return;
         this.selectedCharacterId = id;
         this.save.meta.selectedCharacter = id;
         this.save.saveMeta();
-        for (const other of this.screenRoot.querySelectorAll('[data-char]')) {
-          other.classList.toggle('selected', other.dataset.char === id);
-        }
-        const summary = this.screenRoot.querySelector('[data-selected-summary]');
-        if (summary) summary.textContent = this.t('char.select.blurb', { name: this.t(character.nameKey) });
         this.audio?.play('ui');
+        this.showCharacterSelect();
       });
     }
   }
@@ -293,7 +294,9 @@ export class UIManager {
     const source = this.assets.atlases.gothic;
     if (!source) return;
     const box = frame.opaqueBox ?? { x: 0, y: 0, w: frame.w, h: frame.h };
-    const scale = Math.max(1, Math.min(2, Math.floor(110 / Math.max(1, box.w)), Math.floor(78 / Math.max(1, box.h))));
+    const maxW = canvas.width - 14;
+    const maxH = canvas.height - 14;
+    const scale = Math.max(1, Math.min(3, Math.floor(maxW / Math.max(1, box.w)), Math.floor(maxH / Math.max(1, box.h))));
     const drawW = box.w * scale;
     const drawH = box.h * scale;
     const x = Math.floor((canvas.width - drawW) / 2);
@@ -423,6 +426,31 @@ export class UIManager {
 
   handleKeyDown(event) {
     if (!this.currentScreenName) return;
+    const typing = event.target?.closest?.('input, select, textarea');
+    if (!typing && this.currentScreenName === 'menu' && /^Digit[1-4]$/.test(event.code)) {
+      const action = ['start', 'achievements', 'settings', 'credits'][Number(event.code.slice(-1)) - 1];
+      this.screenRoot.querySelector(`[data-action="${action}"]`)?.click();
+      event.preventDefault();
+      return;
+    }
+    if (!typing && this.currentScreenName === 'characters') {
+      if (/^Digit[1-4]$/.test(event.code)) {
+        const index = Number(event.code.slice(-1)) - 1;
+        this.screenRoot.querySelectorAll('[data-char]')[index]?.click();
+        event.preventDefault();
+        return;
+      }
+      if (event.code === 'Enter') {
+        this.screenRoot.querySelector('[data-action="start"]')?.click();
+        event.preventDefault();
+        return;
+      }
+      if (event.code === 'Escape') {
+        this.showMainMenu();
+        event.preventDefault();
+        return;
+      }
+    }
     if (event.code === 'Escape') {
       if (this.currentScreenName === 'pause') {
         this.clearScreen();
@@ -465,6 +493,8 @@ export class UIManager {
   clearToasts() { this.feedback.clearToasts(); }
 
   toast(key, vars = {}, options = {}) { this.feedback.toast(key, vars, options); }
+
+  toastText(text, options = {}) { this.feedback.toastText(text, options); }
 
   spawnDamageNumber(worldX, worldY, text, kind = 'normal') {
     this.feedback.spawnDamageNumber(worldX, worldY, text, kind);

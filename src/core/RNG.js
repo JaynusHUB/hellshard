@@ -15,7 +15,7 @@ export function combineSeed(seed, ...parts) {
   return h >>> 0;
 }
 
-export function hashString(value) {
+function hashString(value) {
   let h = 2166136261;
   for (let i = 0; i < value.length; i++) {
     h ^= value.charCodeAt(i);
@@ -95,23 +95,10 @@ export function clamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
 }
 
-export function lerp(a, b, t) {
+function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
 export function damp(current, target, lambda, dt) {
   return lerp(current, target, 1 - Math.exp(-lambda * dt));
-}
-
-export function approach(current, target, delta) {
-  if (current < target) return Math.min(current + delta, target);
-  return Math.max(current - delta, target);
-}
-
-export function mod(value, divisor) {
-  return ((value % divisor) + divisor) % divisor;
-}
-
-export function rectsOverlap(a, b) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }

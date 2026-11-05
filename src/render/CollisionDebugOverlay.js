@@ -48,10 +48,11 @@ export class CollisionDebugOverlay {
 
     const ctx = this.ctx;
     const camera = game.camera.getRenderPosition(alpha);
+    const zoom = game.camera.zoom || 1;
     const halfW = GAME.internalWidth / 2;
     const halfH = GAME.internalHeight / 2;
-    const screenX = (worldX) => Math.round(worldX - camera.x + halfW);
-    const screenY = (worldY) => Math.round(camera.y - worldY + halfH);
+    const screenX = (worldX) => Math.round((worldX - camera.x) * zoom + halfW);
+    const screenY = (worldY) => Math.round((camera.y - worldY) * zoom + halfH);
     const t = (key) => game.ui?.t?.(key) ?? key;
 
     ctx.save();
@@ -92,7 +93,7 @@ export class CollisionDebugOverlay {
       ctx.strokeStyle = COLORS.sprite;
       ctx.globalAlpha = 0.8;
       ctx.setLineDash([2, 2]);
-      ctx.strokeRect(x, y, Math.round(spriteRect.width), Math.round(spriteRect.height));
+      ctx.strokeRect(x, y, Math.round(spriteRect.width * zoom), Math.round(spriteRect.height * zoom));
       ctx.setLineDash([]);
       this.cross(ctx, screenX(pos.x + dashLean * player.facing), screenY(spriteY), COLORS.sprite);
       this.label(ctx, `${t('debug.spriteAnchor')} ${spriteY.toFixed(0)}`, screenX(player.x) + 20, screenY(spriteY) - 15, COLORS.sprite);
@@ -104,8 +105,8 @@ export class CollisionDebugOverlay {
     ctx.strokeRect(
       screenX(bounds.x),
       screenY(bounds.y + bounds.h),
-      Math.round(bounds.w),
-      Math.round(bounds.h),
+      Math.round(bounds.w * zoom),
+      Math.round(bounds.h * zoom),
     );
     this.cross(ctx, screenX(player.x), screenY(collisionY), COLORS.physics);
 
@@ -115,7 +116,7 @@ export class CollisionDebugOverlay {
       if (enemy.dead || Math.abs(enemy.x - player.x) > 220) continue;
       const b = enemy.getBounds();
       ctx.strokeStyle = COLORS.enemy;
-      ctx.strokeRect(screenX(b.x), screenY(b.y + b.h), Math.round(b.w), Math.round(b.h));
+      ctx.strokeRect(screenX(b.x), screenY(b.y + b.h), Math.round(b.w * zoom), Math.round(b.h * zoom));
       this.cross(ctx, screenX(enemy.x), screenY(b.y), COLORS.enemy);
       const enemyFrame = enemy.animator?.frame;
       const enemyPos = enemy.getRenderPosition(alpha);
@@ -129,8 +130,8 @@ export class CollisionDebugOverlay {
         ctx.strokeRect(
           screenX(rect.left),
           screenY(rect.top),
-          Math.round(rect.width),
-          Math.round(rect.height),
+          Math.round(rect.width * zoom),
+          Math.round(rect.height * zoom),
         );
         ctx.setLineDash([]);
       }

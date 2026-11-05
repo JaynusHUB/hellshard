@@ -2,20 +2,38 @@
 
 ## Current status
 
-**Complete.** Phases 0–7 are implemented. The active game boots into the main menu and currently ships
-two active zones: the packaged cemetery and the procedural church. Swamp, dungeon and forest are
-disabled because those maps were reported broken; their assets remain in `public/assets`. Meta
-progression persists.
+**Complete + Dungeon Gate + UI pass.** Phases 0–7 are implemented. The active game boots into the main
+menu and ships three active zones: the packaged cemetery, the procedural church, and the hand-authored
+Dungeon Gate. Swamp, dungeon and forest generation remains disabled; their assets stay in
+`public/assets`. Meta progression persists, and the run now ends at the Dungeon Gate's keyed Final Gate
+after the Gate Warden boss.
+
+## Release cleanup — GitHub publish (2026-11-05)
+
+- [x] Fallow dead-code scan reduced the project from 185 findings to **0** (third-party asset demos
+  and the class-member heuristic are intentionally excluded via `.fallowrc.json`).
+- [x] Removed unused exports/helpers (`approach`, `mod`, `rectsOverlap`, `screenToStage`,
+  `createTileMaterial`, `summarizeTiledMap`, stale data-table aliases), export-only wrappers and
+  three unused imports in `Player.js`.
+- [x] Removed the duplicate `map - Kopya.json`; ignored `.fallow/`, `scripts/.tileset-inspect/` and
+  `.vercel/`.
+- [x] Secret scan: no API keys, tokens, `.env` files or credentials in the working tree or git
+  history.
+- [x] Re-verified: 50/50 tests, production build, map/tile/alignment/layout/world validators.
 
 ## Verification (current)
 
+- `npm test` - **50/50 tests passing** in 11 suites, including the new Dungeon Gate loader/object
+  coverage and the existing RNG, upgrades, world, achievement, sprite, localization and AI suites.
+- `npm run validate:maps` - passes for both `cemetery_demo` and `dungeon_gate`; the Dungeon Gate
+  reports 160x12 tiles, 6 image layers, 16 authored enemies, collision GIDs 1/2/3 and a clear spawn.
+- `npm run validate:world` - passes for seeds 1..100 (200 procedural zones, max gap 4 tiles).
+- `npm run validate:layout` - passes for 100 seeds × 2 procedural zones; no overlaps, floating
+  chests, clearance violations, unsupported structures or unreachable platforms.
 - `npm run build` - passes after packaged audio, Aseprite clips and death FX (70 modules, no errors;
   atlases are generated at runtime, JS 869.90 kB / 231.53 kB gzip).
 - Layout note: generated stairs are supported solid columns; high platforms are capped at three
   tiles and validated against the jump envelope.
-- `npm test` - **46/46 tests passing** in 10 suites (RNG, upgrades/evolutions, world generation,
-  achievements, sprite manifest facing/coverage, localization, pit AI, enemy hazards/refund/crowd,
-  base-floor spawn rule, Tiled loader primitives, Aseprite clips/audio/effects).
 - `npm run import:animations -- --check` - **passed**: the manifest already matches every imported
   Aseprite tag and per-frame duration.
 - `npm run validate:tiles` - **passed**: five 16x16 catalogs, source margin 0, spacing 0, all frame
@@ -77,6 +95,36 @@ Aseprite `frameTags`; only differing clips are listed.
 | death_burst | burst | 0-8 (9) | 0-8 (9) | 14 | 8.18 |
 | fireball | fly | 0,1,2 | 0,1,2 | 12 | 10 |
 <!-- aseprite-import:end -->
+
+## Dungeon Gate integration and menu overhaul (2026-11-05)
+
+- [x] **Authored map added:** `public/assets/pool/maps/dungeon_gate.json` (160×12 tiles) is loaded as
+  the third active zone `dungeon_gate`, with collision GIDs 1=solid / 2=one-way / 3=hazard.
+- [x] **Native composition:** per-zone camera profile at 2× zoom with bottom anchoring reproduces the
+  map's 320×180 intent on the 640×360 stage. Camera bounds stop at the map's 192px playable top.
+- [x] **Parallax:** all five image layers and the foreground fog are rendered with Tiled's parallax
+  formula, repeat-x where authored, and autoscroll on the fog. Foreground layers draw above actors.
+- [x] **Animated tiles:** 16 torch/lava/water tile groups animate from tileset frame durations; the
+  renderer updates UVs only when the frame changes. 20 authored `Lights` objects render as additive
+  flickering halos.
+- [x] **Authored objects:** player start, four checkpoints (bonfire heal), 16 enemies, 39 pickups
+  (coins/potions), a key chest, two lore signs, a moving lava lift, the Gate Warden arena, a keyed
+  Final Gate and hint triggers are parsed into gameplay data.
+- [x] **Boss/route:** the Gate Warden (`gate_warden`, 860 HP, two phases) drops the third Hellshard.
+  The cemetery boss arena is restored on its packaged map via a data config, and both prior zone exits
+  require their boss before the route opens. The Final Gate requires 3 shards **and** the iron key.
+- [x] **Authored combat:** the gate uses authored enemies and authored pickups; the ambient spawn
+  director is disabled there. Pickups convert to XP, healing or the key; the HUD shows the key.
+- [x] **Menu redesign:** the main menu uses the live Dungeon Gate map as a cinematic backdrop
+  (animated torches, parallax, 2x camera) with a ritual-console layout, constellation SVG, descent
+  ledger, seed panel, SVG pixel icons and ember/rune ambience; character select, settings and
+  achievements were restyled as well.
+- [x] **Input/accessibility:** menu hotkeys 1–4, character select 1–4/Enter/Escape, visible focus
+  rings, 0.96 press scale, reduced-motion support, responsive stage scaling.
+- [x] **License:** added `LICENSE` (HELLSHARD Original Work License 1.0, © JAYNUS) and updated
+  `CREDITS.md`/`README.md` with the Dungeon Gate credit and third-party asset separation.
+- [ ] **Needs human playtest:** verify the full cemetery → church → gate route in a visible browser,
+  including the iron-key chest jump, the Gate Warden fight and the Final Gate victory result.
 
 ## Known issues — post-playtest fixes (2026-11-02)
 
@@ -429,7 +477,7 @@ their existing multipliers.
 - 10 normal enemy types + 2 elites with zone pools and adaptive spawn director.
 - Three phased bosses: Mourning Maw, Seraph of Ash, Drowned Choir.
 - Boss arenas lock the exit, telegraph attacks, expose a health bar, drop shards and guaranteed chests.
-- 12 achievements and persistent meta currency/unlocks/bonuses.
+- 13 achievements and persistent meta currency/unlocks/bonuses.
 
 ### Phase 4 — World and zones
 - Five seeded zones: cemetery, church, swamp, dungeon, forest.
@@ -459,7 +507,7 @@ their existing multipliers.
 ### Phase 7 — Validation and delivery
 - `scripts/validate-world.js` validates reachability, transitions, checkpoints, chests, arenas and map
   bounds for seeds 1..100; custom seed ranges supported.
-- Vitest suites cover RNG determinism, upgrade caps/evolutions, seeded world generation and all 12
+- Vitest suites cover RNG determinism, upgrade caps/evolutions, seeded world generation and all 13
   achievements (including duplicate-unlock protection).
 - Documentation reconciled with final implementation (`README.md`, `ARCHITECTURE.md`, `ASSET_REPORT.md`,
   `CREDITS.md`, `PROGRESS.md`).

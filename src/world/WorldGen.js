@@ -1,6 +1,6 @@
 import { GAME, PHYSICS_BOUNDS } from '../config/game.js';
 import { RNG, combineSeed } from '../core/RNG.js';
-import { ZONES, ZONE_ORDER } from '../data/zones.js';
+import { ZONES, GENERATED_ZONE_ORDER } from '../data/zones.js';
 import { DUNGEON_ROOM_TEMPLATES } from '../data/dungeonRooms.js';
 import { TILE, Tilemap } from './Tilemap.js';
 import { LayoutGrid } from './LayoutGrid.js';
@@ -17,7 +17,7 @@ const SURFACE = (FLOOR_ROW + 1) * T;
 const BOSS_ROOM = 3;
 
 export function buildZoneRoute(seed) {
-  return ['cemetery', 'church'];
+  return ['cemetery', 'church', 'dungeon_gate'];
 }
 
 function idx(x, y) {
@@ -633,8 +633,10 @@ export function generateZone(seed, zoneId, options = {}) {
   const zone = ZONES[zoneId];
   if (!zone) throw new Error(`Unknown zone: ${zoneId}`);
   const route = options.route ?? buildZoneRoute(seed);
-  const packaged = options.packagedMaps?.cemetery_demo;
-  if (zoneId === 'cemetery' && packaged?.map && packaged?.config) {
+  const packaged = Object.values(options.packagedMaps ?? {}).find(
+    (entry) => entry?.map && entry?.config?.zoneId === zoneId,
+  );
+  if (packaged) {
     return buildTiledWorld({
       map: packaged.map,
       mapUrl: packaged.mapUrl,
@@ -780,7 +782,7 @@ export function analyzeReachability(world) {
 export function generateWorld(seed, options = {}) {
   const zones = {};
   const route = buildZoneRoute(seed);
-  for (const zoneId of ZONE_ORDER) {
+  for (const zoneId of GENERATED_ZONE_ORDER) {
     zones[zoneId] = generateZone(seed, zoneId, {
       ...options,
       route,
@@ -788,5 +790,3 @@ export function generateWorld(seed, options = {}) {
   }
   return zones;
 }
-
-export { WIDTH as WORLD_WIDTH, ROWS as WORLD_ROWS, SURFACE as WORLD_SURFACE, FLOOR_ROW };

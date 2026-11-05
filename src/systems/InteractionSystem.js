@@ -9,17 +9,41 @@ export class InteractionSystem {
 
   updateCheckpoint() {
     const game = this.game;
+    const world = game.activeWorld;
+    if (world.tiled) {
+      for (const checkpoint of world.checkpoints ?? []) {
+        if (checkpoint.activated) continue;
+        if (Math.abs(checkpoint.x - game.player.x) > 22) continue;
+        if (Math.abs(checkpoint.y - game.player.y) > 26) continue;
+        checkpoint.activated = true;
+        game.run.checkpoint = { x: checkpoint.x, y: checkpoint.y };
+        if (checkpoint.heal) {
+          game.player.health = Math.min(game.player.maxHealth, game.player.health + game.player.maxHealth * 0.35);
+          game.ui?.toast('toast.checkpointHeal', {}, { icon: '✚' });
+          game.glowParticles.burst([COLORS.bone, COLORS.gold], checkpoint.x, checkpoint.y + 10, 18, {
+            speed: 60,
+            life: 0.7,
+            gravity: -35,
+            size: 2,
+          });
+        } else {
+          game.ui?.toast('toast.checkpoint');
+        }
+        game.audio.play('ui');
+      }
+      return;
+    }
     const roomWidth = GAME.world.roomWidth * GAME.tile;
     const roomIndex = Math.floor(game.player.x / roomWidth);
-    const room = game.activeWorld.rooms?.[roomIndex];
+    const room = world.rooms?.[roomIndex];
     if (!room || roomIndex === game.lastRoom) return;
     game.lastRoom = roomIndex;
-    if (game.activeWorld.arena && !game.zoneStates[game.activeZoneId]?.bossDefeated) {
+    if (world.arena && !game.zoneStates[game.activeZoneId]?.bossDefeated) {
       return;
     }
     game.run.checkpoint = {
       x: Math.max(32, room.start * GAME.tile + 24),
-      y: game.activeWorld.surface,
+      y: world.surface,
     };
   }
 
@@ -57,8 +81,12 @@ export class InteractionSystem {
     const t = game.ui?.t ?? ((key) => key);
     let text = t('action.openChest');
     if (nearest.type === 'altar') text = t('action.touchAltar');
-    else if (nearest.type === 'finalGate') text = t('action.enterGate');
-    else if (nearest.type === 'chestBoss') text = t('action.openChest');
+    else if (nearest.type === 'sign') text = t('action.readSign');
+    else if (nearest.type === 'finalGate') {
+      const hasItem = !nearest.requiresItem || Boolean(game.run?.flags?.[nearest.requiresItem]);
+      const hasShards = game.run.shards.length >= nearest.requiresShards;
+      text = t(hasItem && hasShards ? 'action.enterGate' : 'action.gateLocked');
+    } else if (nearest.type === 'chestBoss') text = t('action.openChest');
     else if (nearest.target) {
       const targetZone = ZONES[nearest.target];
       if (nearest.labelKey === 'zone.return') {
@@ -74,6 +102,12 @@ export class InteractionSystem {
     const game = this.game;
     if (!interaction) return;
     if (interaction.type === 'finalGate') {
+      const hasItem = !interaction.requiresItem || Boolean(game.run.flags?.[interaction.requiresItem]);
+      if (!hasItem) {
+        game.ui?.toast('zone.gateLockedItem', {}, { icon: '⌘' });
+        game.audio.play('empty');
+        return;
+      }
       if (game.run.shards.length >= interaction.requiresShards) {
         game.audio.play('shard');
         game.endRun('victory');
@@ -81,6 +115,14 @@ export class InteractionSystem {
         game.ui?.toast('zone.finalGateLocked', {}, { icon: '◆' });
         game.audio.play('empty');
       }
+      return;
+    }
+    if (interaction.type === 'sign') {
+      const signText = interaction.textKey
+        ? (game.ui?.t?.(interaction.textKey) ?? interaction.text)
+        : interaction.text;
+      game.ui?.toastText?.(signText, { icon: '✎', duration: 3600 });
+      game.audio.play('ui');
       return;
     }
     if (interaction.type === 'altar') {
@@ -108,6 +150,16 @@ export class InteractionSystem {
     interaction.opened = true;
     game.run.chestsOpened += 1;
     game.gameAchievements?.onChest(game.run.chestsOpened);
+    if (interaction.loot) {
+      game.run.flags = game.run.flags ?? {};
+      game.run.flags[interaction.loot] = true;
+      game.ui?.toast(interaction.loot === 'dungeon_key' ? 'item.dungeonKey' : 'toast.chest', {}, {
+        icon: interaction.loot === 'dungeon_key' ? '⌘' : '▣',
+        achievement: interaction.loot === 'dungeon_key',
+        duration: 2400,
+      });
+      game.audio.play('shard');
+    }
     const guaranteed = interaction.type === 'chestBoss' || interaction.secret;
     const reward = game.progression.grantChestReward(guaranteed);
     game.audio.play('chest');

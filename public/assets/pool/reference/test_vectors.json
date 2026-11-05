@@ -1,0 +1,1018 @@
+{
+ "note": "Beklenen degerler: motorun yukleyicisi bu sayilari ayni uretmeli.",
+ "parallaxOrigin": [
+  160,
+  90
+ ],
+ "imageLayers": [
+  {
+   "name": "Parallax 1 - Sky",
+   "offset": [
+    0,
+    0
+   ],
+   "parallaxx": 0.05,
+   "repeatx": false,
+   "at": {
+    "cam160": {
+     "x": 0,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 1083,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 2128,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 0
+  },
+  {
+   "name": "Parallax 2 - Mountains",
+   "offset": [
+    0,
+    0
+   ],
+   "parallaxx": 0.1,
+   "repeatx": false,
+   "at": {
+    "cam160": {
+     "x": 0,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 1026,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 2016,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 0
+  },
+  {
+   "name": "Parallax 3 - Gate Cliff",
+   "offset": [
+    994,
+    0
+   ],
+   "parallaxx": 0.5,
+   "repeatx": false,
+   "at": {
+    "cam160": {
+     "x": 994,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 1564,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 2114,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 994
+  },
+  {
+   "name": "Parallax 4 - Fence and Torches",
+   "offset": [
+    0,
+    0
+   ],
+   "parallaxx": 0.62,
+   "repeatx": true,
+   "at": {
+    "cam160": {
+     "x": 0,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 433.2,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 851.2,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 0
+  },
+  {
+   "name": "Parallax 5 - Rocks",
+   "offset": [
+    0,
+    0
+   ],
+   "parallaxx": 0.82,
+   "repeatx": true,
+   "at": {
+    "cam160": {
+     "x": 0,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 205.20000000000005,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 403.2000000000001,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 0
+  },
+  {
+   "name": "Parallax Fog (foreground)",
+   "offset": [
+    0,
+    0
+   ],
+   "parallaxx": 0.9,
+   "repeatx": true,
+   "at": {
+    "cam160": {
+     "x": 0,
+     "y": 0
+    },
+    "cam1300": {
+     "x": 113.99999999999997,
+     "y": 0
+    },
+    "cam2400": {
+     "x": 223.99999999999994,
+     "y": 0
+    }
+   },
+   "autoscroll_x_after_4s_cam160": 32
+  }
+ ],
+ "animatedTiles": [
+  {
+   "tileset": "object_markers",
+   "firstTileLocalId": 14,
+   "gid": 159,
+   "totalMs": 560,
+   "frames": {
+    "t0": {
+     "localId": 14,
+     "src": {
+      "sx": 224,
+      "sy": 0,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 14,
+     "src": {
+      "sx": 224,
+      "sy": 0,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 15,
+     "src": {
+      "sx": 240,
+      "sy": 0,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 17,
+     "src": {
+      "sx": 16,
+      "sy": 16,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 17,
+     "src": {
+      "sx": 16,
+      "sy": 16,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 66,
+   "gid": 83,
+   "totalMs": 460,
+   "frames": {
+    "t0": {
+     "localId": 66,
+     "src": {
+      "sx": 32,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 66,
+     "src": {
+      "sx": 32,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 68,
+     "src": {
+      "sx": 64,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 66,
+     "src": {
+      "sx": 32,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 66,
+     "src": {
+      "sx": 32,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 70,
+   "gid": 87,
+   "totalMs": 420,
+   "frames": {
+    "t0": {
+     "localId": 70,
+     "src": {
+      "sx": 96,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 70,
+     "src": {
+      "sx": 96,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 72,
+     "src": {
+      "sx": 128,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 70,
+     "src": {
+      "sx": 96,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 71,
+     "src": {
+      "sx": 112,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 74,
+   "gid": 91,
+   "totalMs": 420,
+   "frames": {
+    "t0": {
+     "localId": 74,
+     "src": {
+      "sx": 160,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 74,
+     "src": {
+      "sx": 160,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 75,
+     "src": {
+      "sx": 176,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 74,
+     "src": {
+      "sx": 160,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 75,
+     "src": {
+      "sx": 176,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 77,
+   "gid": 94,
+   "totalMs": 880,
+   "frames": {
+    "t0": {
+     "localId": 77,
+     "src": {
+      "sx": 208,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 77,
+     "src": {
+      "sx": 208,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 78,
+     "src": {
+      "sx": 224,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 79,
+     "src": {
+      "sx": 240,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 77,
+     "src": {
+      "sx": 208,
+      "sy": 64,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 81,
+   "gid": 98,
+   "totalMs": 880,
+   "frames": {
+    "t0": {
+     "localId": 81,
+     "src": {
+      "sx": 16,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 81,
+     "src": {
+      "sx": 16,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 82,
+     "src": {
+      "sx": 32,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 83,
+     "src": {
+      "sx": 48,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 81,
+     "src": {
+      "sx": 16,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 85,
+   "gid": 102,
+   "totalMs": 640,
+   "frames": {
+    "t0": {
+     "localId": 85,
+     "src": {
+      "sx": 80,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 85,
+     "src": {
+      "sx": 80,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 86,
+     "src": {
+      "sx": 96,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 88,
+     "src": {
+      "sx": 128,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 87,
+     "src": {
+      "sx": 112,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 89,
+   "gid": 106,
+   "totalMs": 1600,
+   "frames": {
+    "t0": {
+     "localId": 89,
+     "src": {
+      "sx": 144,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 89,
+     "src": {
+      "sx": 144,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 89,
+     "src": {
+      "sx": 144,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 90,
+     "src": {
+      "sx": 160,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 91,
+     "src": {
+      "sx": 176,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 93,
+   "gid": 110,
+   "totalMs": 1520,
+   "frames": {
+    "t0": {
+     "localId": 93,
+     "src": {
+      "sx": 208,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 93,
+     "src": {
+      "sx": 208,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 93,
+     "src": {
+      "sx": 208,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 94,
+     "src": {
+      "sx": 224,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 95,
+     "src": {
+      "sx": 240,
+      "sy": 80,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 97,
+   "gid": 114,
+   "totalMs": 1600,
+   "frames": {
+    "t0": {
+     "localId": 97,
+     "src": {
+      "sx": 16,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 97,
+     "src": {
+      "sx": 16,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 97,
+     "src": {
+      "sx": 16,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 97,
+     "src": {
+      "sx": 16,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 99,
+     "src": {
+      "sx": 48,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 100,
+   "gid": 117,
+   "totalMs": 1200,
+   "frames": {
+    "t0": {
+     "localId": 100,
+     "src": {
+      "sx": 64,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 100,
+     "src": {
+      "sx": 64,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 100,
+     "src": {
+      "sx": 64,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 101,
+     "src": {
+      "sx": 80,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 103,
+     "src": {
+      "sx": 112,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 104,
+   "gid": 121,
+   "totalMs": 1200,
+   "frames": {
+    "t0": {
+     "localId": 104,
+     "src": {
+      "sx": 128,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 104,
+     "src": {
+      "sx": 128,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 104,
+     "src": {
+      "sx": 128,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 105,
+     "src": {
+      "sx": 144,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 107,
+     "src": {
+      "sx": 176,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 108,
+   "gid": 125,
+   "totalMs": 460,
+   "frames": {
+    "t0": {
+     "localId": 108,
+     "src": {
+      "sx": 192,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 108,
+     "src": {
+      "sx": 192,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 110,
+     "src": {
+      "sx": 224,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 108,
+     "src": {
+      "sx": 192,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 108,
+     "src": {
+      "sx": 192,
+      "sy": 96,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 112,
+   "gid": 129,
+   "totalMs": 460,
+   "frames": {
+    "t0": {
+     "localId": 112,
+     "src": {
+      "sx": 0,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 112,
+     "src": {
+      "sx": 0,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 114,
+     "src": {
+      "sx": 32,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 112,
+     "src": {
+      "sx": 0,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 112,
+     "src": {
+      "sx": 0,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 116,
+   "gid": 133,
+   "totalMs": 460,
+   "frames": {
+    "t0": {
+     "localId": 116,
+     "src": {
+      "sx": 64,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 116,
+     "src": {
+      "sx": 64,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 118,
+     "src": {
+      "sx": 96,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 116,
+     "src": {
+      "sx": 64,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 116,
+     "src": {
+      "sx": 64,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  },
+  {
+   "tileset": "dungeon_tiles",
+   "firstTileLocalId": 120,
+   "gid": 137,
+   "totalMs": 460,
+   "frames": {
+    "t0": {
+     "localId": 120,
+     "src": {
+      "sx": 128,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t100": {
+     "localId": 120,
+     "src": {
+      "sx": 128,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t250": {
+     "localId": 122,
+     "src": {
+      "sx": 160,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t500": {
+     "localId": 120,
+     "src": {
+      "sx": 128,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    },
+    "t1000": {
+     "localId": 120,
+     "src": {
+      "sx": 128,
+      "sy": 112,
+      "sw": 16,
+      "sh": 16
+     }
+    }
+   }
+  }
+ ],
+ "ambient": {
+  "rule": "ambient_color carpan DEGIL; multiply, alfa 0.25",
+  "strength": 0.25
+ },
+ "camera": {
+  "view": [
+   320,
+   180
+  ],
+  "map": [
+   2560,
+   192
+  ],
+  "camTopWhenGrounded": 12
+ }
+}

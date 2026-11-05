@@ -19,7 +19,7 @@ function createHarness() {
 }
 
 describe('achievements', () => {
-  it('unlocks all 12 achievements from real gameplay events', () => {
+  it('unlocks all 13 achievements from real gameplay events', () => {
     const { save, system } = createHarness();
     system.onKill(1);
     system.onKill(100);
@@ -32,6 +32,7 @@ describe('achievements', () => {
     system.onBoss('mourning_maw', true);
     system.onBoss('seraph_ash');
     system.onBoss('drowned_choir');
+    system.onBoss('gate_warden');
     expect(save.meta.achievements.sort()).toEqual([
       'ascendant',
       'ashfall',
@@ -45,9 +46,10 @@ describe('achievements', () => {
       'treasure_hunter',
       'trinity',
       'untouched',
+      'warden_fallen',
     ]);
     expect(system.rewardTotal).toBeGreaterThan(0);
-    expect(system.unlockedThisRun.length).toBe(12);
+    expect(system.unlockedThisRun.length).toBe(13);
   });
 
   it('does not unlock an achievement twice', () => {

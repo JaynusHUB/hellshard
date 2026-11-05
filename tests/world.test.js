@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildZoneRoute, generateWorld, generateZone, analyzeReachability } from '../src/world/WorldGen.js';
 import { DUNGEON_ROOM_TEMPLATES } from '../src/data/dungeonRooms.js';
-import { ZONE_ORDER } from '../src/data/zones.js';
+import { ZONE_ORDER, GENERATED_ZONE_ORDER } from '../src/data/zones.js';
 
 describe('world generation', () => {
   it('is deterministic for the same seed', () => {
@@ -33,9 +33,9 @@ describe('world generation', () => {
     expect(dungeon.surfaceDecals.length).toBeGreaterThan(0);
   });
 
-  it('generates the two active campaign zones', () => {
+  it('generates the procedural campaign zones', () => {
     const world = generateWorld(20261102);
-    expect(Object.keys(world).sort()).toEqual([...ZONE_ORDER].sort());
+    expect(Object.keys(world).sort()).toEqual([...GENERATED_ZONE_ORDER].sort());
     for (const zone of Object.values(world)) {
       expect(zone.reachability.ok).toBe(true);
       expect(zone.map.isStandableTile(Math.floor(zone.spawn.x / 16), Math.ceil(zone.spawn.y / 16))).toBe(true);
@@ -72,9 +72,9 @@ describe('world generation', () => {
     expect(world.forest).toBeUndefined();
   });
 
-  it('creates the fixed cemetery to church route', () => {
-    expect(buildZoneRoute(1)).toEqual(['cemetery', 'church']);
-    expect(buildZoneRoute(20261102)).toEqual(['cemetery', 'church']);
+  it('creates the cemetery → church → gate route', () => {
+    expect(buildZoneRoute(1)).toEqual(['cemetery', 'church', 'dungeon_gate']);
+    expect(buildZoneRoute(20261102)).toEqual(['cemetery', 'church', 'dungeon_gate']);
   });
 
   it('wires the route exits to the generated neighbor', () => {

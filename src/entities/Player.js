@@ -2,7 +2,7 @@ import { GAME } from '../config/game.js';
 import { CHARACTER_BY_ID } from '../data/characters.js';
 import { clamp } from '../core/RNG.js';
 import { Animator } from '../render/Animator.js';
-import { handleActions, pickAnim, basicAttackClip, heavyAttackClip, emitBasicStrike, emitProjectiles, emitHeavyStrike, useSpecial } from './PlayerCombat.js';
+import { handleActions, pickAnim, basicAttackClip, heavyAttackClip, emitHeavyStrike } from './PlayerCombat.js';
 
 export class Player {
   constructor(characterId, assets, modifiers = {}) {

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "ignorePatterns": ["public/assets/**", "scripts/.tileset-inspect/**"],
+  "rules": {
+    "unused-class-members": "off",
+    "boundary-violation": "off",
+    "policy-violation": "off"
+  }
+}

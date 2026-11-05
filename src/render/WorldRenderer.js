@@ -49,13 +49,17 @@ export class WorldRenderer {
     const game = this.game;
     if (!game.background || !game.tileChunks) return;
     const cameraPos = { x: game.camera.x, y: game.camera.y };
-    game.background.update(cameraPos.x, cameraPos.y);
+    game.background.update(cameraPos.x, cameraPos.y, game.time);
+    game.tiledLights?.update(game.time);
     game.water?.update(game.time);
+    game.tileChunks.update?.(game.time);
+    const halfW = GAME.internalWidth / (2 * (game.camera.zoom || 1));
+    const halfH = GAME.internalHeight / (2 * (game.camera.zoom || 1));
     game.tileChunks.cull(
-      cameraPos.x - GAME.internalWidth / 2,
-      cameraPos.x + GAME.internalWidth / 2,
-      cameraPos.y - GAME.internalHeight / 2,
-      cameraPos.y + GAME.internalHeight / 2,
+      cameraPos.x - halfW,
+      cameraPos.x + halfW,
+      cameraPos.y - halfH,
+      cameraPos.y + halfH,
     );
     for (const family of Object.keys(this.batchEntries)) {
       this.batchEntries[family].prop.mesh.visible = false;
@@ -76,6 +80,7 @@ export class WorldRenderer {
     if (includePlayer && game.player) {
       this.generatedBatch.begin();
       this.drawInteractables(this.generatedBatch);
+      this.drawTiledObjects(this.generatedBatch);
       this.drawMovingPlatforms(this.generatedBatch);
       this.drawHazards(this.generatedBatch);
       this.generatedBatch.end();
@@ -321,6 +326,7 @@ export class WorldRenderer {
       }
       let frame = frames.chest;
       if (interaction.type === 'altar') frame = frames.altar;
+      else if (interaction.type === 'sign') frame = frames.sign;
       else if (interaction.opened) frame = frames.chestOpen;
       else if (interaction.type === 'chestBoss') frame = frames.bossChest;
       if (!frame) continue;
@@ -362,7 +368,8 @@ export class WorldRenderer {
     }
     if (game.activeWorld.finalGate) {
       const gate = game.activeWorld.finalGate;
-      const open = game.run.shards.length >= gate.requiresShards;
+      const hasItem = !gate.requiresItem || Boolean(game.run?.flags?.[gate.requiresItem]);
+      const open = game.run.shards.length >= gate.requiresShards && hasItem;
       batch.draw(frames.portal, Math.round(gate.x), Math.round(gate.y + 1), {
         anchorY: frames.portal.anchorY ?? 1,
         tint: open ? [1.2, 1, 0.68] : [0.55, 0.5, 0.6],
@@ -403,6 +410,42 @@ export class WorldRenderer {
           });
         }
       }
+    }
+  }
+
+  drawTiledObjects(batch) {
+    const game = this.game;
+    const world = game.activeWorld;
+    if (!world?.tiled) return;
+    const frames = this.generated.frames;
+    const t = game.time;
+    for (const checkpoint of world.checkpoints ?? []) {
+      if (checkpoint.id === 'spawn' || !frames.brazier) continue;
+      const pulse = 0.7 + Math.sin(t * 2.4 + checkpoint.x * 0.02) * 0.18;
+      batch.draw(frames.brazier, Math.round(checkpoint.x), Math.round(checkpoint.y + 1), {
+        anchorY: frames.brazier.anchorY ?? 1,
+        tint: checkpoint.activated ? [0.52, 1.08, 0.92] : [0.92, 0.7, 0.42],
+        alpha: pulse,
+      });
+    }
+    for (const pickup of world.pickups ?? []) {
+      if (pickup.collected) continue;
+      let frame = frames.coin;
+      let tint = [1, 1, 1];
+      if (pickup.type === 'health_potion') {
+        frame = frames.potion;
+        tint = [1.15, 0.9, 0.88];
+      } else if (pickup.type === 'dungeon_key') {
+        frame = frames.key;
+        tint = [1.14, 1.02, 0.7];
+      }
+      if (!frame) continue;
+      const bob = Math.round(Math.sin(t * 2.8 + pickup.x * 0.05) * 2);
+      batch.draw(frame, Math.round(pickup.x), Math.round(pickup.y + bob), {
+        anchorY: frame.anchorY ?? 1,
+        tint,
+        alpha: 0.92,
+      });
     }
   }
 
@@ -456,7 +499,7 @@ export class WorldRenderer {
     if (!frame) return;
     const tint = game.activeZoneId === 'forest'
       ? [0.72, 0.96, 0.78]
-      : game.activeZoneId === 'dungeon'
+      : game.activeZoneId === 'dungeon' || game.activeZoneId === 'dungeon_gate'
         ? [0.72, 0.75, 0.8]
         : [1, 0.96, 0.86];
     for (const platform of platforms) {
@@ -489,6 +532,8 @@ export class WorldRenderer {
   drawHazards(batch) {
     const game = this.game;
     if (!game.activeWorld?.hazards) return;
+    // Tiled hazard tiles already render their own animated lava/spike art.
+    if (game.activeWorld.tiled) return;
     for (const hazard of game.activeWorld.hazards) {
       if (hazard.kind === 'water') continue;
       const frame = this.generated.frames.spikes;

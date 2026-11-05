@@ -39,6 +39,7 @@ export class SpawnDirector {
     const game = this.game;
     if (game.peaceful) return;
     if (!game.player || !game.activeWorld) return;
+    if (game.activeWorld.noAmbientSpawns) return;
     if (game.boss && !game.boss.dead) return;
     const arena = game.activeWorld.arena;
     if (arena && game.player.x > arena.left && game.player.x < arena.right) return;

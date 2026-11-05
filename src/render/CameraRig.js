@@ -15,6 +15,8 @@ export class CameraRig {
     this.shakeSetting = 0.7;
     this.lookAhead = GAME.camera.lookAhead;
     this.initialized = false;
+    this.zoom = 1;
+    this.verticalAnchor = 'follow';
   }
 
   setBounds(left, right, bottom, top) {
@@ -22,6 +24,14 @@ export class CameraRig {
     this.bounds.right = right;
     this.bounds.bottom = bottom;
     this.bounds.top = top;
+  }
+
+  setZoom(zoom) {
+    this.zoom = Math.max(0.5, Number(zoom) || 1);
+  }
+
+  setVerticalAnchor(anchor) {
+    this.verticalAnchor = anchor === 'bottom' ? 'bottom' : 'follow';
   }
 
   snapTo(x, y) {
@@ -33,10 +43,12 @@ export class CameraRig {
   }
 
   follow(targetX, targetY, facing, dt) {
-    const halfW = GAME.internalWidth / 2;
-    const halfH = GAME.internalHeight / 2;
+    const halfW = GAME.internalWidth / (2 * this.zoom);
+    const halfH = GAME.internalHeight / (2 * this.zoom);
     const desiredX = targetX + facing * this.lookAhead;
-    const desiredY = targetY + GAME.camera.offsetY;
+    const desiredY = this.verticalAnchor === 'bottom'
+      ? this.bounds.bottom + halfH
+      : targetY + GAME.camera.offsetY;
     this.targetX = clamp(desiredX, this.bounds.left + halfW, Math.max(this.bounds.left + halfW, this.bounds.right - halfW));
     this.targetY = clamp(desiredY, this.bounds.bottom + halfH, Math.max(this.bounds.bottom + halfH, this.bounds.top - halfH));
     if (!this.initialized) {

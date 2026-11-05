@@ -49,6 +49,14 @@ export class FeedbackLayer {
 
   toast(key, vars = {}, options = {}) {
     const text = key.includes('.') ? this.t(key, vars) : key;
+    this.queueToast(text, options);
+  }
+
+  toastText(text, options = {}) {
+    this.queueToast(String(text ?? ''), options);
+  }
+
+  queueToast(text, options = {}) {
     this.toastQueue.push({
       text,
       icon: options.icon ?? '◆',
@@ -64,7 +72,12 @@ export class FeedbackLayer {
     if (!entry) return;
     const node = document.createElement('div');
     node.className = `game-toast ${entry.kind === 'achievement' ? 'achievement' : ''}`;
-    node.innerHTML = `<span class="toast-icon">${entry.icon}</span><span>${entry.text}</span>`;
+    const iconNode = document.createElement('span');
+    iconNode.className = 'toast-icon';
+    iconNode.textContent = entry.icon;
+    const textNode = document.createElement('span');
+    textNode.textContent = entry.text;
+    node.append(iconNode, textNode);
     this.toastLayer.appendChild(node);
     requestAnimationFrame(() => node.classList.add('show'));
     this.activeToast = { node, entry };
@@ -104,6 +117,7 @@ export class FeedbackLayer {
   updateDamageNumbers(dt, camera) {
     if (!this.save.settings.damageNumbers) return;
     const cam = camera.getRenderPosition(0);
+    const zoom = camera.zoom || 1;
     for (const el of this.damagePool) {
       if (!el.dataset.used) continue;
       const life = Number(el.dataset.life);
@@ -116,8 +130,8 @@ export class FeedbackLayer {
         continue;
       }
       const t = age / life;
-      const x = Number(el.dataset.x) - cam.x + GAME.internalWidth / 2 + Number(el.dataset.wobble) * t;
-      const y = cam.y - Number(el.dataset.y) + GAME.internalHeight / 2 - 8 - t * 18;
+      const x = (Number(el.dataset.x) - cam.x) * zoom + GAME.internalWidth / 2 + Number(el.dataset.wobble) * t;
+      const y = (cam.y - Number(el.dataset.y)) * zoom + GAME.internalHeight / 2 - 8 - t * 18;
       el.style.opacity = String(t < 0.65 ? 1 : 1 - (t - 0.65) / 0.35);
       el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px) translate(-50%, -100%)`;
     }
@@ -163,6 +177,11 @@ export class FeedbackLayer {
     `;
     const wash = document.getElementById('zone-wash');
     if (wash) wash.style.background = p.fog;
+    const ambient = document.getElementById('ambient-layer');
+    if (ambient) {
+      ambient.style.background = zone.ambientColor ?? 'transparent';
+      ambient.style.opacity = String(zone.ambientColor ? (zone.ambientStrength ?? 0.25) : 0);
+    }
     this.setVignetteOpacity(zone.id === 'dungeon' ? 0.92 : 0.95);
     this.stage.classList.toggle('is-critical', false);
   }

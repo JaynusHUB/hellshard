@@ -47,7 +47,7 @@ export function pickAnim(p, ...names) {
     return 'idle';
   }
 
-export function emitBasicStrike(p) {
+function emitBasicStrike(p) {
     const weapon = p.character.weapon;
     if (weapon.style === 'melee') {
       const evolved = p.evolved && p.characterId === 'brakk';
@@ -69,7 +69,7 @@ export function emitBasicStrike(p) {
     }
   }
 
-export function emitProjectiles(p, heavy) {
+function emitProjectiles(p, heavy) {
     const weapon = p.character.weapon;
     const heavyDef = weapon.heavy;
     const count = heavy ? 1 : p.stats.projectileCount;
@@ -172,7 +172,7 @@ export function emitHeavyStrike(p) {
     }
   }
 
-export function useSpecial(p, world) {
+function useSpecial(p, world) {
     const special = p.character.special;
     p.specialCooldown = special.cooldown;
     p.attackAnim = 0.3;

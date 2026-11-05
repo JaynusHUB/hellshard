@@ -69,6 +69,41 @@ export const BOSSES = {
     deathEffect: 'soul',
     xp: 190,
   },
+  dungeon_gate: {
+    id: 'gate_warden',
+    zone: 'dungeon_gate',
+    nameKey: 'boss.gateWarden.name',
+    titleKey: 'boss.gateWarden.title',
+    sprite: 'wight',
+    animation: 'walk',
+    attackAnimation: 'attack',
+    tint: [1.24, 0.76, 0.48],
+    accent: '#d08a4e',
+    maxHealth: 860,
+    phases: [
+      {
+        threshold: 1,
+        speed: 58,
+        patterns: ['lunge', 'shockwave', 'summon'],
+        cooldowns: { lunge: 3.2, shockwave: 4.6, summon: 7.2 },
+        damage: 20,
+      },
+      {
+        threshold: 0.5,
+        speed: 82,
+        patterns: ['double_lunge', 'shockwave', 'summon'],
+        cooldowns: { double_lunge: 3.4, shockwave: 3.4, summon: 6.4 },
+        damage: 28,
+      },
+    ],
+    width: 44,
+    height: 52,
+    visualOffsetY: 0,
+    shard: 'gate',
+    arenaWidth: 17,
+    deathEffect: 'ember',
+    xp: 180,
+  },
   swamp: {
     id: 'drowned_choir',
     zone: 'swamp',
@@ -105,5 +140,3 @@ export const BOSSES = {
     xp: 170,
   },
 };
-
-export const BOSS_LIST = Object.values(BOSSES);

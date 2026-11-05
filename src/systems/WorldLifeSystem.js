@@ -23,6 +23,24 @@ export class WorldLifeSystem {
     }
   }
 
+  updateTriggers() {
+    const game = this.game;
+    const world = game.activeWorld;
+    const player = game.player;
+    if (!world?.triggers?.length || !player || player.dead) return;
+    for (const trigger of world.triggers) {
+      if (trigger.shown) continue;
+      if (player.x < trigger.x || player.x > trigger.x + trigger.w) continue;
+      if (player.y < trigger.y - 8 || player.y > trigger.y + trigger.h + 8) continue;
+      trigger.shown = true;
+      const text = trigger.textKey
+        ? (game.ui?.t?.(trigger.textKey) ?? trigger.text)
+        : trigger.text;
+      game.ui?.toastText?.(text, { icon: '!', duration: 3200 });
+      game.audio.play('ui');
+    }
+  }
+
   emitAmbient(dt) {
     const game = this.game;
     this.ambientTimer -= dt;

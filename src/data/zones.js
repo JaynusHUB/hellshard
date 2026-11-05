@@ -68,7 +68,7 @@ export const ZONES = {
     elitePool: ['pale_revenant', 'alpha_hound'],
     decor: ['column'],
     traps: ['spikes'],
-    exit: null,
+    exit: { side: 'right', target: 'dungeon_gate', labelKey: 'zone.dungeonGate.name' },
     doors: [],
     hasFinalGate: false,
     hazards: 'spikes',
@@ -154,6 +154,47 @@ export const ZONES = {
     weather: 'dust',
     challengeRoom: 3,
   },
+  dungeon_gate: {
+    id: 'dungeon_gate',
+    nameKey: 'zone.dungeonGate.name',
+    subtitleKey: 'zone.dungeonGate.subtitle',
+    order: 5,
+    phaseKeys: {
+      tutorial: 'zone.dungeonGate.phase.tutorial',
+      stirring: 'zone.dungeonGate.phase.stirring',
+      pressure: 'zone.dungeonGate.phase.pressure',
+      elites: 'zone.dungeonGate.phase.elites',
+      hell: 'zone.dungeonGate.phase.hell',
+    },
+    family: 'dungeon',
+    atlas: 'dungeon',
+    tileset: 'dungeon',
+    backdrop: 'dungeon',
+    boss: 'dungeon_gate',
+    bossRoom: -1,
+    spawnRoom: 0,
+    palette: {
+      fog: '#1a1420',
+      fogAlpha: 0.25,
+      vignette: 'rgba(7, 4, 10, 0.78)',
+      accent: '#d08a4e',
+      particle: '#ffb066',
+      sky: '#0b0810',
+    },
+    ambientColor: '#1a1420',
+    ambientStrength: 0.25,
+    enemyPool: ['burning_ghoul', 'bone_thrall', 'wisp', 'wight'],
+    elitePool: ['pale_revenant'],
+    decor: [],
+    traps: ['spikes'],
+    exit: null,
+    doors: [],
+    hasFinalGate: false,
+    hazards: 'spikes',
+    music: 'dungeon',
+    weather: 'embers',
+    authored: true,
+  },
   forest: {
     id: 'forest',
     nameKey: 'zone.forest.name',
@@ -197,10 +238,7 @@ export const ZONES = {
   },
 };
 
-export const ZONE_ORDER = ['cemetery', 'church'];
-export const ZONE_BY_ID = ZONES;
-export const BOSS_ZONE_IDS = ['cemetery', 'church', 'swamp'];
-
-export function getZone(id) {
-  return ZONES[id];
-}
+export const ZONE_ORDER = ['cemetery', 'church', 'dungeon_gate'];
+// Procedural zones are generated from room templates. Hand-authored packaged
+// maps (dungeon_gate) are built from Tiled JSON in RunController instead.
+export const GENERATED_ZONE_ORDER = ['cemetery', 'church'];

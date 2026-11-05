@@ -56,6 +56,14 @@ export const ACHIEVEMENTS = [
     reward: 2,
   },
   {
+    id: 'warden_fallen',
+    nameKey: 'achievement.wardenFallen.name',
+    descKey: 'achievement.wardenFallen.desc',
+    icon: '⌘',
+    condition: { type: 'boss', target: 'gate_warden' },
+    reward: 3,
+  },
+  {
     id: 'ascendant',
     nameKey: 'achievement.ascendant.name',
     descKey: 'achievement.ascendant.desc',

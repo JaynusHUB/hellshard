@@ -284,15 +284,3 @@ export class TileChunkManager {
     this.material.dispose();
   }
 }
-
-export function createTileMaterial(texture) {
-  return new THREE.ShaderMaterial({
-    uniforms: { uMap: { value: texture } },
-    vertexShader: TILE_VERTEX,
-    fragmentShader: TILE_FRAGMENT,
-    transparent: true,
-    depthTest: true,
-    depthWrite: false,
-    side: THREE.DoubleSide,
-  });
-}

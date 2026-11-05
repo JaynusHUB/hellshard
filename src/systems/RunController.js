@@ -2,7 +2,7 @@ import { GAME } from '../config/game.js';
 import { CHARACTER_BY_ID } from '../data/characters.js';
 import { ZONES } from '../data/zones.js';
 import { EVOLUTIONS } from '../config/upgrades.js';
-import { generateWorld } from '../world/WorldGen.js';
+import { generateWorld, generateZone, buildZoneRoute } from '../world/WorldGen.js';
 import { Player } from '../entities/Player.js';
 import { Progression } from '../systems/Progression.js';
 
@@ -39,10 +39,16 @@ export class RunController {
       damageTaken: 0,
       characterId,
       checkpoint: { x: 0, y: 0 },
+      flags: {},
       startTime: performance.now(),
       victory: false,
     };
     game.worlds = generateWorld(game.seed, { packagedMaps: game.packagedMaps });
+    const gateWorld = generateZone(game.seed, 'dungeon_gate', {
+      packagedMaps: game.packagedMaps,
+      route: buildZoneRoute(game.seed),
+    });
+    if (gateWorld) game.worlds.dungeon_gate = gateWorld;
     game.player = new Player(characterId, game.assets, this.getMetaModifiers());
     game.player.devFly = Boolean(game.devFly);
     game.player.immortal = Boolean(game.devFly);

@@ -29,7 +29,8 @@ export class BossController {
     game.bossHazards = [];
     game.bossDamageTaken = 0;
     const centerX = (arena.left + arena.right) / 2;
-    const y = bossData.flying ? game.activeWorld.surface + 112 : game.activeWorld.surface;
+    const arenaFloor = arena.floorY ?? game.activeWorld.surface;
+    const y = bossData.flying ? arenaFloor + 112 : arenaFloor;
     game.boss = new Boss({
       data: bossData,
       assets: game.assets,
@@ -38,11 +39,11 @@ export class BossController {
       y,
     });
     game.enemies.push(game.boss);
-    game.activeWorld.map.addBlocker(arena.left + 10, game.activeWorld.surface, 10, 260, { tag: 'arena' });
-    game.activeWorld.map.addBlocker(arena.right - 20, game.activeWorld.surface, 10, 260, { tag: 'arena' });
+    game.activeWorld.map.addBlocker(arena.left + 10, arenaFloor, 10, 260, { tag: 'arena' });
+    game.activeWorld.map.addBlocker(arena.right - 20, arenaFloor, 10, 260, { tag: 'arena' });
     game.arenaGatePositions = [
-      { x: arena.left + 10, y: game.activeWorld.surface },
-      { x: arena.right - 20, y: game.activeWorld.surface },
+      { x: arena.left + 10, y: arenaFloor },
+      { x: arena.right - 20, y: arenaFloor },
     ];
     game.buildSpatialHash();
     game.camera.addShake(5);
@@ -137,14 +138,14 @@ export class BossController {
       id: `boss-chest-${def.id}`,
       type: 'chestBoss',
       x: boss.x,
-      y: game.activeWorld.surface,
+      y: boss.y,
       opened: false,
     };
     if (!game.activeWorld.interactions.some((i) => i.id === chest.id)) {
       game.activeWorld.interactions.push(chest);
     }
-    game.xpOrbs.spawn(40, boss.x - 10, game.activeWorld.surface + 16, { big: true });
-    game.xpOrbs.spawn(40, boss.x + 10, game.activeWorld.surface + 16, { big: true });
+    game.xpOrbs.spawn(40, boss.x - 10, boss.y + 16, { big: true });
+    game.xpOrbs.spawn(40, boss.x + 10, boss.y + 16, { big: true });
     game.glowParticles.burst([COLORS.gold, COLORS.white, def.accent ?? COLORS.gold], boss.x, boss.y + 30, 60, {
       speed: 150,
       spread: Math.PI * 2,

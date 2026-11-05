@@ -1,5 +1,5 @@
 import { GAME, PHYSICS_BOUNDS } from '../src/config/game.js';
-import { ZONE_ORDER } from '../src/data/zones.js';
+import { GENERATED_ZONE_ORDER } from '../src/data/zones.js';
 import { generateWorld } from '../src/world/WorldGen.js';
 import { TILE } from '../src/world/Tilemap.js';
 
@@ -8,7 +8,7 @@ const TOLERANCE = 1;
 const stats = {};
 const failures = [];
 
-for (const zoneId of ZONE_ORDER) {
+for (const zoneId of GENERATED_ZONE_ORDER) {
   stats[zoneId] = {
     props: 0,
     chests: 0,
@@ -74,7 +74,7 @@ function scanTinyStructures(world) {
 
 for (let seed = 1; seed <= 100; seed++) {
   const world = generateWorld(seed);
-  for (const zoneId of ZONE_ORDER) {
+  for (const zoneId of GENERATED_ZONE_ORDER) {
     const zone = world[zoneId];
     const entries = zone.layout?.entries ?? [];
     const props = entries.filter((entry) => entry.kind === 'prop');
@@ -142,7 +142,7 @@ for (let seed = 1; seed <= 100; seed++) {
 const columns = ['zone', 'props', 'chests', 'gates', 'platforms', 'overlaps', 'floatingChests', 'clearanceBad', 'tinyStructures', 'unreachablePlatforms'];
 const widths = [10, 7, 7, 7, 10, 9, 15, 13, 15, 21];
 console.log(columns.map((column, index) => column.padEnd(widths[index])).join(''));
-for (const zoneId of ZONE_ORDER) {
+for (const zoneId of GENERATED_ZONE_ORDER) {
   const row = stats[zoneId];
   const values = [zoneId, row.props, row.chests, row.gates, row.platforms, row.overlaps, row.floatingChests, row.clearanceBad, row.tinyStructures, row.unreachablePlatforms];
   console.log(values.map((value, index) => String(value).padEnd(widths[index])).join(''));
@@ -155,4 +155,4 @@ if (totalBad > 0) {
   for (const failure of failures) console.error(`  - ${failure}`);
   process.exit(1);
 }
-console.log(`\n? Layout validation passed: 100 seeds ? ${ZONE_ORDER.length} zones; zero overlaps, floating chests, clearance violations, unsupported single-tile structures or unreachable platforms.`);
+console.log(`\n? Layout validation passed: 100 seeds ? ${GENERATED_ZONE_ORDER.length} zones; zero overlaps, floating chests, clearance violations, unsupported single-tile structures or unreachable platforms.`);

@@ -1,5 +1,5 @@
 import { GAME, PHYSICS_BOUNDS } from '../src/config/game.js';
-import { ZONE_ORDER, ZONES } from '../src/data/zones.js';
+import { GENERATED_ZONE_ORDER, ZONES } from '../src/data/zones.js';
 import { generateWorld, buildZoneRoute } from '../src/world/WorldGen.js';
 
 const args = process.argv.slice(2);
@@ -23,7 +23,7 @@ for (let seed = startSeed; seed <= endSeed; seed++) {
     failures.push(`seed ${seed}: generation threw ${error.message}`);
     continue;
   }
-  for (const zoneId of ZONE_ORDER) {
+  for (const zoneId of GENERATED_ZONE_ORDER) {
     const zone = world[zoneId];
     const zoneDef = ZONES[zoneId];
     zonesChecked++;

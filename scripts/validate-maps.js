@@ -51,8 +51,19 @@ for (const config of Object.values(PACKAGED_MAPS)) {
     continue;
   }
   const layerByName = new Map(map.layers.map((layer) => [layer.name, layer]));
-  for (const name of [config.layers.collision, ...config.layers.render]) {
+  for (const name of [
+    config.layers.collision,
+    ...(config.layers.render ?? []),
+    ...(config.layers.front ?? []),
+  ]) {
     if (!layerByName.has(name)) fail(`${config.id}: missing layer ${name}`);
+  }
+  for (const layer of map.layers) {
+    if (layer.type !== 'imagelayer' || !layer.image) continue;
+    const imagePath = path.resolve(path.dirname(mapPath), layer.image);
+    if (!fs.existsSync(imagePath)) {
+      fail(`${config.id}: image layer ${layer.name} points to missing ${layer.image}`);
+    }
   }
   let collisionTiles = 0;
   let collisionGids = new Set();
@@ -91,7 +102,7 @@ for (const config of Object.values(PACKAGED_MAPS)) {
       tilesets,
       images: new Map(),
       config,
-      route: ['cemetery', 'church', 'forest'],
+      route: ['cemetery', 'church', 'dungeon_gate'],
       seed: 1,
     });
   } catch (error) {
@@ -108,7 +119,22 @@ for (const config of Object.values(PACKAGED_MAPS)) {
   if (world.map.getType(spawnTx, spawnRow) !== TILE.SOLID) {
     fail(`${config.id}: spawn has no solid floor`);
   }
-  if (!world.transitions.length) fail(`${config.id}: no right-edge transition was created`);
+  if (config.exitTarget !== null && !world.transitions.length) {
+    fail(`${config.id}: no right-edge transition was created`);
+  }
+  if (config.exitTarget === null && !world.finalGate) {
+    fail(`${config.id}: no authored final gate / level exit found`);
+  }
+  if (config.objectLayers?.length) {
+    for (const layerName of config.objectLayers) {
+      if (!map.layers.some((layer) => layer.name === layerName)) {
+        fail(`${config.id}: missing object layer ${layerName}`);
+      }
+    }
+    if (!world.tiled.enemies.length && !world.arena) {
+      fail(`${config.id}: authored map has no enemies or boss arena`);
+    }
+  }
   lines.push({
     id: config.id,
     size: `${map.width}x${map.height}`,
@@ -118,14 +144,19 @@ for (const config of Object.values(PACKAGED_MAPS)) {
     collisionGids: [...collisionGids].sort().join(','),
     spawn: `${spawnTx},${spawnRow}`,
     transitions: world.transitions.length,
+    imageLayers: world.tiled.imageLayers.length,
+    enemies: world.tiled.enemies.length,
   });
 }
 
-const widths = [18, 10, 12, 7, 15, 15, 10, 12];
-const columns = ['map', 'tiles', 'pixels', 'layers', 'collisionTiles', 'collisionGids', 'spawn', 'transitions'];
+const widths = [18, 10, 12, 7, 15, 15, 10, 12, 13, 9];
+const columns = ['map', 'tiles', 'pixels', 'layers', 'collisionTiles', 'collisionGids', 'spawn', 'transitions', 'imageLayers', 'enemies'];
 console.log(columns.map((column, index) => column.padEnd(widths[index])).join(''));
 for (const line of lines) {
-  const values = [line.id, line.size, line.pixels, line.layers, line.collisionTiles, line.collisionGids, line.spawn, line.transitions];
+  const values = [
+    line.id, line.size, line.pixels, line.layers, line.collisionTiles, line.collisionGids,
+    line.spawn, line.transitions, line.imageLayers, line.enemies,
+  ];
   console.log(values.map((value, index) => String(value).padEnd(widths[index])).join(''));
 }
 

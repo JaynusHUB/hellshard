@@ -340,7 +340,9 @@ export class AudioManager {
     }
     this.musicStarted = true;
     this.ambientZone = zone;
-    const base = { cemetery: 55, church: 49, swamp: 46, dungeon: 41, forest: 52 }[zone] ?? 50;
+    const base = {
+      cemetery: 55, church: 49, swamp: 46, dungeon: 41, dungeon_gate: 41, forest: 52,
+    }[zone] ?? 50;
     const fade = ctx.createGain();
     fade.gain.setValueAtTime(0.0001, ctx.currentTime);
     fade.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 3);
@@ -375,7 +377,9 @@ export class AudioManager {
 
   setSynthZone(zone) {
     if (!this.context || !this.musicStarted) return;
-    const base = { cemetery: 55, church: 49, swamp: 46, dungeon: 41, forest: 52 }[zone] ?? 50;
+    const base = {
+      cemetery: 55, church: 49, swamp: 46, dungeon: 41, dungeon_gate: 41, forest: 52,
+    }[zone] ?? 50;
     const now = this.context.currentTime;
     let toneIndex = 0;
     for (const node of this.musicNodes) {
